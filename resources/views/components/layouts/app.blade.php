@@ -10,6 +10,7 @@
 </head>
 
 <body class="bg-[#070715] flex flex-col min-h-full text-[#C3C3D1] flex min-h-full flex-col">
+    <livewire:Notifications />
     <x-ui.navbar />
     <main class="grow mx-auto px-4 sm:px-6 lg:px-8 w-full py-[40px]">
         {{ $slot }}

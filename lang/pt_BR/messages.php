@@ -37,5 +37,31 @@ return [
         'contact' => 'Fale Conosco',
         'terms' => 'Termos de Serviço',
         'privacy_policy' => 'Política de Privacidade',
+        'rights' => 'Todos os direitos reservados.',
+    ],
+    'newsletter' => [
+        'caredata' => 'Nós nos preocupamos com seus dados. Leia nossa',
+        'privacy_policy' => 'Política de Privacidade',
+        'headline' => 'Gostou do nosso produto e quer ficar por dentro das atualizações?',
+        'subheadline' => 'Inscreva-se na nossa newsletter.',
+    ],
+    'buttons' => [
+        'notify_me' => 'Notifique-me',
+    ],
+    'login' => [
+        'headline' => 'Acesse sua conta',
+        'email' => 'E-mail',
+        'password' => 'Senha',
+        'remember_me' => 'Lembrar-me',
+        'login' => 'Entrar',
+        'forgot_password' => 'Esqueceu sua senha?',
+        'register' => 'Registrar',
+        'register_cta' => 'Cadastre-se',
+        'not_registered_yet' => 'Ainda não está registrado?',
+        'continue_with' => 'Ou continue com',
+    ],
+    'authentication' => [
+        'wrongcredentials' => 'Email ou Senha incorretos ou não cadastrados',
+        'success' => 'Login efetuado com sucesso',
     ],
 ];

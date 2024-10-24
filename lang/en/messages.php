@@ -37,5 +37,31 @@ return [
         'contact' => 'Contact Us',
         'terms' => 'Terms of Service',
         'privacy_policy' => 'Privacy Policy',
+        'rights' => 'All Rights Reserved',
     ],
+    'newsletter' => [
+        'caredata' => 'We care about your data. Read our',
+        'privacy_policy' => 'Privacy Policy',
+        'headline' => 'Liked our product and want to be aware of our updates?',
+        'subheadline' => 'Subscribe to our newsletter.',
+    ],
+    'buttons' => [
+        'notify_me' => 'Notify Me',
+    ],
+    'login' => [
+        'headline' => 'Log in to your account',
+        'email' => 'Email',
+        'password' => 'Password',
+        'remember_me' => 'Remember Me',
+        'login' => 'Login',
+        'forgot_password' => 'Forgot your password?',
+        'register' => 'Register',
+        'register_cta' => 'Sign Up',
+        'not_registered_yet' => 'Not registered yet?',
+        'continue_with' => 'Or continue with',
+    ],
+    'authentication' => [
+        'wrongcredentials' => 'Email or Password doesn\' match or not registered.',
+        'success' => 'You have successfully logged in.',
+    ]
 ];

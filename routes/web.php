@@ -1,12 +1,17 @@
 <?php
 
-use App\Http\Controllers\HomeController;
+use App\Http\Controllers\{HomeController, UserController};
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/login', [HomeController::class, 'login'])->name('login');
 
-// Route::group(['middleware' => 'auth'], function () {
+Route::group(['middleware' => 'guest'], function() {
+    Route::get('/login', [HomeController::class, 'login'])->name('login');
+    Route::post('/login', [UserController::class, 'authenticate'])->name('authenticate');
+});
+
+Route::group(['middleware' => 'auth'], function () {
+    Route::get('/logout', [UserController::class, 'logout'])->name('logout');
 //     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 //     Route::prefix('wishlist')->group(function() {
@@ -16,7 +21,7 @@ Route::get('/login', [HomeController::class, 'login'])->name('login');
 //             Route::get('/create', 'create')->name('wishlist.create');
 //         });
 //     });
-// });
+});
 
 // Route::get('/wishes', [WishlistController::class, 'index'])->name('wishes.index');
 // Route::get('/wishes/{username}', [WishlistController::class, 'show'])->name('wishes.show');
