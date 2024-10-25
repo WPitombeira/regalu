@@ -32,6 +32,10 @@ return [
         'features' => 'Recursos',
         'contact' => 'Contato',
         'login' => 'Entrar',
+        'dashboard' => 'Dashboard',
+        'wishlists' => 'Listas de Desejos',
+        'secret_santa' => 'Amigo Secreto',
+        'privacy_policy' => 'Política de Privacidade',
     ],
     'footer' => [
         'contact' => 'Fale Conosco',

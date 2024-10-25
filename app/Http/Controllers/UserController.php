@@ -45,4 +45,8 @@ class UserController extends Controller {
 
         return back()->with('status', 'Password confirmed. You have been logged out on other devices.');
     }
+
+    public function viewSettings() {
+        return view('settings');
+    }
 }

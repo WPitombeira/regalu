@@ -38,8 +38,7 @@ class LoginForm extends Component {
 
         if ((new UserController())->loginWithoutRedirect($this->email, $this->password, $this->remember)) {
             $this->dispatch('notification', ["message" => __("messages.authentication.success"), "type" => 'success']);
-            // redirect()->intended('dashboard');
-            return;
+            redirect()->intended('dashboard');
         }
 
         $this->addError('loginError', __("messages.authentication.wrongcredentials"));

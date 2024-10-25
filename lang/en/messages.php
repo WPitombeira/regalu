@@ -32,6 +32,10 @@ return [
         'features' => 'Features',
         'contact' => 'Contact',
         'login' => 'Login',
+        'dashboard' => 'Dashboard',
+        'wishlists' => 'Wishlists',
+        'secret_santa' => 'Secret Santa',
+        'privacy_policy' => 'Política de Privacidade',
     ],
     'footer' => [
         'contact' => 'Contact Us',

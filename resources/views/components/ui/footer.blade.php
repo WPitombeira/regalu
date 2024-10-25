@@ -7,16 +7,13 @@
             </a>
             <ul class="flex flex-wrap items-center mb-6 text-sm font-medium text-gray-500 sm:mb-0 dark:text-gray-400">
                 <li>
-                    <a href="#" class="hover:underline me-4 md:me-6">About</a>
+                    <a href="#" class="hover:underline me-4 md:me-6">{{ __("messages.navbar.about") }}</a>
                 </li>
                 <li>
-                    <a href="#" class="hover:underline me-4 md:me-6">Privacy Policy</a>
+                    <a href="#" class="hover:underline me-4 md:me-6">{{ __("messages.navbar.privacy_policy") }}</a>
                 </li>
                 <li>
-                    <a href="#" class="hover:underline me-4 md:me-6">Licensing</a>
-                </li>
-                <li>
-                    <a href="#" class="hover:underline">Contact</a>
+                    <a href="#" class="hover:underline">{{ __("messages.navbar.contact") }}</a>
                 </li>
             </ul>
         </div>
