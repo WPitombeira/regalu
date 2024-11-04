@@ -2,16 +2,16 @@
 
 <div>
     {{-- <x-toast type="info" message="This is a success message" /> --}}
-    <section class="bg-gray-50 dark:bg-gray-900" x-data="{ showLogin: true, showRegister: false }">
-        <div class="h-[70vh] flex flex-col items-center justify-center grow lg:py-0">
+    <section class="bg-gray-50 dark:bg-gray-900" x-data="{ showLogin: false, showRegister: true }">
+        <div :class="{'h-[80vh]': ! showLogin}" class="h-[70vh] flex flex-col items-center justify-center grow lg:py-0 transition-all ease-in-out delay-200">
             <div class="flex flex-col items-center px-6 w-4/6">
                 {{-- // Login --}}
-                <div x-show="showLogin" x-transition
-                    class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+                <div x-show="showLogin"
+                    class="transition-all ease-in-out delay-300 w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
                     <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
                         <h1
                             class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                            {{ __("messages.login.headline") }}
+                            {{ __("messages.login.login_headline") }}
                         </h1>
                         <form class="space-y-4 md:space-y-6" wire:submit="login">
                             <div>
@@ -73,9 +73,8 @@
                                     </div>
                                 </span>
                                 <div class="grid grid-cols-2 gap-2 mt-4">
-                                    <x-ui.buttons.login />
-                                    <button type="button"
-                                        class="max-h-[50px] text-black bg-white hover:bg-slate-300 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-white-800 dark:hover:bg-white-900 dark:focus:ring-slate-800 flex align-middle"><x-ui.icons.google height="100%"/> <span class="inline-block pl-2 self-center">Google</span></button>
+                                    <x-ui.buttons.login provider="Apple" />
+                                    <x-ui.buttons.login provider="Google" />
                                 </div>
                             </div>
                         </form>
@@ -83,10 +82,52 @@
                 </div>
                 
                 {{-- // Register --}}
-                <div x-show.important="showRegister" x-transition>
-                    <p class="text-sm font-light text-gray-500 dark:text-gray-400">
-                        Already have an account? <button x-on:click="showLogin = !showLogin; showRegister = !showRegister" type="button"
-                            class="font-medium text-primary-600 hover:underline dark:text-primary-500">Login</a></div>
+                <div x-show.important="showRegister" class="transition-all ease-in-out delay-300 w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+                    <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
+                        <h1
+                            class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
+                            {{ __("messages.login.register_headline") }}
+                        </h1>
+                        <form class="space-y-4 md:space-y-6" wire:submit="register">
+                            <div>
+                                <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">{{ __("messages.login.form_fields.name") }}</label>
+                                <input type="text" wire:model="name" placeholder="{{ __("messages.login.form_fields.name_placeholder") }}" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">{{ __("messages.login.form_fields.email") }}</label>
+                                <input type="text" wire:model="name" placeholder="{{ __("messages.login.form_fields.email_placeholder") }}" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">{{ __("messages.login.form_fields.password") }}</label>
+                                <input type="text" wire:model="name" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">{{ __("messages.login.form_fields.confirm_password") }}</label>
+                                <input type="text" wire:model="name" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                            </div>
+                        </form>
+                        <p class="text-sm font-light text-gray-500 dark:text-gray-400">
+                            Already have an account? <button x-on:click="showLogin = !showLogin; showRegister = !showRegister" type="button"
+                            class="font-medium text-primary-600 hover:underline dark:text-primary-500">Login</button></p>
+                            
+                        <div>
+                            <span class="relative flex justify-between">
+                                <div aria-hidden="true" class="w-full inset-0 flex items-center">
+                                    <div class="w-full border border-gray-300 dark:border-gray-600"></div>
+                                </div>
+                                <div class="w-full flex justify-center text-sm">
+                                    <span class="px-2 text-gray-500 dark:text-gray-400">{{ __("messages.login.register_with") }}</span>
+                                </div>
+                                <div aria-hidden="true"  class="w-full inset-0 flex items-center">
+                                    <div class="w-full border border-gray-300 dark:border-gray-600"></div>
+                                </div>
+                            </span>
+                            <div class="grid grid-cols-2 gap-2 mt-4">
+                                <x-ui.buttons.login provider="Apple" />
+                                <x-ui.buttons.login provider="Google" />
+                            </div>
+                        </div>
+                    </div>
             </div>
         </div>
     </section>

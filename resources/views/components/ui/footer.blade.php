@@ -6,14 +6,13 @@
                 <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">{{ config("app.name") }}</span>
             </a>
             <ul class="flex flex-wrap items-center mb-6 text-sm font-medium text-gray-500 sm:mb-0 dark:text-gray-400">
-                <li>
-                    <a href="#" class="hover:underline me-4 md:me-6">{{ __("messages.navbar.about") }}</a>
+                <li class="flex flex-column justify-center mr-2">
+                    <div class="w-[18px] h-[18px]">
+                        <a href="#" class="hover:underline me-4 md:me-6"><x-ui.icons.bluesky /></a>
+                    </div>
                 </li>
                 <li>
                     <a href="#" class="hover:underline me-4 md:me-6">{{ __("messages.navbar.privacy_policy") }}</a>
-                </li>
-                <li>
-                    <a href="#" class="hover:underline">{{ __("messages.navbar.contact") }}</a>
                 </li>
             </ul>
         </div>
