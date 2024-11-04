@@ -7,23 +7,23 @@ return [
         'subheadline' => 'Também temos recursos para aproveitar com a família e amigos',
     ],
     'features' => [
-        'title' => 'Nossos Recursos',
-        'description' => ['Descubra uma variedade de recursos projetados para melhorar sua experiência.'],
+        'headline' => 'Nossos Recursos',
+        'subheadline' => ['Descubra uma variedade de recursos projetados para melhorar sua experiência.'],
         'wishlist' => [
-            'title' => 'Gerenciamento de Lista de Desejos',
-            'description' => 'Crie e gerencie suas listas de desejos sem esforço.',
+            'headline' => 'Gerenciamento de Lista de Desejos',
+            'subheadline' => 'Crie e gerencie suas listas de desejos sem esforço.',
         ],
         'family_friends' => [
-            'title' => 'Família e Amigos',
-            'description' => 'Compartilhe e aproveite com a família e amigos.',
+            'headline' => 'Família e Amigos',
+            'subheadline' => 'Compartilhe e aproveite com a família e amigos.',
         ],
         'notifications' => [
-            'title' => 'Notificações',
-            'description' => 'Receba notificações para atualizações importantes.',
+            'headline' => 'Notificações',
+            'subheadline' => 'Receba notificações para atualizações importantes instantaneamente.',
         ],
         'privacy' => [
-            'title' => 'Privacidade em Primeiro Lugar',
-            'description' => '100% engajado em proteger sua privacidade.',
+            'headline' => 'Privacidade em Primeiro Lugar',
+            'subheadline' => '100% engajado em proteger sua privacidade.',
         ],
     ],
     'navbar' => [
@@ -51,6 +51,7 @@ return [
     ],
     'buttons' => [
         'notify_me' => 'Notifique-me',
+        'backhome' => 'Voltar para a página inicial',
     ],
     'login' => [
         'headline' => 'Acesse sua conta',
@@ -68,4 +69,10 @@ return [
         'wrongcredentials' => 'Email ou Senha incorretos ou não cadastrados',
         'success' => 'Login efetuado com sucesso',
     ],
+    'errors' => [
+        '404' => [
+            'title' => 'Página não encontrada',
+            'description' => 'A página que você está procurando não foi encontrada.',
+        ],
+    ]
 ];

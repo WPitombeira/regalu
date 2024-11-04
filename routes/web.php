@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\{HomeController, UserController};
+use App\Livewire\Contact;
 use Illuminate\Support\Facades\Route;
 
 
@@ -9,6 +10,8 @@ Route::group(['middleware' => 'guest'], function() {
     Route::get('/login', [HomeController::class, 'login'])->name('login');
     Route::post('/login', [UserController::class, 'authenticate'])->name('authenticate');
 });
+
+Route::get('/contact', [Contact::class, 'render'])->name('contact');
 
 Route::group(['middleware' => 'auth'], function () {
     //     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
