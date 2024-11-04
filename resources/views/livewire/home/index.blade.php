@@ -75,7 +75,7 @@
         </div>
     </section>
 
-    <section class="bg-white mt-10 dark:bg-gray-900 py-10">
+    <section id="data_privacy" class="bg-white mt-10 dark:bg-gray-900 py-10">
         <div class="w-100 m-auto justify-center flex">
             <div class="grid lg:grid-cols-2 gap-4 place-content-center">
                 <div class="max-w-lg md:px-4">
