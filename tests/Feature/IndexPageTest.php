@@ -7,7 +7,7 @@ it('renders the hero section', function () {
     $response->assertStatus(200);
     $response->assertSee(__('messages.hero.headline'));
     $response->assertSee(__('messages.hero.subheadline'));
-    $response->assertSee(__('messages.get_started'));
+    $response->assertSee(__('messages.buttons.get_started'));
 });
 
 it('renders the features section', function () {

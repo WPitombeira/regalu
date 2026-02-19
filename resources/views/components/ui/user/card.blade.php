@@ -5,15 +5,15 @@
             class="flex text-sm bg-gray-800 rounded-full md:me-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
             id="user-menu-button" aria-expanded="false" aria-haspopup="true">
             <span class="sr-only">Open user menu</span>
-            <img class="w-8 h-8 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-3.jpg"
+            <img class="w-8 h-8 rounded-full" src="{{ auth()->user()->avatar_url ?? asset('media/default-avatar.png') }}"
                 alt="user photo">
         </button>
 
         <!-- Dropdown menu -->
         <div x-show="show" class="z-10 absolute bg-white divide-y divide-gray-100 rounded-lg mt-2 shadow w-44 dark:bg-gray-700" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
             <div class="px-4 py-3">
-                <span class="block text-sm text-gray-900 dark:text-white">Bonnie Green</span>
-                <span class="block text-sm  text-gray-500 truncate dark:text-gray-400">name@flowbite.com</span>
+                <span class="block text-sm text-gray-900 dark:text-white">{{ auth()->user()->name }}</span>
+                <span class="block text-sm  text-gray-500 truncate dark:text-gray-400">{{ auth()->user()->email }}</span>
             </div>
             <ul class="py-2">
                 <li>

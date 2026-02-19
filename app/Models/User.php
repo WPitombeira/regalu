@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -20,6 +21,9 @@ class User extends Authenticatable {
         'name',
         'email',
         'password',
+        'avatar_url',
+        'phone',
+        'locale',
     ];
 
     /**
@@ -41,5 +45,31 @@ class User extends Authenticatable {
         return [
             'password' => 'hashed',
         ];
+    }
+
+    public function families(): BelongsToMany {
+        return $this->belongsToMany(\App\Models\Family::class, 'family_members')
+            ->withPivot('role', 'joined_at')
+            ->withTimestamps();
+    }
+
+    public function familyMemberships(): HasMany {
+        return $this->hasMany(\App\Models\FamilyMember::class);
+    }
+
+    public function wishlists(): HasMany {
+        return $this->hasMany(\App\Models\Wishlist::class);
+    }
+
+    public function organizedEvents(): HasMany {
+        return $this->hasMany(\App\Models\AmigoSecretoEvent::class, 'organizer_id');
+    }
+
+    public function eventParticipations(): HasMany {
+        return $this->hasMany(\App\Models\AmigoSecretoParticipant::class);
+    }
+
+    public function userNotifications(): HasMany {
+        return $this->hasMany(\App\Models\Notification::class);
     }
 }
