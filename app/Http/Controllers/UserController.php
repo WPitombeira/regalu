@@ -12,7 +12,7 @@ class UserController extends Controller {
             'email' => 'required|email',
             'password' => 'required',
         ]);
-        $remember = $request->filled('remember') ?? false;
+        $remember = $request->filled('remember');
 
         // Auth::attempt(['email' => $credentials->email, 'password' => $credentials->password, 'active' => 1]);
 

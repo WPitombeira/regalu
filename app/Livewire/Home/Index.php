@@ -12,4 +12,9 @@ class Index extends Component {
 
     #[Rule(['required', 'email'])]
     public string $email = '';
+
+    #[Rule(['required', 'min:5'])]
+    public string $feedback_message = '';
+    public string $feedback_email = '';
+    public string $feedback_name = '';
 }
