@@ -12,6 +12,8 @@ class UrlMetaFetchService
 {
     private const MAX_BODY_BYTES = 524288;
 
+    private const MAX_IMAGE_CANDIDATES = 3;
+
     private const CACHE_TTL_SECONDS = 21600;
 
     public function __construct(private PublicUrlResolver $urlResolver) {}
@@ -136,6 +138,7 @@ class UrlMetaFetchService
             }
 
             $metadata = [];
+            $imageCandidates = 0;
 
             foreach ($document->getElementsByTagName('meta') as $meta) {
                 if (strtolower(trim($meta->getAttribute('property'))) === 'og:title') {
@@ -146,7 +149,10 @@ class UrlMetaFetchService
                     }
                 }
 
-                if (! isset($metadata['image']) && strtolower(trim($meta->getAttribute('property'))) === 'og:image') {
+                if (! isset($metadata['image']) && $imageCandidates < self::MAX_IMAGE_CANDIDATES
+                    && strtolower(trim($meta->getAttribute('property'))) === 'og:image') {
+                    // Rejected candidates consume the budget too: DNS is synchronous.
+                    $imageCandidates++;
                     $image = $this->sanitizeImageUrl($meta->getAttribute('content'), $sourceUrl);
 
                     if ($image !== null) {

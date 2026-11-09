@@ -36,6 +36,8 @@ class FamilyRoster extends Component
         $family = $this->authorizedFamily('update');
         $member = $family->members()->findOrFail($memberId);
 
+        abort_if($member->getAttribute('user_id') === $family->getAttribute('creator_id'), 403);
+
         if ($member->getAttribute('user_id') === Auth::id()) {
             return;
         }

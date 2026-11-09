@@ -45,7 +45,9 @@ class CreateEvent extends Component
         $this->validate();
 
         if ($this->family_id !== null) {
-            Gate::authorize('view', Family::query()->findOrFail($this->family_id));
+            $family = Family::query()->findOrFail($this->family_id);
+            Gate::authorize('view', $family);
+            abort_if($family->is_archived, 403);
         }
 
         $event = AmigoSecretoEvent::create([
@@ -76,7 +78,7 @@ class CreateEvent extends Component
     public function render(): View
     {
         abort_unless(Auth::check(), 403);
-        $families = Auth::user()->families;
+        $families = Auth::user()->families()->where('is_archived', false)->get();
 
         return view('livewire.amigo-secreto.create-event', [
             'families' => $families,

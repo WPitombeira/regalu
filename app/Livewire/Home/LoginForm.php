@@ -100,7 +100,7 @@ class LoginForm extends Component
 
         $this->dispatch('notification', ['message' => __('messages.auth.register_success'), 'type' => 'success']);
 
-        return redirect()->route('dashboard');
+        return redirect()->intended(route('dashboard'));
     }
 
     // Checks if the given provider is valid

@@ -63,6 +63,6 @@
                 </a>
             @endforeach
         </div>
-        <div class="mt-6">{{ $events->links() }}</div>
     @endif
+    <div class="mt-6">{{ $events->links() }}</div>
 </div>

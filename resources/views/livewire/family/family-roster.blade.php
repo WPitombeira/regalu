@@ -61,11 +61,13 @@
                                 Promote
                             </button>
                         @endif
-                        <button wire:click="removeMember({{ $member->id }})"
-                                wire:confirm="Remove this member from the family?"
-                                class="px-3 py-1.5 text-xs font-medium text-red-400 bg-red-900/30 border border-red-800 rounded-lg hover:bg-red-900/50 transition-colors">
-                            Remove
-                        </button>
+                        @if($member->user_id !== $family->creator_id)
+                            <button wire:click="removeMember({{ $member->id }})"
+                                    wire:confirm="Remove this member from the family?"
+                                    class="px-3 py-1.5 text-xs font-medium text-red-400 bg-red-900/30 border border-red-800 rounded-lg hover:bg-red-900/50 transition-colors">
+                                Remove
+                            </button>
+                        @endif
                     </div>
                 @endif
             </div>

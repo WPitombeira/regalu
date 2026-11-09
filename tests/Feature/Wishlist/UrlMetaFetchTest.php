@@ -143,6 +143,32 @@ describe('URL metadata fetching', function () {
         expect($lastOptions['connect_timeout'])->toBe(2);
     });
 
+    it('bounds rejected image resolution while retaining metadata and valid early candidates', function (?int $validImage) {
+        $lookups = [];
+        $this->app->instance(PublicUrlResolver::class, new PublicUrlResolver(function (string $host) use (&$lookups, $validImage): array {
+            $lookups[] = $host;
+
+            return $host === 'catalog.example.com' || $host === "image{$validImage}.example.com" ? ['93.184.216.34'] : [];
+        }));
+        $html = '<html><head>';
+        for ($i = 1; $i <= 1000; $i++) {
+            $html .= '<meta property="og:image" content="https://image'.$i.'.example.com/image.png">';
+        }
+        $html .= '<meta property="og:title" content="Title after all image candidates"></head></html>';
+        expect(strlen($html))->toBeLessThan(524288);
+        Http::preventStrayRequests();
+        Http::fake(['https://catalog.example.com/bounded-images' => Http::response($html)]);
+
+        $expected = ['title' => 'Title after all image candidates'];
+        if ($validImage === 3) {
+            $expected = ['image' => 'https://image3.example.com/image.png', ...$expected];
+        }
+        expect(app(UrlMetaFetchService::class)->fetch('https://catalog.example.com/bounded-images'))->toBe($expected);
+        expect($lookups)->toHaveCount(4);
+        expect($lookups)->toBe(['catalog.example.com', 'image1.example.com', 'image2.example.com', 'image3.example.com']);
+        Http::assertSentCount(1);
+    })->with(['all rejected' => null, 'valid within budget' => 3, 'valid beyond budget' => 4]);
+
     it('rejects mixed public and private DNS answers before making a request', function () {
         $url = 'https://catalog.example.com/rebinding';
         $this->app->instance(PublicUrlResolver::class, new PublicUrlResolver(static fn (string $host): array => ['93.184.216.34', '127.0.0.1']));
