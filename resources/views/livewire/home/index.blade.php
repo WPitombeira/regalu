@@ -28,7 +28,7 @@
             </div>
             <div class="grid grid-cols-1 gap-8 lg:col-span-5">
                 <div class="flex items center">
-                    <div class="flex-shrink-0 flex flex-col justify-center">
+                    <div class="shrink-0 flex flex-col justify-center">
                         <div class="flex flex-col items-center items center justify-center w-12 h-12 text-white bg-primary-700 rounded-md">
                             <x-ui.icons.heart class="w-8 h-8" />
                         </div>
@@ -39,7 +39,7 @@
                     </div>
                 </div>
                 <div class="flex items center">
-                    <div class="flex-shrink-0">
+                    <div class="shrink-0">
                         <div class="flex flex-col items-center items center justify-center w-12 h-12 text-white bg-primary-700 rounded-md">
                             <x-ui.icons.share class="w-8 h-8" />
                         </div>
@@ -50,7 +50,7 @@
                     </div>
                 </div>
                 <div class="flex items center">
-                    <div class="flex-shrink-0">
+                    <div class="shrink-0">
                         <div class="flex flex-col items-center items center justify-center w-12 h-12 text-white bg-primary-700 rounded-md">
                             <x-ui.icons.notifications class="w-8 h-8" />
                         </div>
@@ -61,7 +61,7 @@
                     </div>
                 </div>
                 <div class="flex items center">
-                    <div class="flex-shrink-0">
+                    <div class="shrink-0">
                         <div class="flex flex-col items-center items center justify-center w-12 h-12 text-white bg-primary-700 rounded-md">
                             <x-ui.icons.lock class="w-8 h-8" />
                         </div>
@@ -76,7 +76,7 @@
     </section>
 
     <section id="newsletter" class="bg-white mt-10 dark:bg-gray-900 py-10">
-        <div class="w-100 m-auto justify-center flex">
+        <div class="w-auto m-auto justify-center flex">
             <div class="grid lg:grid-cols-2 gap-4 place-content-center">
                 <div class="max-w-lg md:px-4">
                     <h1 class="text-xl font-bold tracking-tight leading-none md:text-xl xl:text-2xl dark:text-white">{{ __("messages.newsletter.headline") }}</h1>
@@ -86,7 +86,7 @@
                     <form class="flex flex-col" wire:submit="registerNewsletter">
                         <div class="grid grid-cols-3 gap-4">
                             <input wire:model="email"  class="inset-0 py-2 px-3.5 text-sm h-9 col-span-2 form-input rounded-md px-4 py-3" type="email" placeholder="Your best e-mail" required="">
-                            <button type="submit" class="hover:text-violet-900 hover:bg-gray-200 transition hover:duration-200 ease-in-out shadow-sm text-violet-800 bg-white text-black font-bold text-sm rounded-md py-2 px-3.5">{{ __("messages.buttons.notify_me") }}</button>
+                            <button type="submit" class="hover:text-violet-900 hover:bg-gray-200 transition hover:duration-200 ease-in-out shadow-xs text-violet-800 bg-white text-black font-bold text-sm rounded-md py-2 px-3.5">{{ __("messages.buttons.notify_me") }}</button>
                         </div>
                         <span class="m-auto text-base">{{ __("messages.newsletter.caredata") }} <a href="#" class="font-bold">{{ __("messages.newsletter.privacy_policy") }}</a></span>
                     </form>
@@ -120,7 +120,7 @@
                             @enderror
                         </div>
                         <div class="w-full flex justify-center">
-                            <button class="w-4/12 font-base text-lg hover:text-violet-900 hover:bg-gray-200 transition hover:duration-200 ease-in-out shadow-sm text-violet-800 bg-white text-black font-bold text-sm rounded-md py-2 px-3.5" type="submit">Submit</button>
+                            <button class="w-4/12 font-base text-lg hover:text-violet-900 hover:bg-gray-200 transition hover:duration-200 ease-in-out shadow-xs text-violet-800 bg-white text-black font-bold text-sm rounded-md py-2 px-3.5" type="submit">Submit</button>
                         </div>
                     </div>
                 </form>

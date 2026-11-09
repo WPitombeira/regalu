@@ -13,7 +13,7 @@
                 {{ __("messages.wishlist.name") }}
             </label>
             <input wire:model="name" type="text" id="name"
-                class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
             @error('name')
                 <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
             @enderror
@@ -25,7 +25,7 @@
                 {{ __("messages.wishlist.description") }}
             </label>
             <textarea wire:model="description" id="description" rows="3"
-                class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
             @error('description')
                 <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
             @enderror
@@ -37,7 +37,7 @@
                 {{ __("messages.wishlist.type") }}
             </label>
             <select wire:model="type" id="type"
-                class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 <option value="GENERIC">Generic</option>
                 <option value="CHRISTMAS">Christmas</option>
                 <option value="BIRTHDAY">Birthday</option>
@@ -54,7 +54,7 @@
                 {{ __("messages.wishlist.privacy") }}
             </label>
             <select wire:model="privacy" id="privacy"
-                class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 <option value="PRIVATE">{{ __("messages.wishlist.privacy_private") }}</option>
                 <option value="FAMILY">{{ __("messages.wishlist.privacy_family") }}</option>
                 <option value="SPECIFIC">{{ __("messages.wishlist.privacy_specific") }}</option>
@@ -80,7 +80,7 @@
         <div class="flex gap-3 mb-6">
             <div class="flex-1">
                 <input wire:model="shareEmail" type="email" placeholder="Enter user email to share..."
-                    class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                    class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                 @error('shareEmail')
                     <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
                 @enderror

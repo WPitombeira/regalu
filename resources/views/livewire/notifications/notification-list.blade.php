@@ -25,7 +25,7 @@
                         : 'bg-gray-800/30 border-gray-800 hover:bg-gray-800/50' }}"
             >
                 {{-- Type icon --}}
-                <div class="flex-shrink-0 mt-0.5">
+                <div class="shrink-0 mt-0.5">
                     @switch($notification->type)
                         @case('wishlist')
                             <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-purple-500/20 text-purple-400">
@@ -56,7 +56,7 @@
                             {{ $notification->title }}
                         </p>
                         @if (!$notification->is_read)
-                            <span class="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full"></span>
+                            <span class="shrink-0 w-2 h-2 bg-blue-500 rounded-full"></span>
                         @endif
                     </div>
                     <p class="text-sm text-gray-400 mt-1">
@@ -69,7 +69,7 @@
 
                 {{-- Action arrow --}}
                 @if ($notification->action_url)
-                    <div class="flex-shrink-0 self-center text-gray-500">
+                    <div class="shrink-0 self-center text-gray-500">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                     </div>
                 @endif

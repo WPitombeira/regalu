@@ -6,34 +6,59 @@ on:
   pull_request:
     branches: [ "master" ]
 
+permissions:
+  contents: read
+
 jobs:
+  # Tests need no external services; database fixtures use disposable SQLite.
   regalu-tests:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
 
     steps:
-    - uses: shivammathur/setup-php@v2
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+    - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
       with:
-        php-version: '8.5'
-    - uses: actions/checkout@v4
+        php-version: '8.5.12'
+        extensions: mbstring, pdo_sqlite, xml, curl, zip, sockets
+        tools: composer:2.11.1
+        coverage: none
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: '.nvmrc'
+        cache: 'npm'
+
+    - name: Use pinned npm version
+      run: npm install --global npm@12.2.2
 
     - name: Copy .env
       run: php -r "file_exists('.env') || copy('.env.example', '.env');"
 
-    - name: Install composer Dependencies
-      run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+    - name: Validate Composer manifest
+      run: composer validate --strict
+
+    - name: Install Composer dependencies from lockfile
+      run: composer install --no-interaction --no-progress --prefer-dist
+
+    - name: Audit Composer dependencies
+      run: composer audit --locked
 
     - name: Generate key
       run: php artisan key:generate
 
-    - name: Install NPM Dependencies
-      run: npm install -y
+    - name: Install npm dependencies from lockfile
+      run: npm ci
+
+    - name: Audit npm dependencies
+      run: npm audit
 
     - name: Build assets
       run: npm run build
 
-    - name: Directory Permissions
-      run: chmod -R 777 storage bootstrap/cache
+    - name: Verify portable build and Octane file watcher
+      run: npm run test:tooling
 
     - name: Create Database
       run: |
@@ -49,5 +74,5 @@ jobs:
     - name: Execute tests (Unit and Feature tests) via PHPUnit/Pest
       env:
         DB_CONNECTION: sqlite
-        DB_DATABASE: database/database.sqlite
+        DB_DATABASE: ':memory:'
       run: php artisan test

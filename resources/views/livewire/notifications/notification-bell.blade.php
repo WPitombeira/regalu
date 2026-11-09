@@ -7,7 +7,7 @@
     {{-- Bell button --}}
     <button
         @click="open = !open"
-        class="relative p-2 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg transition-colors"
+        class="relative p-2 text-gray-400 hover:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500 rounded-lg transition-colors"
         aria-label="{{ __('messages.navbar.notifications') }}"
     >
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -57,7 +57,7 @@
                     class="flex items-start gap-3 px-4 py-3 border-b border-gray-700/50 hover:bg-gray-700/50 transition-colors {{ !$notification->is_read ? 'bg-gray-700/30' : '' }}"
                 >
                     {{-- Type icon --}}
-                    <div class="flex-shrink-0 mt-0.5">
+                    <div class="shrink-0 mt-0.5">
                         @switch($notification->type)
                             @case('wishlist')
                                 <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-500/20 text-purple-400">
@@ -96,7 +96,7 @@
 
                     {{-- Unread indicator --}}
                     @if (!$notification->is_read)
-                        <span class="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-2"></span>
+                        <span class="shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-2"></span>
                     @endif
                 </div>
             @empty

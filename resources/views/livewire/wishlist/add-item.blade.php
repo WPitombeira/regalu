@@ -18,7 +18,7 @@
                 </label>
                 <div class="flex gap-2">
                     <input wire:model="url" type="url" id="item-url"
-                        class="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        class="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="https://example.com/product" />
                     <button wire:click="fetchMeta" type="button"
                         class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 text-sm font-medium rounded-lg transition-colors duration-200">
@@ -36,7 +36,7 @@
                     {{ __("messages.wishlist.item_name") }}
                 </label>
                 <input wire:model="name" type="text" id="item-name"
-                    class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Item name" />
                 @error('name')
                     <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
@@ -49,7 +49,7 @@
                     Description
                 </label>
                 <textarea wire:model="description" id="item-description" rows="2"
-                    class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Optional description"></textarea>
                 @error('description')
                     <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
@@ -63,7 +63,7 @@
                         {{ __("messages.wishlist.item_price") }} (Min)
                     </label>
                     <input wire:model="price_min" type="number" step="0.01" min="0" id="item-price-min"
-                        class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="0.00" />
                     @error('price_min')
                         <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
@@ -74,7 +74,7 @@
                         {{ __("messages.wishlist.item_price") }} (Max)
                     </label>
                     <input wire:model="price_max" type="number" step="0.01" min="0" id="item-price-max"
-                        class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="0.00" />
                     @error('price_max')
                         <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
@@ -88,7 +88,7 @@
                     {{ __("messages.wishlist.item_priority") }}
                 </label>
                 <select wire:model="priority" id="item-priority"
-                    class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     <option value="LOW">Low</option>
                     <option value="MEDIUM">Medium</option>
                     <option value="HIGH">High</option>

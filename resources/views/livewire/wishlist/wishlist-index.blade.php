@@ -15,10 +15,10 @@
     <div class="flex flex-col sm:flex-row gap-4 mb-6">
         <div class="flex-1">
             <input wire:model.live.debounce.300ms="search" type="text" placeholder="Search wishlists..."
-                class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
         </div>
         <select wire:model.live="filterType"
-            class="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            class="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             <option value="">All Types</option>
             <option value="CHRISTMAS">Christmas</option>
             <option value="BIRTHDAY">Birthday</option>
@@ -26,7 +26,7 @@
             <option value="GENERIC">Generic</option>
         </select>
         <select wire:model.live="filterPrivacy"
-            class="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            class="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             <option value="">All Privacy</option>
             <option value="PRIVATE">{{ __("messages.wishlist.privacy_private") }}</option>
             <option value="FAMILY">{{ __("messages.wishlist.privacy_family") }}</option>
@@ -75,7 +75,7 @@
                         <span class="text-sm text-gray-500">
                             {{ $wishlist->items_count }} {{ __("messages.wishlist.items") }}
                         </span>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium
                             @switch($wishlist->privacy)
                                 @case('PRIVATE') bg-gray-700 text-gray-400 @break
                                 @case('FAMILY') bg-green-900/50 text-green-300 @break

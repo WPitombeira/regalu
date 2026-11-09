@@ -36,8 +36,11 @@ php artisan optimize
 # Compile assets
 export NVM_DIR=~/.nvm
 source ~/.nvm/nvm.sh
+nvm install
+nvm use
+npm install --global npm@12.2.2
 
-npm install -y
+npm ci
 
 npm run build
 

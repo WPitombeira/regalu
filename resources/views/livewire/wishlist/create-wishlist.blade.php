@@ -10,7 +10,7 @@
                 {{ __("messages.wishlist.name") }}
             </label>
             <input wire:model="name" type="text" id="name"
-                class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="My Birthday Wishlist" />
             @error('name')
                 <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
@@ -23,7 +23,7 @@
                 {{ __("messages.wishlist.description") }}
             </label>
             <textarea wire:model="description" id="description" rows="3"
-                class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="What is this wishlist for?"></textarea>
             @error('description')
                 <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
@@ -36,7 +36,7 @@
                 {{ __("messages.wishlist.type") }}
             </label>
             <select wire:model="type" id="type"
-                class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 <option value="GENERIC">Generic</option>
                 <option value="CHRISTMAS">Christmas</option>
                 <option value="BIRTHDAY">Birthday</option>
@@ -53,7 +53,7 @@
                 {{ __("messages.wishlist.privacy") }}
             </label>
             <select wire:model="privacy" id="privacy"
-                class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 <option value="PRIVATE">{{ __("messages.wishlist.privacy_private") }}</option>
                 <option value="FAMILY">{{ __("messages.wishlist.privacy_family") }}</option>
                 <option value="SPECIFIC">{{ __("messages.wishlist.privacy_specific") }}</option>
@@ -70,7 +70,7 @@
                     Family (optional)
                 </label>
                 <select wire:model="family_id" id="family_id"
-                    class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     <option value="">None</option>
                     @foreach ($families as $family)
                         <option value="{{ $family->id }}">{{ $family->name }}</option>
