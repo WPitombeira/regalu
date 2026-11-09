@@ -1,8 +1,8 @@
 <?php
 
+use App\Livewire\Home\LoginForm;
 use App\Models\User;
 use Livewire\Livewire;
-use App\Livewire\Home\LoginForm;
 
 describe('registration', function () {
     it('can register with valid data', function () {

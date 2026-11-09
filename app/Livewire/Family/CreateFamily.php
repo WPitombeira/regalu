@@ -4,17 +4,23 @@ namespace App\Livewire\Family;
 
 use App\Models\Family;
 use App\Models\FamilyMember;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
+use Livewire\Features\SupportRedirects\Redirector;
 
-class CreateFamily extends Component {
+class CreateFamily extends Component
+{
     #[Rule(['required', 'min:2'])]
     public string $name = '';
 
     #[Rule(['nullable'])]
     public ?string $description = null;
 
-    public function create() {
+    public function create(): Redirector|RedirectResponse
+    {
+        abort_unless(auth()->check(), 403);
         $this->validate();
 
         $family = Family::create([
@@ -30,12 +36,15 @@ class CreateFamily extends Component {
             'joined_at' => now(),
         ]);
 
-        $this->dispatch('notification', ["message" => __("messages.family.created"), "type" => "success"]);
+        $this->dispatch('notification', ['message' => __('messages.family.created'), 'type' => 'success']);
 
         return redirect()->route('families.show', $family);
     }
 
-    public function render() {
+    public function render(): View
+    {
+        abort_unless(auth()->check(), 403);
+
         return view('livewire.family.create-family');
     }
 }

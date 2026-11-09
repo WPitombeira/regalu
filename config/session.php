@@ -20,6 +20,10 @@ return [
 
     'driver' => env('SESSION_DRIVER', 'database'),
 
+    // Existing PHP-serialized sessions must re-authenticate on this rollout.
+    // SESSION_SERIALIZATION=php is a temporary compatibility escape hatch.
+    'serialization' => env('SESSION_SERIALIZATION', 'json'),
+
     /*
     |--------------------------------------------------------------------------
     | Session Lifetime

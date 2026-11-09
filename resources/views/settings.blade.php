@@ -1,3 +1,3 @@
 <x-layouts.app>
-    <livewire:user-settings />
+    <livewire:profile.settings />
 </x-layouts.app>

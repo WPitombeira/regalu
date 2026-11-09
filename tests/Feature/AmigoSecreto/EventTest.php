@@ -1,5 +1,8 @@
 <?php
 
+use App\Livewire\AmigoSecreto\CreateEvent;
+use App\Livewire\AmigoSecreto\ManageExclusions;
+use App\Livewire\AmigoSecreto\ManageParticipants;
 use App\Models\AmigoSecretoEvent;
 use App\Models\AmigoSecretoExclusion;
 use App\Models\AmigoSecretoParticipant;
@@ -11,7 +14,7 @@ describe('amigo secreto events', function () {
         $user = User::factory()->create();
 
         Livewire::actingAs($user)
-            ->test(\App\Livewire\AmigoSecreto\CreateEvent::class)
+            ->test(CreateEvent::class)
             ->set('name', 'Christmas 2026')
             ->set('event_type', 'CHRISTMAS')
             ->set('description', 'Holiday gift exchange')
@@ -30,7 +33,7 @@ describe('amigo secreto events', function () {
         $user = User::factory()->create();
 
         Livewire::actingAs($user)
-            ->test(\App\Livewire\AmigoSecreto\CreateEvent::class)
+            ->test(CreateEvent::class)
             ->set('name', 'Birthday Party')
             ->set('event_type', 'BIRTHDAY')
             ->call('create');
@@ -51,7 +54,7 @@ describe('amigo secreto events', function () {
         ]);
 
         Livewire::actingAs($organizer)
-            ->test(\App\Livewire\AmigoSecreto\ManageParticipants::class, ['event' => $event])
+            ->test(ManageParticipants::class, ['event' => $event])
             ->set('inviteEmail', 'friend@example.com')
             ->call('inviteByEmail');
 
@@ -86,7 +89,7 @@ describe('amigo secreto events', function () {
         ]);
 
         Livewire::actingAs($organizer)
-            ->test(\App\Livewire\AmigoSecreto\ManageExclusions::class, ['event' => $event])
+            ->test(ManageExclusions::class, ['event' => $event])
             ->set('userAId', $userA->id)
             ->set('userBId', $userB->id)
             ->call('addExclusion');
@@ -114,7 +117,7 @@ describe('amigo secreto events', function () {
         ]);
 
         Livewire::actingAs($organizer)
-            ->test(\App\Livewire\AmigoSecreto\ManageExclusions::class, ['event' => $event])
+            ->test(ManageExclusions::class, ['event' => $event])
             ->call('removeExclusion', $exclusion->id);
 
         $this->assertDatabaseMissing('amigo_secreto_exclusions', [

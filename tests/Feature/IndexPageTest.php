@@ -1,7 +1,5 @@
 <?php
 
-use Pest\Laravel\Testing\Concerns\MakesHttpRequests;
-
 it('renders the hero section', function () {
     $response = $this->get(route('home'));
     $response->assertStatus(200);

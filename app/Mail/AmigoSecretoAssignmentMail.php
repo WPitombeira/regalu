@@ -4,11 +4,13 @@ namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class AmigoSecretoAssignmentMail extends Mailable {
+class AmigoSecretoAssignmentMail extends Mailable
+{
     use Queueable, SerializesModels;
 
     public function __construct(
@@ -17,13 +19,15 @@ class AmigoSecretoAssignmentMail extends Mailable {
         public ?string $wishlistUrl = null,
     ) {}
 
-    public function envelope(): Envelope {
+    public function envelope(): Envelope
+    {
         return new Envelope(
             subject: "You drew {$this->targetName}! - Secret Santa Assignment",
         );
     }
 
-    public function content(): Content {
+    public function content(): Content
+    {
         return new Content(
             view: 'mail.amigo-secreto-assignment',
             with: [
@@ -34,7 +38,9 @@ class AmigoSecretoAssignmentMail extends Mailable {
         );
     }
 
-    public function attachments(): array {
+    /** @return list<Attachment> */
+    public function attachments(): array
+    {
         return [];
     }
 }

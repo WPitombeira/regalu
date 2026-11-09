@@ -1,78 +1,230 @@
-name: Laravel
+name: Laravel CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [master]
   pull_request:
-    branches: [ "master" ]
+    branches: [master]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  # Tests need no external services; database fixtures use disposable SQLite.
-  regalu-tests:
-
+  php-quality:
+    name: PHP quality and dependency audit
     runs-on: ubuntu-26.04
-
+    timeout-minutes: 20
+    env:
+      APP_ENV: testing
+      APP_DEBUG: false
     steps:
-    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-    - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
-      with:
-        php-version: '8.5.12'
-        extensions: mbstring, pdo_sqlite, xml, curl, zip, sockets
-        tools: composer:2.11.1
-        coverage: none
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '8.5.12'
+          extensions: mbstring, pdo_sqlite, xml, curl, zip, sockets
+          tools: composer:2.11.1
+          coverage: none
 
-    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-      with:
-        node-version-file: '.nvmrc'
-        cache: 'npm'
+      - name: Cache Composer download files
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/composer/files
+          key: composer-${{ runner.os }}-php-8.5.12-${{ hashFiles('composer.lock') }}
 
-    - name: Use pinned npm version
-      run: npm install --global npm@12.2.2
+      - name: Generate ephemeral application key
+        run: printf 'APP_KEY=base64:%s\n' "$(php -r 'echo base64_encode(random_bytes(32));')" >> "$GITHUB_ENV"
 
-    - name: Copy .env
-      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+      - name: Validate Composer manifest
+        run: composer validate --strict
 
-    - name: Validate Composer manifest
-      run: composer validate --strict
+      - name: Install Composer dependencies from lockfile
+        run: composer install --no-interaction --no-progress --prefer-dist
 
-    - name: Install Composer dependencies from lockfile
-      run: composer install --no-interaction --no-progress --prefer-dist
+      - name: Audit locked Composer dependencies
+        run: composer audit --locked
 
-    - name: Audit Composer dependencies
-      run: composer audit --locked
+      - name: Check Pint formatting
+        run: vendor/bin/pint --test
 
-    - name: Generate key
-      run: php artisan key:generate
+      - name: Run Larastan
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
 
-    - name: Install npm dependencies from lockfile
-      run: npm ci
+  assets:
+    name: Native and portable frontend checks
+    runs-on: ubuntu-26.04
+    timeout-minutes: 25
+    env:
+      APP_ENV: testing
+      APP_DEBUG: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-    - name: Audit npm dependencies
-      run: npm audit
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '8.5.12'
+          extensions: mbstring, pdo_sqlite, xml, curl, zip, sockets
+          tools: composer:2.11.1
+          coverage: none
 
-    - name: Build assets
-      run: npm run build
+      - name: Cache Composer download files
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/composer/files
+          key: composer-${{ runner.os }}-php-8.5.12-${{ hashFiles('composer.lock') }}
 
-    - name: Verify portable build and Octane file watcher
-      run: npm run test:tooling
+      - name: Generate ephemeral application key
+        run: printf 'APP_KEY=base64:%s\n' "$(php -r 'echo base64_encode(random_bytes(32));')" >> "$GITHUB_ENV"
 
-    - name: Create Database
-      run: |
-        mkdir -p database
-        touch database/database.sqlite
+      - name: Install Composer dependencies for Octane tooling smoke test
+        run: composer install --no-interaction --no-progress --prefer-dist
 
-    - name: Execute migrations
-      env:
-        DB_CONNECTION: sqlite
-        DB_DATABASE: database/database.sqlite
-      run: php artisan migrate --force
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
 
-    - name: Execute tests (Unit and Feature tests) via PHPUnit/Pest
-      env:
-        DB_CONNECTION: sqlite
-        DB_DATABASE: ':memory:'
-      run: php artisan test
+      - name: Pin npm version
+        run: npm install --global npm@12.2.2
+
+      - name: Verify Node and npm versions
+        run: test "$(node --version)" = 'v26.13.0' && test "$(npm --version)" = '12.2.2'
+
+      - name: Install npm dependencies from lockfile
+        run: npm ci --no-audit --no-fund
+
+      - name: Audit npm dependencies
+        run: npm audit
+
+      - name: Build production assets with native Rolldown
+        run: npm run build
+
+      - name: Upload native production assets for PHP tests
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: vite-build
+          path: public/build
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Smoke-test portable Vite build and Octane watcher
+        run: npm run test:tooling
+
+  tests:
+    name: PHP tests, coverage, and release boot smoke
+    runs-on: ubuntu-26.04
+    needs: assets
+    timeout-minutes: 35
+    env:
+      APP_ENV: testing
+      APP_DEBUG: false
+      DB_CONNECTION: sqlite
+      CACHE_STORE: array
+      MAIL_MAILER: array
+      QUEUE_CONNECTION: sync
+      SESSION_DRIVER: array
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '8.5.12'
+          extensions: mbstring, pdo_sqlite, xml, curl, zip, sockets
+          tools: composer:2.11.1
+          coverage: pcov
+
+      - name: Cache Composer download files
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/composer/files
+          key: composer-${{ runner.os }}-php-8.5.12-${{ hashFiles('composer.lock') }}
+
+      - name: Generate ephemeral application key
+        run: printf 'APP_KEY=base64:%s\n' "$(php -r 'echo base64_encode(random_bytes(32));')" >> "$GITHUB_ENV"
+
+      - name: Verify required PHP extensions and PCOV
+        run: |
+          php -r 'if (! extension_loaded("curl") || ! extension_loaded("dom") || ! extension_loaded("pdo_sqlite") || ! extension_loaded("sockets") || ! extension_loaded("pcov")) { fwrite(STDERR, "Required PHP extension missing\n"); exit(1); }'
+
+      - name: Install Composer dependencies from lockfile
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Download native production assets
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: vite-build
+          path: public/build
+
+      - name: Prepare isolated test environment
+        run: printf '# Tests use phpunit.xml and process environment only.\n' > .env.testing
+
+      - name: Run tests with enforced coverage and reports
+        env:
+          DB_DATABASE: ':memory:'
+        run: |
+          mkdir -p coverage
+          php artisan test --coverage --min=80 --coverage-clover=coverage/clover.xml --log-junit=coverage/junit.xml
+
+      - name: Release configuration and database boot smoke
+        env:
+          APP_ENV: production
+          APP_DEBUG: false
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ${{ runner.temp }}/regalu-release.sqlite
+          CACHE_STORE: array
+          MAIL_MAILER: array
+          QUEUE_CONNECTION: sync
+          SESSION_DRIVER: array
+        run: |
+          set -euo pipefail
+          mkdir -p "$(dirname "$DB_DATABASE")"
+          touch "$DB_DATABASE"
+          php artisan config:clear
+          php artisan route:clear
+          php artisan view:clear
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+          php artisan migrate --force
+          php artisan migrate:rollback --force
+          php artisan migrate --force
+
+      - name: Clear release smoke caches
+        if: always()
+        env:
+          APP_ENV: production
+          APP_DEBUG: false
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ${{ runner.temp }}/regalu-release.sqlite
+          CACHE_STORE: array
+          MAIL_MAILER: array
+          QUEUE_CONNECTION: sync
+          SESSION_DRIVER: array
+        run: |
+          rm -f bootstrap/cache/config.php
+          php artisan config:clear
+          php artisan route:clear
+          php artisan view:clear
+
+      - name: Upload PHP coverage reports
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: php-coverage-reports
+          path: |
+            coverage/clover.xml
+            coverage/junit.xml
+          if-no-files-found: warn
+          retention-days: 14

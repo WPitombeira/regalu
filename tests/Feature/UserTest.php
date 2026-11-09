@@ -1,62 +1,92 @@
 <?php
 
+use App\Livewire\Profile\Settings;
 use App\Models\User;
+use Livewire\Livewire;
 
 pest()->group('user');
 
-describe('profile related', function() {
-    it('user can view their own profile', function() {
+describe('account profile', function () {
+    it('shows an authenticated user their own profile information', function () {
+        $user = User::factory()->create([
+            'name' => 'Current Account',
+            'email' => 'current-account@example.com',
+        ]);
+        $otherUser = User::factory()->create([
+            'name' => 'Other Account',
+            'email' => 'other-account@example.com',
+        ]);
 
-    })->todo(note: <<<'NOTE'
-        Given I am a user
-        When I visit my profile page
-        Then I should see my profile information
-        NOTE);
+        $this->actingAs($user)
+            ->get(route('profile'))
+            ->assertOk()
+            ->assertSee('Current Account')
+            ->assertSee('current-account@example.com')
+            ->assertDontSee('other-account@example.com');
+    });
 
-    it('user can view other users profile', function() {
+    it('does not expose another user profile at a public user URL', function () {
+        $user = User::factory()->create();
 
-    })->todo(note: <<<'NOTE'
-        Given I am a user
-        When I visit another users profile page
-        Then I should see their profile information if their profile is public
-        NOTE);
+        $this->actingAs(User::factory()->create())
+            ->get('/users/'.$user->id)
+            ->assertNotFound();
+    });
 
-    it('user can edit their own profile', function() {
+    it('allows a user to edit their own profile', function () {
+        $user = User::factory()->create(['name' => 'Before Update']);
 
-    })->todo(note: <<<'NOTE'
-        Given I am a user
-        When I visit my profile page
-        And I click the edit button
-        Then I should see a form to edit my profile
-        NOTE);
+        Livewire::actingAs($user)
+            ->test(Settings::class)
+            ->set('name', 'After Update')
+            ->call('updateProfile')
+            ->assertHasNoErrors();
 
-    it('admin user can edit other users profile', function() {
+        expect($user->fresh()->name)->toBe('After Update');
+    });
 
-    })->todo(note: <<<'NOTE'
-        Given I am a user
-        And Given I am an admin
-        When I visit another users profile page
-        And I click the edit button
-        Then I should see a form to edit their profile
-        NOTE);
+    it('does not let a settings query target another user account', function () {
+        $user = User::factory()->create([
+            'name' => 'Signed In Account',
+            'email' => 'signed-in@example.com',
+        ]);
+        $otherUser = User::factory()->create([
+            'name' => 'Unrelated Account',
+            'email' => 'unrelated@example.com',
+        ]);
 
-    it('normal user cannot edit other users profile', function() {
+        $this->actingAs($user)
+            ->get(route('settings', ['user' => $otherUser->id]))
+            ->assertOk()
+            ->assertSee('signed-in@example.com')
+            ->assertDontSee('unrelated@example.com');
+    });
 
-    })->todo(note: <<<'NOTE'
-        Given I am a user
-        When I visit another users profile page
-        Then I should not see an edit button
-        NOTE);
+    it('keeps profile edits scoped to the signed-in user', function () {
+        $user = User::factory()->create(['name' => 'Signed In Name']);
+        $otherUser = User::factory()->create(['name' => 'Unchanged Name']);
 
-    it('settings can be acessed by authenticated users', function() {
-        $User = User::factory()->create();
-    
-        $this->actingAs($User)
-            ->get(route('settings'))
-            ->assertOk();
-    })->wip();
-    
-    it('user has a profile page', function() {
-    
-    })->todo();
-})->wip();
+        Livewire::actingAs($user)
+            ->test(Settings::class)
+            ->set('name', 'Updated Signed In Name')
+            ->call('updateProfile')
+            ->assertHasNoErrors();
+
+        expect($user->fresh()->name)->toBe('Updated Signed In Name');
+        expect($otherUser->fresh()->name)->toBe('Unchanged Name');
+    });
+
+    it('provides an authenticated user with the profile route', function () {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('profile'))
+            ->assertOk()
+            ->assertSee('wire:submit="updatePassword"', false);
+    });
+
+    it('requires authentication to view account settings', function () {
+        $this->get(route('settings'))
+            ->assertRedirect(route('login'));
+    });
+});

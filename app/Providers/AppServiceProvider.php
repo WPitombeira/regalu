@@ -2,7 +2,12 @@
 
 namespace App\Providers;
 
+use App\Jobs\SendEventInvitation;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Session\Middleware\AuthenticateSession;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +24,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Model::preventLazyLoading(! $this->app->isProduction());
+        Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
+
+        Livewire::addPersistentMiddleware([AuthenticateSession::class]);
+
+        Queue::route(SendEventInvitation::class, 'mail');
     }
 }

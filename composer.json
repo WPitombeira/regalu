@@ -41,6 +41,10 @@
     },
     "scripts": {
         "test": "@php artisan test",
+        "test:coverage": "@php artisan test --coverage --min=80 --coverage-clover=coverage/clover.xml --log-junit=coverage/junit.xml",
+        "lint": "@php vendor/bin/pint --test",
+        "analyse": "@php vendor/bin/phpstan analyse --no-progress --memory-limit=1G",
+        "check": ["@lint", "@analyse", "@test"],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

@@ -4,7 +4,8 @@ Wishlist sharing, family groups, and Amigo Secreto (Secret Santa), built with La
 
 ## Start here
 
-- [Project map and current implementation](docs/PROJECT_MAP.md)
+- [Laravel 13 modernization, verification, and rollout notes](docs/LARAVEL_13_MODERNIZATION.md)
+- [Architecture and historical baseline inventory](docs/PROJECT_MAP.md)
 - [Dependency versions, upgrade decisions, and verification](docs/DEPENDENCY_UPGRADE.md)
 - [Product vision (historical)](docs/PRODUCT_DEFINITION.md)
 
@@ -60,8 +61,11 @@ npm audit
 npm run build                   # or npm run build:portable on older virtual CPUs
 npm run test:tooling
 php artisan test
+composer test:coverage          # PCOV/Xdebug required; minimum 80%, Clover/JUnit reports
 php vendor/bin/phpstan analyse
 php vendor/bin/pint --test
 ```
 
-PHPStan and repository-wide Pint have existing debt; see the qualification report for actual results. Passing the existing tests does **not** mean this application is production-ready: family/event authorization, URL-fetch safety, and several unfinished UI flows require follow-up before release.
+PHPStan and repository-wide Pint now pass, and CI enforces at least 80% line coverage. Tests use an isolated SQLite database and array/sync services; if `.env.testing` does not exist locally, create a comment-only file rather than copying production settings. See the [modernization report](docs/LARAVEL_13_MODERNIZATION.md) for actual results and remaining product/concurrency limits.
+
+Invitations now use the `mail` queue. Run a supervised `php artisan queue:work --queue=mail,default --tries=3 --timeout=30` worker with an asynchronous queue connection. JSON sessions require a coordinated reauthentication/compatibility rollout; read the report before deploying. No successful remote pipeline or production deployment is implied by local tests.

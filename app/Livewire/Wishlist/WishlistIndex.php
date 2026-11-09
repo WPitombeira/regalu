@@ -6,18 +6,32 @@ use App\Models\Wishlist;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\WithPagination;
 
-class WishlistIndex extends Component {
+class WishlistIndex extends Component
+{
+    use WithPagination;
+
     public string $search = '';
+
     public string $filterType = '';
+
     public string $filterPrivacy = '';
 
-    public function render(): View {
+    public function updated(string $property): void
+    {
+        if (in_array($property, ['search', 'filterType', 'filterPrivacy'], true)) {
+            $this->resetPage();
+        }
+    }
+
+    public function render(): View
+    {
         $query = Wishlist::where('user_id', Auth::id())
             ->where('is_archived', false);
 
         if ($this->search !== '') {
-            $query->where('name', 'like', '%' . $this->search . '%');
+            $query->where('name', 'like', '%'.$this->search.'%');
         }
 
         if ($this->filterType !== '') {
@@ -28,7 +42,7 @@ class WishlistIndex extends Component {
             $query->where('privacy', $this->filterPrivacy);
         }
 
-        $wishlists = $query->withCount('items')->latest()->get();
+        $wishlists = $query->withCount('items')->latest()->orderByDesc('id')->simplePaginate(12);
 
         return view('livewire.wishlist.wishlist-index', [
             'wishlists' => $wishlists,

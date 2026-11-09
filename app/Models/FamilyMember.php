@@ -5,7 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class FamilyMember extends Model {
+class FamilyMember extends Model
+{
     protected $fillable = [
         'family_id',
         'user_id',
@@ -13,17 +14,22 @@ class FamilyMember extends Model {
         'joined_at',
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'joined_at' => 'datetime',
         ];
     }
 
-    public function family(): BelongsTo {
+    /** @return BelongsTo<Family, $this> */
+    public function family(): BelongsTo
+    {
         return $this->belongsTo(Family::class);
     }
 
-    public function user(): BelongsTo {
+    /** @return BelongsTo<User, $this> */
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
 }

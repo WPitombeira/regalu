@@ -5,7 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class AmigoSecretoExclusion extends Model {
+class AmigoSecretoExclusion extends Model
+{
     protected $fillable = [
         'event_id',
         'user_a_id',
@@ -13,15 +14,21 @@ class AmigoSecretoExclusion extends Model {
         'reason',
     ];
 
-    public function event(): BelongsTo {
+    /** @return BelongsTo<AmigoSecretoEvent, $this> */
+    public function event(): BelongsTo
+    {
         return $this->belongsTo(AmigoSecretoEvent::class, 'event_id');
     }
 
-    public function userA(): BelongsTo {
+    /** @return BelongsTo<User, $this> */
+    public function userA(): BelongsTo
+    {
         return $this->belongsTo(User::class, 'user_a_id');
     }
 
-    public function userB(): BelongsTo {
+    /** @return BelongsTo<User, $this> */
+    public function userB(): BelongsTo
+    {
         return $this->belongsTo(User::class, 'user_b_id');
     }
 }
