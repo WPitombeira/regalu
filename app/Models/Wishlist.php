@@ -66,9 +66,10 @@ class Wishlist extends Model
             return true;
         }
 
-        // Family privacy: user must share a family with the owner
+        // Archived membership must not grant ongoing access to private lists.
         if ($this->privacy === 'FAMILY') {
             return FamilyMember::where('user_id', $user->id)
+                ->whereHas('family', fn (Builder $query) => $query->where('is_archived', false))
                 ->whereIn('family_id', FamilyMember::select('family_id')->where('user_id', $this->user_id))
                 ->exists();
         }

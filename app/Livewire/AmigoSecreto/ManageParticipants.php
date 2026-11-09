@@ -21,7 +21,7 @@ class ManageParticipants extends Component
     public function mount(AmigoSecretoEvent $event): void
     {
         $this->event = $event;
-        $this->event = $this->authorizedEvent('manage');
+        $this->event = $this->authorizedEvent('viewManagement');
     }
 
     public function inviteByEmail(): void
@@ -69,9 +69,10 @@ class ManageParticipants extends Component
 
     public function render(): View
     {
-        $event = $this->authorizedEvent('manage');
+        $event = $this->authorizedEvent('viewManagement');
 
         return view('livewire.amigo-secreto.manage-participants', [
+            'event' => $event,
             'participants' => $event->participants()->with('user')->get(),
         ]);
     }

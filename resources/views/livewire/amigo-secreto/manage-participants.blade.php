@@ -2,14 +2,14 @@
     <div class="max-w-3xl mx-auto">
         <div class="flex items-center justify-between mb-8">
             <h1 class="text-3xl font-bold text-gray-100">{{ __("messages.amigo_secreto.participants") }}</h1>
-            <a href="{{ route('amigo-secreto.show', $event) }}"
+            <a href="{{ $event->is_archived ? route('amigo-secreto.index') : route('amigo-secreto.show', $event) }}"
                class="text-sm text-gray-400 hover:text-gray-200 transition-colors">
-                &larr; Back to event
+                &larr; {{ $event->is_archived ? 'Back to events' : 'Back to event' }}
             </a>
         </div>
 
         {{-- Invite by Email --}}
-        @if ($event->organizer_id === auth()->id())
+        @can('update', $event)
             <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 mb-8">
                 <h2 class="text-lg font-semibold text-gray-200 mb-4">Invite by Email</h2>
                 <form wire:submit="inviteByEmail" class="flex gap-3">
@@ -32,7 +32,7 @@
                     </p>
                 </div>
             </div>
-        @endif
+        @endcan
 
         {{-- Participants List --}}
         <div class="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden">
@@ -79,15 +79,17 @@
                                     {{ $participant->status }}
                                 </span>
 
-                                @if ($event->organizer_id === auth()->id() && $participant->user_id !== $event->organizer_id)
-                                    <button wire:click="removeParticipant({{ $participant->id }})"
-                                            wire:confirm="Are you sure you want to remove this participant?"
-                                            class="text-red-400 hover:text-red-300 transition-colors">
-                                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                @endif
+                                @can('update', $event)
+                                    @if ($participant->user_id !== $event->organizer_id)
+                                        <button wire:click="removeParticipant({{ $participant->id }})"
+                                                wire:confirm="Are you sure you want to remove this participant?"
+                                                class="text-red-400 hover:text-red-300 transition-colors">
+                                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    @endif
+                                @endcan
                             </div>
                         </li>
                     @endforeach

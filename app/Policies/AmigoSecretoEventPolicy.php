@@ -25,6 +25,11 @@ class AmigoSecretoEventPolicy
         return ! $event->is_archived && $this->isOrganizer($user, $event);
     }
 
+    public function viewManagement(User $user, AmigoSecretoEvent $event): bool
+    {
+        return $this->isOrganizer($user, $event);
+    }
+
     public function update(User $user, AmigoSecretoEvent $event): bool
     {
         return $this->manage($user, $event)

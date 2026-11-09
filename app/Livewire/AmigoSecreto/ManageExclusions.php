@@ -23,7 +23,7 @@ class ManageExclusions extends Component
     public function mount(AmigoSecretoEvent $event): void
     {
         $this->event = $event;
-        $this->event = $this->authorizedEvent('manage');
+        $this->event = $this->authorizedEvent('viewManagement');
     }
 
     public function addExclusion(): void
@@ -78,7 +78,7 @@ class ManageExclusions extends Component
 
     public function render(): View
     {
-        $event = $this->authorizedEvent('manage');
+        $event = $this->authorizedEvent('viewManagement');
         $acceptedParticipants = $event->participants()
             ->where('status', 'ACCEPTED')
             ->whereNotNull('user_id')
@@ -86,6 +86,7 @@ class ManageExclusions extends Component
             ->get();
 
         return view('livewire.amigo-secreto.manage-exclusions', [
+            'event' => $event,
             'exclusions' => $event->exclusions()->with(['userA', 'userB'])->get(),
             'acceptedParticipants' => $acceptedParticipants,
         ]);

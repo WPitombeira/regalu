@@ -2,11 +2,10 @@
 
 use App\Livewire\Home\LoginForm;
 use App\Models\User;
-use Illuminate\Support\Facades\Cache;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    Cache::flush();
+    config(['cache.default' => 'array', 'cache.limiter' => 'array']);
 });
 
 it('shares the login attempt limit from HTTP requests with Livewire login', function () {

@@ -6,10 +6,12 @@
                 <p class="text-[#C3C3D1] mt-2">{{ $family->description }}</p>
             @endif
         </div>
-        <a href="{{ route('families.settings', $family) }}"
-           class="px-4 py-2 text-sm font-medium text-[#C3C3D1] bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 transition-colors">
-            {{ __("messages.family.settings") }}
-        </a>
+        @can('manage', $family)
+            <a href="{{ route('families.settings', $family) }}"
+               class="px-4 py-2 text-sm font-medium text-[#C3C3D1] bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 transition-colors">
+                {{ __("messages.family.settings") }}
+            </a>
+        @endcan
     </div>
 
     {{-- Invite Code Section --}}

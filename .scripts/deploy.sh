@@ -12,6 +12,9 @@ composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader
 # Migrate database
 php artisan migrate --force
 
+# Refresh the public uploads symlink without replacing a non-symlink path
+php artisan storage:link --force
+
 # Clear cache
 php artisan cache:clear
 
@@ -27,11 +30,11 @@ php artisan view:clear
 # Clear compiled views
 php artisan view:clear
 
-# Restart queue worker
-php artisan queue:restart
-
 # Optimize
 php artisan optimize
+
+# Restart long-running workers after configuration caches are refreshed
+php artisan queue:restart
 
 # Compile assets
 export NVM_DIR=~/.nvm

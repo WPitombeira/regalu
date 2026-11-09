@@ -3,6 +3,7 @@
 use App\Jobs\SendEventInvitation;
 use App\Models\AmigoSecretoEvent;
 use App\Models\AmigoSecretoParticipant;
+use Illuminate\Foundation\Bootstrap\SetRequestForConsole;
 use Illuminate\Mail\Transport\ArrayTransport;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -31,6 +32,9 @@ it('persists only committed invitations on the routed mail queue and delivers th
         ->and($payload['timeout'])->toBe(30)
         ->and($payload['backoff'])->toBe('10,60,180');
 
+    // Use Laravel's actual console bootstrap, not a forced URL-generator root.
+    config(['app.url' => 'http://127.0.0.1:8123']);
+    (new SetRequestForConsole)->bootstrap($this->app);
     $this->artisan('queue:work', ['connection' => 'database', '--queue' => 'mail', '--once' => true])
         ->assertSuccessful();
     expect(DB::table('jobs')->count())->toBe(0)
@@ -40,7 +44,7 @@ it('persists only committed invitations on the routed mail queue and delivers th
     $message = $transport->messages()->sole()->getOriginalMessage();
     expect($message->getTo()[0]->getAddress())->toBe('worker@example.com')
         ->and($message->getSubject())->toContain('Queue delivery')
-        ->and($message->getHtmlBody())->toContain($event->event_code);
+        ->and($message->getHtmlBody())->toContain("http://127.0.0.1:8123/join-event/{$event->event_code}");
 });
 
 it('does not publish invitation work from a rolled back transaction', function () {
