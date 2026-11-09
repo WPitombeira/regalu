@@ -43,7 +43,7 @@
                     </div>
 
                     <div class="flex items-center gap-2 mb-3">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-700 text-gray-300">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-gray-700 text-gray-300">
                             {{ $event->event_type }}
                         </span>
                     </div>

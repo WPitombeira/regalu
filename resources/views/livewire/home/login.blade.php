@@ -1,3 +1,3 @@
 <x-layouts.app>
-    <livewire:home.loginform />
+    <livewire:home.login-form />
 </x-layouts.app>

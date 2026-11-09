@@ -3,6 +3,8 @@
 **Date:** February 18, 2026
 **Status:** Synthesized from BA1 (Current State) + BA2 (Product Vision)
 
+> Historical product-vision document. The implementation inventory below predates the family/wishlist/Secret Santa work and is not current. See [PROJECT_MAP.md](PROJECT_MAP.md) for the inspected implementation and [DEPENDENCY_UPGRADE.md](DEPENDENCY_UPGRADE.md) for the current toolchain; WhatsApp, reveal automation, and other vision items are not implied to be implemented.
+
 ---
 
 ## 1. What is Regalu?

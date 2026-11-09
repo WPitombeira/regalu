@@ -59,7 +59,7 @@
 
                     {{-- Item Image --}}
                     @if ($item->image_url)
-                        <div class="w-16 h-16 rounded-lg overflow-hidden bg-gray-700 flex-shrink-0">
+                        <div class="w-16 h-16 rounded-lg overflow-hidden bg-gray-700 shrink-0">
                             <img src="{{ $item->image_url }}" alt="{{ $item->name }}"
                                 class="w-full h-full object-cover" />
                         </div>
@@ -69,7 +69,7 @@
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2 mb-1">
                             <h3 class="text-lg font-medium text-gray-100 truncate">{{ $item->name }}</h3>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium
                                 @switch($item->priority)
                                     @case('HIGH') bg-red-900/50 text-red-300 @break
                                     @case('MEDIUM') bg-yellow-900/50 text-yellow-300 @break
@@ -110,7 +110,7 @@
                     </div>
 
                     {{-- Status / Actions --}}
-                    <div class="flex-shrink-0">
+                    <div class="shrink-0">
                         @if ($item->status === 'BOUGHT')
                             @if ($isOwner)
                                 <span class="inline-flex items-center px-3 py-1.5 rounded-lg bg-green-900/30 text-green-300 text-sm font-medium">

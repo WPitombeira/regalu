@@ -6,6 +6,8 @@
 /public/storage
 /storage/*.key
 /vendor
+/rr
+/.rr.yaml
 .env
 .env.backup
 .env.production

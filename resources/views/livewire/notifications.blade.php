@@ -18,13 +18,13 @@
         $class = $classes[$notification["type"]] ?? 'dark:bg-blue-800 dark:text-blue-200 bg-blue-500 border-blue-700';    
         @endphp
 
-        <div id="toast-default" class="flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800 mb-2" role="alert"
+        <div id="toast-default" class="flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg shadow-sm dark:text-gray-400 dark:bg-gray-800 mb-2" role="alert"
             x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 scale-90"
             x-transition:enter-end="opacity-100 scale-100"
             x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)" 
             >
-                <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-blue-500 bg-blue-100 rounded-lg {{ $class }}">
+                <div class="inline-flex items-center justify-center shrink-0 w-8 h-8 text-blue-500 bg-blue-100 rounded-lg {{ $class }}">
                     @switch($notification["type"])
                         @case('success')
                             <x-ui.icons.success />

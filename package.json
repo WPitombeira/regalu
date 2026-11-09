@@ -1,21 +1,26 @@
 {
     "private": true,
     "type": "module",
+    "engines": {
+        "node": "^26.13.0",
+        "npm": "^12.2.2"
+    },
+    "packageManager": "npm@12.2.2",
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "dev:portable": "node .scripts/vite-wasm.mjs",
+        "build": "vite build",
+        "build:portable": "node .scripts/vite-wasm.mjs build",
+        "test:tooling": "node --test tests/Tooling/*.test.mjs"
     },
     "devDependencies": {
-        "@tailwindcss/forms": "^0.5.9",
-        "autoprefixer": "^10.4.20",
-        "axios": "^1.7.4",
-        "laravel-vite-plugin": "^1.0",
-        "postcss": "^8.4.47",
-        "tailwindcss": "^3.4.13",
-        "vite": "^5.0"
-    },
-    "dependencies": {
-        "livewire": "^0.6.1",
-        "tailwind": "^4.0.0"
+        "@rolldown/binding-wasm32-wasi": "1.2.18",
+        "@tailwindcss/forms": "^0.5.11",
+        "@tailwindcss/vite": "^4.3.5",
+        "axios": "^1.21.0",
+        "chokidar": "^6.0.0",
+        "laravel-vite-plugin": "^3.2.1",
+        "tailwindcss": "^4.3.5",
+        "vite": "^8.3.7"
     }
 }

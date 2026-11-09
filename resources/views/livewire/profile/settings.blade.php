@@ -43,7 +43,7 @@
 
             <div class="flex justify-end">
                 <button type="submit"
-                    class="text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5">
+                    class="text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-hidden focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5">
                     {{ __("messages.buttons.save") }}
                 </button>
             </div>
@@ -83,7 +83,7 @@
 
             <div class="flex justify-end">
                 <button type="submit"
-                    class="text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5">
+                    class="text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-hidden focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5">
                     {{ __("messages.buttons.update") }}
                 </button>
             </div>
