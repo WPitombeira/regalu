@@ -62,6 +62,17 @@
                 </div>
             </div>
 
+            <div>
+                <label for="recipient_visibility" class="block text-sm font-medium text-gray-300 mb-1">{{ __('assignments.visibility') }}</label>
+                <select id="recipient_visibility" wire:model="recipient_visibility"
+                        class="w-full rounded-lg border-gray-600 bg-gray-700 text-gray-100">
+                    <option value="NAMED">{{ __('assignments.named') }}</option>
+                    <option value="ANONYMOUS_UNTIL_REVEAL">{{ __('assignments.anonymous') }}</option>
+                </select>
+                <p class="mt-2 text-sm text-gray-400">{{ __('assignments.visibility_help') }}</p>
+                @error('recipient_visibility') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
+            </div>
+
             {{-- Dates --}}
             <div class="grid grid-cols-2 gap-4">
                 <div>
