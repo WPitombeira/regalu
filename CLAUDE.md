@@ -75,3 +75,4 @@ The app uses a hybrid controller + Livewire approach:
 - Octane: RoadRunner server with file watching
 - CI: separate PHP quality, assets, and test jobs on push/PR to `master`; pinned actions/runtimes, audits, Pint/Larastan, native/portable builds, 80% PCOV coverage and disposable release cache/migration/rollback smoke
 - Invitation jobs use Laravel 13 queue routing to `mail`, after-commit dispatch and bounded retry/timeout attributes. Keep supervised workers listening on `mail,default`
+- Assignment jobs use the same `mail` queue. Secret Santa recipient secrecy, explicit wishlist consent and scheduled reveals are documented in `docs/SECRET_SANTA_PRIVACY.md`; keep the Laravel scheduler running every minute. Never expose raw recipient/list identifiers in anonymous assignment payloads or grant hosts other participants' pairings.

@@ -3,7 +3,7 @@
 **Date:** February 18, 2026
 **Status:** Synthesized from BA1 (Current State) + BA2 (Product Vision)
 
-> Historical product-vision document. The implementation inventory below predates the family/wishlist/Secret Santa work and is not current. See [PROJECT_MAP.md](PROJECT_MAP.md) for the inspected implementation and [DEPENDENCY_UPGRADE.md](DEPENDENCY_UPGRADE.md) for the current toolchain; WhatsApp, reveal automation, and other vision items are not implied to be implemented.
+> Historical product-vision document. The implementation inventory below predates the family/wishlist/Secret Santa work and is not current. See [LARAVEL_13_MODERNIZATION.md](LARAVEL_13_MODERNIZATION.md) for the modernization inventory and [DEPENDENCY_UPGRADE.md](DEPENDENCY_UPGRADE.md) for the toolchain. [SECRET_SANTA_PRIVACY.md](SECRET_SANTA_PRIVACY.md) supersedes the recipient-secrecy assumptions below and documents assignment delivery, wishlist consent and automatic reveal. Other vision items, including WhatsApp, are not implied to be implemented.
 
 ---
 

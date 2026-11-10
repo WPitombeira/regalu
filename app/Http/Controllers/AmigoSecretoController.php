@@ -46,4 +46,10 @@ class AmigoSecretoController extends Controller
     {
         return view('livewire.amigo-secreto.join', ['code' => $code]);
     }
+
+    #[Authorize('view', 'event')]
+    public function assignment(AmigoSecretoEvent $event): View
+    {
+        return view('livewire.amigo-secreto.assignment', ['event' => $event]);
+    }
 }

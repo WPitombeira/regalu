@@ -6,27 +6,25 @@
 <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
     <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; padding: 40px;">
         <h1 style="color: #1a1a2e; font-size: 24px; margin-bottom: 16px;">
-            You drew {{ $targetName }}!
+            {{ __('assignments.mail_subject') }}
         </h1>
         <p style="color: #4a4a4a; font-size: 16px; line-height: 1.5; margin-bottom: 8px;">
-            Hi {{ $drawerName }},
+            {{ __('assignments.greeting', ['name' => $drawerName]) }}
         </p>
         <p style="color: #4a4a4a; font-size: 16px; line-height: 1.5; margin-bottom: 24px;">
-            Your Secret Santa assignment is ready! You have been matched with
-            <strong style="color: #2563eb;">{{ $targetName }}</strong>.
-            Time to start thinking about the perfect gift!
+            {{ $targetName === null ? __('assignments.hidden_recipient') : __('assignments.you_drew', ['name' => $targetName]) }}
         </p>
         @if ($wishlistUrl)
             <p style="color: #4a4a4a; font-size: 16px; line-height: 1.5; margin-bottom: 24px;">
-                Check out their wishlist for gift ideas:
+                {{ __('assignments.mail_intro') }}
             </p>
             <a href="{{ $wishlistUrl }}"
                style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; font-weight: 600;">
-                View Wishlist
+                {{ __('assignments.open') }}
             </a>
         @endif
         <p style="color: #9a9a9a; font-size: 12px; margin-top: 32px;">
-            Remember, keep it a secret! This email was sent from {{ config('app.name') }}.
+            {{ __('assignments.mail_footer', ['app' => config('app.name')]) }}
         </p>
     </div>
 </body>

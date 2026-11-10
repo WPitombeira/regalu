@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Jobs\SendAssignment;
 use App\Jobs\SendEventInvitation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Session\Middleware\AuthenticateSession;
@@ -30,5 +31,6 @@ class AppServiceProvider extends ServiceProvider
         Livewire::addPersistentMiddleware([AuthenticateSession::class]);
 
         Queue::route(SendEventInvitation::class, 'mail');
+        Queue::route(SendAssignment::class, 'mail');
     }
 }

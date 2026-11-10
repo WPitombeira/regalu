@@ -93,14 +93,48 @@
             </div>
         </div>
 
+        <section class="bg-gray-800 border border-gray-700 rounded-xl p-6 mb-8">
+            <h2 class="text-lg font-semibold text-gray-100 mb-2">{{ __('assignments.visibility') }}</h2>
+            <p class="text-gray-300">{{ $event->recipient_visibility === 'NAMED' ? __('assignments.named') : __('assignments.anonymous') }}</p>
+            @if ($event->reveal_date)
+                <p class="text-sm text-gray-400 mt-2">{{ __('messages.amigo_secreto.reveal_date') }}: {{ $event->reveal_date->format('M d, Y') }}</p>
+            @endif
+            @can('update', $event)
+                <form wire:submit="savePrivacy" class="mt-4 space-y-3">
+                    <label for="recipient_visibility" class="block text-sm text-gray-300">{{ __('assignments.visibility') }}</label>
+                    <select id="recipient_visibility" wire:model="recipient_visibility" class="w-full rounded-lg border-gray-600 bg-gray-700 text-gray-100">
+                        <option value="NAMED">{{ __('assignments.named') }}</option>
+                        <option value="ANONYMOUS_UNTIL_REVEAL">{{ __('assignments.anonymous') }}</option>
+                    </select>
+                    @error('recipient_visibility') <p class="text-sm text-red-400">{{ $message }}</p> @enderror
+                    <label for="reveal_date" class="block text-sm text-gray-300">{{ __('messages.amigo_secreto.reveal_date') }}</label>
+                    <input id="reveal_date" type="date" wire:model="reveal_date" class="w-full rounded-lg border-gray-600 bg-gray-700 text-gray-100">
+                    @error('reveal_date') <p class="text-sm text-red-400">{{ $message }}</p> @enderror
+                    <p class="text-sm text-gray-400">{{ __('assignments.visibility_help') }}</p>
+                    <button type="submit" wire:loading.attr="disabled" class="px-4 py-2 bg-blue-600 rounded-lg text-white">{{ __('messages.buttons.save') }}</button>
+                </form>
+            @endcan
+        </section>
+
         {{-- Assignment (if draws complete and user is participant) --}}
+        @if ($isParticipant)
+            <form wire:submit="saveWishlist" class="bg-gray-800 border border-gray-700 rounded-xl p-6 mb-8 space-y-3">
+                <label for="wishlist_id" class="block text-lg font-semibold text-gray-100">{{ __('assignments.choose_wishlist') }}</label>
+                <p class="text-sm text-gray-400">{{ __('assignments.consent') }}</p>
+                <select id="wishlist_id" wire:model="wishlist_id" class="w-full rounded-lg border-gray-600 bg-gray-700 text-gray-100">
+                    <option value="">{{ __('assignments.no_wishlist') }}</option>
+                    @foreach ($ownWishlists as $ownWishlist)
+                        <option value="{{ $ownWishlist->id }}">{{ $ownWishlist->name }}</option>
+                    @endforeach
+                </select>
+                @error('wishlist_id') <p class="text-sm text-red-400">{{ $message }}</p> @enderror
+                <p class="text-sm text-amber-300">{{ __('assignments.identity_warning') }}</p>
+                <button type="submit" wire:loading.attr="disabled" class="px-4 py-2 bg-blue-600 rounded-lg text-white">{{ __('messages.buttons.save') }}</button>
+            </form>
+        @endif
+
         @if ($myAssignment && in_array($event->status, ['DRAWS_COMPLETE', 'REVEALED', 'COMPLETED']))
-            <div class="bg-gradient-to-r from-green-900/50 to-emerald-900/50 border border-green-700 rounded-xl p-6 mb-8">
-                <h3 class="text-lg font-semibold text-green-300 mb-2">Your Assignment</h3>
-                <p class="text-2xl font-bold text-gray-100">
-                    You drew: <span class="text-green-400">{{ $myAssignment->target->name }}</span>
-                </p>
-            </div>
+            <x-amigo-secreto.assignment-summary :assignment="$myAssignment" :event="$event" />
         @endif
 
         {{-- Action Buttons --}}

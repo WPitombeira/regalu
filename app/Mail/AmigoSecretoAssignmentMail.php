@@ -15,14 +15,14 @@ class AmigoSecretoAssignmentMail extends Mailable
 
     public function __construct(
         public string $drawerName,
-        public string $targetName,
+        public ?string $targetName,
         public ?string $wishlistUrl = null,
     ) {}
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "You drew {$this->targetName}! - Secret Santa Assignment",
+            subject: __('assignments.mail_subject'),
         );
     }
 

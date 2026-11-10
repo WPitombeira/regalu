@@ -10,6 +10,7 @@ class AmigoSecretoParticipant extends Model
     protected $fillable = [
         'event_id',
         'user_id',
+        'wishlist_id',
         'status',
         'invite_email',
         'invited_at',

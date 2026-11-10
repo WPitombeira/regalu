@@ -45,35 +45,10 @@
                     <h2 class="text-lg font-semibold text-gray-200">Draw Results</h2>
                 </div>
 
-                @if ($isOrganizer)
-                    {{-- Organizer sees all draws --}}
-                    <ul class="divide-y divide-gray-700">
-                        @foreach ($draws as $draw)
-                            <li class="px-6 py-4 flex items-center gap-3">
-                                <div class="flex-1">
-                                    <span class="text-gray-100 font-medium">{{ $draw->drawer->name }}</span>
-                                </div>
-                                <svg class="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                </svg>
-                                <div class="flex-1 text-right">
-                                    <span class="text-green-400 font-medium">{{ $draw->target->name }}</span>
-                                </div>
-                            </li>
-                        @endforeach
-                    </ul>
+                @if ($myDraw)
+                    <x-amigo-secreto.assignment-summary :assignment="$myDraw" :event="$event" />
                 @else
-                    {{-- Participant sees only their assignment --}}
-                    @if ($myDraw)
-                        <div class="px-6 py-8 text-center">
-                            <p class="text-gray-400 mb-2">You drew:</p>
-                            <p class="text-3xl font-bold text-green-400">{{ $myDraw->target->name }}</p>
-                        </div>
-                    @else
-                        <div class="px-6 py-8 text-center text-gray-500">
-                            You are not part of this draw.
-                        </div>
-                    @endif
+                    <p class="px-6 py-8 text-center text-gray-400">{{ __('assignments.not_in_draw') }}</p>
                 @endif
             </div>
         @endif

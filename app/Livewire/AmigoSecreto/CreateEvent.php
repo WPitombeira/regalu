@@ -24,6 +24,9 @@ class CreateEvent extends Component
     #[Rule(['required', 'in:CHRISTMAS,BIRTHDAY,WEDDING,CASUAL'])]
     public string $event_type = 'CASUAL';
 
+    #[Rule(['required', 'in:NAMED,ANONYMOUS_UNTIL_REVEAL'])]
+    public string $recipient_visibility = 'NAMED';
+
     #[Rule(['nullable', 'numeric', 'min:0'])]
     public ?string $budget_min = null;
 
@@ -33,7 +36,7 @@ class CreateEvent extends Component
     #[Rule(['nullable', 'date', 'after_or_equal:today'])]
     public ?string $event_date = null;
 
-    #[Rule(['nullable', 'date', 'after_or_equal:today'])]
+    #[Rule(['required_if:recipient_visibility,ANONYMOUS_UNTIL_REVEAL', 'nullable', 'date', 'after_or_equal:today'])]
     public ?string $reveal_date = null;
 
     #[Rule(['nullable', 'exists:families,id'])]
@@ -60,6 +63,7 @@ class CreateEvent extends Component
             'budget_max' => $this->budget_max ?: null,
             'event_date' => $this->event_date ?: null,
             'reveal_date' => $this->reveal_date ?: null,
+            'recipient_visibility' => $this->recipient_visibility,
             'status' => 'PLANNING',
         ]);
 
