@@ -3,13 +3,14 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class PasswordResetMail extends Mailable {
+class PasswordResetMail extends Mailable
+{
     use Queueable, SerializesModels;
 
     public function __construct(
@@ -17,13 +18,15 @@ class PasswordResetMail extends Mailable {
         public string $userName,
     ) {}
 
-    public function envelope(): Envelope {
+    public function envelope(): Envelope
+    {
         return new Envelope(
-            subject: __("messages.auth.reset_password"),
+            subject: __('messages.auth.reset_password'),
         );
     }
 
-    public function content(): Content {
+    public function content(): Content
+    {
         return new Content(
             view: 'mail.password-reset',
             with: [
@@ -34,9 +37,10 @@ class PasswordResetMail extends Mailable {
     }
 
     /**
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     * @return array<int, Attachment>
      */
-    public function attachments(): array {
+    public function attachments(): array
+    {
         return [];
     }
 }

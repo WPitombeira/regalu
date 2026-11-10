@@ -1,5 +1,9 @@
 <?php
 
+use App\Livewire\Wishlist\AddItem;
+use App\Livewire\Wishlist\CreateWishlist;
+use App\Livewire\Wishlist\WishlistDetail;
+use App\Livewire\Wishlist\WishlistSettings;
 use App\Models\Family;
 use App\Models\FamilyMember;
 use App\Models\User;
@@ -14,7 +18,7 @@ describe('wishlists', function () {
         $user = User::factory()->create();
 
         Livewire::actingAs($user)
-            ->test(\App\Livewire\Wishlist\CreateWishlist::class)
+            ->test(CreateWishlist::class)
             ->set('name', 'My Birthday Wishlist')
             ->set('description', 'Things I want for my birthday')
             ->set('type', 'BIRTHDAY')
@@ -87,7 +91,7 @@ describe('wishlists', function () {
         $wishlist = Wishlist::factory()->create(['user_id' => $user->id]);
 
         Livewire::actingAs($user)
-            ->test(\App\Livewire\Wishlist\AddItem::class, ['wishlistId' => $wishlist->id])
+            ->test(AddItem::class, ['wishlistId' => $wishlist->id])
             ->set('name', 'New Headphones')
             ->set('description', 'Sony WH-1000XM5')
             ->set('url', 'https://example.com/headphones')
@@ -125,7 +129,7 @@ describe('wishlists', function () {
         ]);
 
         Livewire::actingAs($buyer)
-            ->test(\App\Livewire\Wishlist\WishlistDetail::class, ['wishlist' => $wishlist])
+            ->test(WishlistDetail::class, ['wishlist' => $wishlist])
             ->call('markAsBought', $item->id)
             ->assertDispatched('notification');
 
@@ -161,7 +165,7 @@ describe('wishlists', function () {
         ]);
 
         Livewire::actingAs($user)
-            ->test(\App\Livewire\Wishlist\WishlistSettings::class, ['wishlist' => $wishlist])
+            ->test(WishlistSettings::class, ['wishlist' => $wishlist])
             ->call('archive')
             ->assertRedirect(route('wishlists.index'));
 

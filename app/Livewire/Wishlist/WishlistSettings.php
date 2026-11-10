@@ -7,10 +7,14 @@ use App\Models\Wishlist;
 use App\Models\WishlistShare;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
 
-class WishlistSettings extends Component {
+class WishlistSettings extends Component
+{
+    #[Locked]
     public Wishlist $wishlist;
 
     #[Rule(['required', 'string', 'min:2', 'max:255'])]
@@ -28,7 +32,9 @@ class WishlistSettings extends Component {
     #[Rule(['nullable', 'email'])]
     public string $shareEmail = '';
 
-    public function mount(Wishlist $wishlist): void {
+    public function mount(Wishlist $wishlist): void
+    {
+        Gate::authorize('update', $wishlist);
         $this->wishlist = $wishlist;
         $this->name = $wishlist->name;
         $this->description = $wishlist->description ?? '';
@@ -36,7 +42,9 @@ class WishlistSettings extends Component {
         $this->type = $wishlist->type;
     }
 
-    public function update(): void {
+    public function update(): void
+    {
+        $this->authorizeUpdate();
         $this->validate();
 
         $this->wishlist->update([
@@ -46,21 +54,25 @@ class WishlistSettings extends Component {
             'type' => $this->type,
         ]);
 
-        $this->dispatch('notification', ["message" => __("messages.wishlist.updated"), "type" => "success"]);
+        $this->dispatch('notification', ['message' => __('messages.wishlist.updated'), 'type' => 'success']);
     }
 
-    public function addShare(): void {
+    public function addShare(): void
+    {
+        $this->authorizeUpdate();
         $this->validateOnly('shareEmail');
 
         $user = User::where('email', $this->shareEmail)->first();
 
-        if (!$user) {
+        if (! $user) {
             $this->addError('shareEmail', 'User not found with that email.');
+
             return;
         }
 
         if ($user->id === Auth::id()) {
             $this->addError('shareEmail', 'You cannot share a wishlist with yourself.');
+
             return;
         }
 
@@ -70,6 +82,7 @@ class WishlistSettings extends Component {
 
         if ($exists) {
             $this->addError('shareEmail', 'This user already has access.');
+
             return;
         }
 
@@ -82,40 +95,54 @@ class WishlistSettings extends Component {
         $this->shareEmail = '';
         $this->wishlist->refresh();
 
-        $this->dispatch('notification', ["message" => "User added successfully.", "type" => "success"]);
+        $this->dispatch('notification', ['message' => 'User added successfully.', 'type' => 'success']);
     }
 
-    public function removeShare(int $shareId): void {
+    public function removeShare(int $shareId): void
+    {
+        $this->authorizeUpdate();
         WishlistShare::where('id', $shareId)
             ->where('wishlist_id', $this->wishlist->id)
             ->delete();
 
         $this->wishlist->refresh();
 
-        $this->dispatch('notification', ["message" => "User removed.", "type" => "success"]);
+        $this->dispatch('notification', ['message' => 'User removed.', 'type' => 'success']);
     }
 
-    public function archive(): void {
+    public function archive(): void
+    {
+        $this->authorizeUpdate();
         $this->wishlist->update(['is_archived' => true]);
 
-        $this->dispatch('notification', ["message" => __("messages.wishlist.updated"), "type" => "success"]);
+        $this->dispatch('notification', ['message' => __('messages.wishlist.updated'), 'type' => 'success']);
 
         redirect()->route('wishlists.index');
     }
 
-    public function delete(): void {
+    public function delete(): void
+    {
+        $this->authorizeUpdate();
         $this->wishlist->delete();
 
-        $this->dispatch('notification', ["message" => __("messages.wishlist.deleted"), "type" => "success"]);
+        $this->dispatch('notification', ['message' => __('messages.wishlist.deleted'), 'type' => 'success']);
 
         redirect()->route('wishlists.index');
     }
 
-    public function render(): View {
+    public function render(): View
+    {
+        $this->authorizeUpdate();
         $shares = $this->wishlist->shares()->with('sharedWithUser')->get();
 
         return view('livewire.wishlist.wishlist-settings', [
             'shares' => $shares,
         ]);
+    }
+
+    private function authorizeUpdate(): void
+    {
+        $this->wishlist->refresh();
+        Gate::authorize('update', $this->wishlist);
     }
 }

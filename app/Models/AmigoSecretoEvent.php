@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\AmigoSecretoEventFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-class AmigoSecretoEvent extends Model {
-    /** @use HasFactory<\Database\Factories\AmigoSecretoEventFactory> */
+class AmigoSecretoEvent extends Model
+{
+    /** @use HasFactory<AmigoSecretoEventFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -27,7 +29,8 @@ class AmigoSecretoEvent extends Model {
         'is_archived',
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'budget_min' => 'decimal:2',
             'budget_max' => 'decimal:2',
@@ -37,7 +40,8 @@ class AmigoSecretoEvent extends Model {
         ];
     }
 
-    protected static function boot(): void {
+    protected static function boot(): void
+    {
         parent::boot();
 
         static::creating(function (AmigoSecretoEvent $event) {
@@ -47,23 +51,33 @@ class AmigoSecretoEvent extends Model {
         });
     }
 
-    public function organizer(): BelongsTo {
+    /** @return BelongsTo<User, $this> */
+    public function organizer(): BelongsTo
+    {
         return $this->belongsTo(User::class, 'organizer_id');
     }
 
-    public function family(): BelongsTo {
+    /** @return BelongsTo<Family, $this> */
+    public function family(): BelongsTo
+    {
         return $this->belongsTo(Family::class);
     }
 
-    public function participants(): HasMany {
+    /** @return HasMany<AmigoSecretoParticipant, $this> */
+    public function participants(): HasMany
+    {
         return $this->hasMany(AmigoSecretoParticipant::class, 'event_id');
     }
 
-    public function draws(): HasMany {
+    /** @return HasMany<AmigoSecretoDraw, $this> */
+    public function draws(): HasMany
+    {
         return $this->hasMany(AmigoSecretoDraw::class, 'event_id');
     }
 
-    public function exclusions(): HasMany {
+    /** @return HasMany<AmigoSecretoExclusion, $this> */
+    public function exclusions(): HasMany
+    {
         return $this->hasMany(AmigoSecretoExclusion::class, 'event_id');
     }
 }

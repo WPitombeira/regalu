@@ -6,10 +6,12 @@
                 <p class="text-[#C3C3D1] mt-2">{{ $family->description }}</p>
             @endif
         </div>
-        <a href="{{ route('families.settings', $family) }}"
-           class="px-4 py-2 text-sm font-medium text-[#C3C3D1] bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 transition-colors">
-            {{ __("messages.family.settings") }}
-        </a>
+        @can('manage', $family)
+            <a href="{{ route('families.settings', $family) }}"
+               class="px-4 py-2 text-sm font-medium text-[#C3C3D1] bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 transition-colors">
+                {{ __("messages.family.settings") }}
+            </a>
+        @endcan
     </div>
 
     {{-- Invite Code Section --}}
@@ -61,11 +63,13 @@
                                 Promote
                             </button>
                         @endif
-                        <button wire:click="removeMember({{ $member->id }})"
-                                wire:confirm="Remove this member from the family?"
-                                class="px-3 py-1.5 text-xs font-medium text-red-400 bg-red-900/30 border border-red-800 rounded-lg hover:bg-red-900/50 transition-colors">
-                            Remove
-                        </button>
+                        @if($member->user_id !== $family->creator_id)
+                            <button wire:click="removeMember({{ $member->id }})"
+                                    wire:confirm="Remove this member from the family?"
+                                    class="px-3 py-1.5 text-xs font-medium text-red-400 bg-red-900/30 border border-red-800 rounded-lg hover:bg-red-900/50 transition-colors">
+                                Remove
+                            </button>
+                        @endif
                     </div>
                 @endif
             </div>

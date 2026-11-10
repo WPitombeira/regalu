@@ -2,15 +2,17 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Models\Family;
 use App\Models\FamilyMember;
+use App\Models\User;
 use App\Models\Wishlist;
 use App\Models\WishlistItem;
 use Illuminate\Database\Seeder;
 
-class DatabaseSeeder extends Seeder {
-    public function run(): void {
+class DatabaseSeeder extends Seeder
+{
+    public function run(): void
+    {
         $testUser = User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',

@@ -3,14 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Livewire\Home\Login;
-use Illuminate\Http\Request;
+use Illuminate\Contracts\View\View;
 
-class HomeController extends Controller {
-    public function index() {
+class HomeController extends Controller
+{
+    public function index(): View
+    {
         return view('home');
     }
 
-    public function login() {
-        return (new Login())->render();
+    public function login(): View
+    {
+        return (new Login)->render();
     }
 }

@@ -146,4 +146,5 @@
             @endforeach
         </div>
     @endif
+    <div class="mt-6">{{ $items->links() }}</div>
 </div>

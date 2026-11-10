@@ -7,17 +7,19 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
-class PasswordResetController extends Controller {
-    public function showForgotForm(): View {
+class PasswordResetController extends Controller
+{
+    public function showForgotForm(): View
+    {
         return view('livewire.auth.forgot-password');
     }
 
-    public function sendLink(Request $request): RedirectResponse {
+    public function sendLink(Request $request): RedirectResponse
+    {
         $request->validate([
             'email' => ['required', 'email'],
         ]);
@@ -25,19 +27,21 @@ class PasswordResetController extends Controller {
         Password::sendResetLink($request->only('email'));
 
         // Always return success to prevent email enumeration
-        return back()->with('status', __("messages.auth.reset_link_sent"));
+        return back()->with('status', __('messages.auth.reset_link_sent'));
     }
 
-    public function showResetForm(Request $request, string $token): View {
+    public function showResetForm(Request $request, string $token): View
+    {
         return view('livewire.auth.reset-password', [
             'token' => $token,
             'email' => $request->query('email', ''),
         ]);
     }
 
-    public function reset(Request $request): RedirectResponse {
+    public function reset(Request $request): RedirectResponse
+    {
         $request->validate([
-            'token' => ['required'],
+            'token' => ['required', 'string'],
             'email' => ['required', 'email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
@@ -57,9 +61,9 @@ class PasswordResetController extends Controller {
         );
 
         if ($status === Password::PASSWORD_RESET) {
-            return redirect()->route('dashboard')->with('status', __("messages.auth.reset_success"));
+            return redirect()->route('dashboard')->with('status', __('messages.auth.reset_success'));
         }
 
-        return back()->withErrors(['email' => __("messages.auth.invalid_token")]);
+        return back()->withErrors(['email' => __('messages.auth.invalid_token')]);
     }
 }

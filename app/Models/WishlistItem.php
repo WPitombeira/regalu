@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\WishlistItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class WishlistItem extends Model {
-    /** @use HasFactory<\Database\Factories\WishlistItemFactory> */
+class WishlistItem extends Model
+{
+    /** @use HasFactory<WishlistItemFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -26,7 +28,8 @@ class WishlistItem extends Model {
         'notes',
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'price_min' => 'decimal:2',
             'price_max' => 'decimal:2',
@@ -35,23 +38,30 @@ class WishlistItem extends Model {
     }
 
     /** @return BelongsTo<Wishlist, $this> */
-    public function wishlist(): BelongsTo {
+    public function wishlist(): BelongsTo
+    {
         return $this->belongsTo(Wishlist::class);
     }
 
     /** @return BelongsTo<User, $this> */
-    public function boughtBy(): BelongsTo {
+    public function boughtBy(): BelongsTo
+    {
         return $this->belongsTo(User::class, 'bought_by_user_id');
     }
 
     /**
      * Mark this item as bought by the given user.
      */
-    public function markAsBought(User $user): void {
-        $this->update([
+    public function markAsBought(User $user): bool
+    {
+        $updated = static::whereKey($this->id)->where('status', 'AVAILABLE')->update([
             'status' => 'BOUGHT',
             'bought_by_user_id' => $user->id,
             'bought_at' => now(),
         ]);
+
+        $this->refresh();
+
+        return $updated === 1;
     }
 }

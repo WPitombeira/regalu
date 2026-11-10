@@ -92,4 +92,5 @@
             @endforeach
         </div>
     @endif
+    <div class="mt-6">{{ $wishlists->links() }}</div>
 </div>

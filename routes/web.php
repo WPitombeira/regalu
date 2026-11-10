@@ -1,11 +1,16 @@
 <?php
 
-use App\Http\Controllers\{AmigoSecretoController, DashboardController, FamilyController, HomeController, PasswordResetController, UserController, WishlistController};
+use App\Http\Controllers\AmigoSecretoController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FamilyController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 
-
-Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::group(['middleware' => 'guest'], function() {
+Route::get('/', [HomeController::class, 'index'])->middleware('auth.session')->name('home');
+Route::group(['middleware' => 'guest'], function () {
     Route::get('/login', [HomeController::class, 'login'])->name('login');
     Route::post('/login', [UserController::class, 'authenticate'])->name('authenticate');
     Route::get('/forgot-password', [PasswordResetController::class, 'showForgotForm'])->name('password.request');
@@ -14,9 +19,9 @@ Route::group(['middleware' => 'guest'], function() {
     Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
 });
 
-Route::group(['middleware' => 'auth'], function () {
+Route::group(['middleware' => ['auth', 'auth.session']], function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/logout', [UserController::class, 'logout'])->name('logout');
+    Route::post('/logout', [UserController::class, 'logout'])->name('logout');
     Route::get('/settings', [UserController::class, 'viewSettings'])->name('settings');
     Route::get('/profile', [UserController::class, 'viewSettings'])->name('profile');
 
@@ -52,10 +57,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/{event}/exclusions', [AmigoSecretoController::class, 'exclusions'])->name('amigo-secreto.exclusions');
         Route::get('/{event}/draw', [AmigoSecretoController::class, 'drawPage'])->name('amigo-secreto.draw');
     });
+    // Shareable links retain their URLs, but require a current authenticated session.
+    Route::get('/w/{wishlist}', [WishlistController::class, 'show'])->name('wishlists.public');
+    Route::get('/join-event/{code}', [AmigoSecretoController::class, 'joinForm'])->name('amigo-secreto.public-join');
 });
-
-// Public wishlist route
-Route::get('/w/{wishlist}', [WishlistController::class, 'show'])->name('wishlists.public');
-
-// Public Secret Santa join route
-Route::get('/join-event/{code}', [AmigoSecretoController::class, 'joinForm'])->name('amigo-secreto.public-join');

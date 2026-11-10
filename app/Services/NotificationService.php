@@ -6,17 +6,17 @@ use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
-class NotificationService {
+class NotificationService
+{
     /**
      * Send a notification to a user.
      *
-     * @param User $user The recipient user
-     * @param string $type Notification type (e.g. 'wishlist', 'family', 'secret_santa', 'system')
-     * @param string $title Short notification title
-     * @param string $message Full notification message
-     * @param string|null $actionUrl Optional URL to navigate to when clicking
-     * @param Model|null $relatedEntity Optional related Eloquent model (morph)
-     * @return Notification
+     * @param  User  $user  The recipient user
+     * @param  string  $type  Notification type (e.g. 'wishlist', 'family', 'secret_santa', 'system')
+     * @param  string  $title  Short notification title
+     * @param  string  $message  Full notification message
+     * @param  string|null  $actionUrl  Optional URL to navigate to when clicking
+     * @param  Model|null  $relatedEntity  Optional related Eloquent model (morph)
      */
     public static function send(
         User $user,
@@ -40,7 +40,8 @@ class NotificationService {
     /**
      * Get the unread notification count for a user.
      */
-    public static function unreadCount(User $user): int {
+    public static function unreadCount(User $user): int
+    {
         return Notification::where('user_id', $user->id)->unread()->count();
     }
 }

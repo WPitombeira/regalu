@@ -2,13 +2,20 @@
 
 namespace App\Livewire\Wishlist;
 
+use App\Models\Wishlist;
 use App\Models\WishlistItem;
 use App\Services\UrlMetaFetchService;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
 
-class AddItem extends Component {
+class AddItem extends Component
+{
+    #[Locked]
     public int $wishlist_id;
 
     #[Rule(['required', 'string', 'min:2', 'max:255'])]
@@ -17,9 +24,11 @@ class AddItem extends Component {
     #[Rule(['nullable', 'string', 'max:1000'])]
     public string $description = '';
 
-    #[Rule(['nullable', 'url', 'max:2048'])]
+    #[Rule(['nullable', 'string', 'url', 'max:2048'])]
     public string $url = '';
 
+    #[Locked]
+    #[Rule(['nullable', 'string', 'url:http,https', 'max:2048'])]
     public string $image_url = '';
 
     #[Rule(['nullable', 'numeric', 'min:0'])]
@@ -31,14 +40,31 @@ class AddItem extends Component {
     #[Rule(['required', 'in:LOW,MEDIUM,HIGH'])]
     public string $priority = 'MEDIUM';
 
-    public function mount(int $wishlistId): void {
+    public function mount(int $wishlistId): void
+    {
         $this->wishlist_id = $wishlistId;
+        $this->authorizeWishlist();
     }
 
-    public function fetchMeta(): void {
+    public function fetchMeta(): void
+    {
+        $this->authorizeWishlist();
+
         if ($this->url === '') {
             return;
         }
+
+        $this->validateOnly('url');
+
+        $rateLimitKey = 'wishlist-meta-fetch:'.Auth::id();
+
+        if (RateLimiter::tooManyAttempts($rateLimitKey, 10)) {
+            $this->addError('url', __('Too many metadata requests. Please try again shortly.'));
+
+            return;
+        }
+
+        RateLimiter::hit($rateLimitKey, 60);
 
         $service = app(UrlMetaFetchService::class);
         $meta = $service->fetch($this->url);
@@ -52,7 +78,9 @@ class AddItem extends Component {
         }
     }
 
-    public function save(): void {
+    public function save(): void
+    {
+        $this->authorizeWishlist();
         $this->validate();
 
         WishlistItem::create([
@@ -67,14 +95,25 @@ class AddItem extends Component {
             'status' => 'AVAILABLE',
         ]);
 
-        $this->dispatch('notification', ["message" => __("messages.wishlist.item_added"), "type" => "success"]);
+        $this->dispatch('notification', ['message' => __('messages.wishlist.item_added'), 'type' => 'success']);
         $this->dispatch('item-added');
 
         $this->reset(['name', 'description', 'url', 'image_url', 'price_min', 'price_max', 'priority']);
         $this->priority = 'MEDIUM';
     }
 
-    public function render(): View {
+    public function render(): View
+    {
+        $this->authorizeWishlist();
+
         return view('livewire.wishlist.add-item');
+    }
+
+    private function authorizeWishlist(): Wishlist
+    {
+        $wishlist = Wishlist::query()->findOrFail($this->wishlist_id);
+        Gate::authorize('update', $wishlist);
+
+        return $wishlist;
     }
 }

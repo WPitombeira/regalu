@@ -2,24 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Services\LoginAttemptService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
-class UserController extends Controller {
-    public function authenticate(Request $request): RedirectResponse {
+class UserController extends Controller
+{
+    public function authenticate(Request $request, LoginAttemptService $loginAttempts): RedirectResponse
+    {
         $credentials = $request->validate([
             'email' => 'required|email',
-            'password' => 'required',
+            'password' => ['required', 'string'],
         ]);
-        $remember = $request->filled('remember');
+        $remember = $request->boolean('remember');
 
-        // Auth::attempt(['email' => $credentials->email, 'password' => $credentials->password, 'active' => 1]);
-
-        if (Auth::attempt($credentials, $remember)) {
+        if ($loginAttempts->attempt($credentials['email'], $credentials['password'], $remember, $request->ip())) {
             $request->session()->regenerate();
 
-            return redirect()->intended('dashboard');
+            return redirect()->intended(route('dashboard'));
         }
 
         return back()->withErrors([
@@ -27,26 +29,24 @@ class UserController extends Controller {
         ])->onlyInput('email');
     }
 
-    public function loginWithoutRedirect(string $email, string $password, bool $remember): bool {
-        if (Auth::attempt(['email' => $email, 'password' => $password], $remember)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    public function logout(): RedirectResponse {
+    public function logout(Request $request): RedirectResponse
+    {
         Auth::logout();
-        return redirect('/');
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('home');
     }
 
-    public function logoutAll(Request $request): RedirectResponse {
+    public function logoutAll(Request $request): RedirectResponse
+    {
         Auth::logoutOtherDevices($request->password);
 
         return back()->with('status', 'Password confirmed. You have been logged out on other devices.');
     }
 
-    public function viewSettings() {
+    public function viewSettings(): View
+    {
         return view('settings');
     }
 }

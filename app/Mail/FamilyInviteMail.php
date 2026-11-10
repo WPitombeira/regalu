@@ -4,11 +4,13 @@ namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class FamilyInviteMail extends Mailable {
+class FamilyInviteMail extends Mailable
+{
     use Queueable, SerializesModels;
 
     public function __construct(
@@ -16,13 +18,15 @@ class FamilyInviteMail extends Mailable {
         public string $joinUrl,
     ) {}
 
-    public function envelope(): Envelope {
+    public function envelope(): Envelope
+    {
         return new Envelope(
             subject: "You've been invited to join {$this->familyName}!",
         );
     }
 
-    public function content(): Content {
+    public function content(): Content
+    {
         return new Content(
             view: 'mail.family-invite',
             with: [
@@ -32,7 +36,9 @@ class FamilyInviteMail extends Mailable {
         );
     }
 
-    public function attachments(): array {
+    /** @return list<Attachment> */
+    public function attachments(): array
+    {
         return [];
     }
 }

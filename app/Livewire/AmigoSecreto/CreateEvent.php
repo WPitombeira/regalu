@@ -4,11 +4,17 @@ namespace App\Livewire\AmigoSecreto;
 
 use App\Models\AmigoSecretoEvent;
 use App\Models\AmigoSecretoParticipant;
+use App\Models\Family;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
+use Livewire\Features\SupportRedirects\Redirector;
 
-class CreateEvent extends Component {
+class CreateEvent extends Component
+{
     #[Rule(['required', 'string', 'min:3', 'max:255'])]
     public string $name = '';
 
@@ -33,8 +39,16 @@ class CreateEvent extends Component {
     #[Rule(['nullable', 'exists:families,id'])]
     public ?int $family_id = null;
 
-    public function create() {
+    public function create(): Redirector|RedirectResponse
+    {
+        abort_unless(Auth::check(), 403);
         $this->validate();
+
+        if ($this->family_id !== null) {
+            $family = Family::query()->findOrFail($this->family_id);
+            Gate::authorize('view', $family);
+            abort_if($family->is_archived, 403);
+        }
 
         $event = AmigoSecretoEvent::create([
             'organizer_id' => Auth::id(),
@@ -56,13 +70,15 @@ class CreateEvent extends Component {
             'accepted_at' => now(),
         ]);
 
-        $this->dispatch('notification', ["message" => __("messages.amigo_secreto.created"), "type" => "success"]);
+        $this->dispatch('notification', ['message' => __('messages.amigo_secreto.created'), 'type' => 'success']);
 
         return redirect()->route('amigo-secreto.show', $event);
     }
 
-    public function render() {
-        $families = Auth::user()->families;
+    public function render(): View
+    {
+        abort_unless(Auth::check(), 403);
+        $families = Auth::user()->families()->where('is_archived', false)->get();
 
         return view('livewire.amigo-secreto.create-event', [
             'families' => $families,

@@ -4,7 +4,8 @@ Wishlist sharing, family groups, and Amigo Secreto (Secret Santa), built with La
 
 ## Start here
 
-- [Project map and current implementation](docs/PROJECT_MAP.md)
+- [Laravel 13 modernization, verification, and rollout notes](docs/LARAVEL_13_MODERNIZATION.md)
+- [Architecture and historical baseline inventory](docs/PROJECT_MAP.md)
 - [Dependency versions, upgrade decisions, and verification](docs/DEPENDENCY_UPGRADE.md)
 - [Product vision (historical)](docs/PRODUCT_DEFINITION.md)
 
@@ -27,15 +28,18 @@ composer install
 npm ci
 ```
 
-Create a private local `.env` with `APP_ENV=local`, `DB_CONNECTION=sqlite`, and `MAIL_MAILER=log`. Review `.env.example` rather than blindly reusing service credentials. Do not use a production database or production mail account for local development/tests.
+Create a private local `.env` with `APP_ENV=local`, `APP_URL=http://127.0.0.1:8000`, `DB_CONNECTION=sqlite`, and `MAIL_MAILER=log`. The URL matches the local server below and is also used by the invitation queue worker. Review `.env.example` rather than blindly reusing service credentials. Do not use a production database or production mail account for local development/tests.
 
 ```bash
 php artisan key:generate
 touch database/database.sqlite
 php artisan migrate
+php artisan storage:link
 npm run build
-php artisan serve
+php artisan serve --host=127.0.0.1 --port=8000
 ```
+
+`storage:link` exposes `storage/app/public` through `public/storage`, which is required for public uploads such as avatars.
 
 For HMR, run `npm run dev` in another terminal. On older virtual CPUs where Vite's native Rolldown binding raises `SIGILL`, use `npm run build:portable` and `npm run dev:portable`; these use the official, lockfile-pinned WASM binding without forcing Tailwind's native modules into WASM mode.
 
@@ -52,6 +56,19 @@ Use `--poll` as well as `--watch` when native file events are unavailable on a n
 
 ## Verification
 
+### Isolated local test environment
+
+Create a **comment-only** `.env.testing` if it does not already exist; never copy application database or mail credentials into it. Laravel loads this file instead of `.env`, so the development `APP_KEY` is not available to tests. In the terminal where you will run the checks, generate an ephemeral test-only key:
+
+```bash
+export APP_ENV=testing
+export APP_KEY="base64:$(php -r 'echo base64_encode(random_bytes(32));')"
+```
+
+Do not print, commit, or reuse this key in an application environment; generate it again in each new test terminal. `phpunit.xml` forces SQLite `:memory:` and clears inherited `DB_URL` values. Before migration traits run, the test harness also rejects cached configuration and any effective connection other than SQLite `:memory:`. If the configuration is cached in your **local development checkout**, clear it with `php artisan config:clear` before testing. Do not run the test suite against a deployed application.
+
+### Checks
+
 ```bash
 composer validate --strict
 composer check-platform-reqs
@@ -60,8 +77,17 @@ npm audit
 npm run build                   # or npm run build:portable on older virtual CPUs
 npm run test:tooling
 php artisan test
+composer test:coverage          # PCOV/Xdebug required; minimum 80%, Clover/JUnit reports
 php vendor/bin/phpstan analyse
 php vendor/bin/pint --test
 ```
 
-PHPStan and repository-wide Pint have existing debt; see the qualification report for actual results. Passing the existing tests does **not** mean this application is production-ready: family/event authorization, URL-fetch safety, and several unfinished UI flows require follow-up before release.
+PHPStan and repository-wide Pint now pass, and CI enforces at least 80% line coverage. Tests use an isolated in-memory SQLite database and array/sync services. See the [modernization report](docs/LARAVEL_13_MODERNIZATION.md) for actual results and remaining product/concurrency limits.
+
+### Application URL and invitation workers
+
+Invitation links are generated from Laravel's configured `APP_URL`, not a hardcoded host. In production, set it to the site's canonical HTTPS origin (for example, `https://regalu.example.com`) in the web and queue-worker environment; never retain the local URL from `.env.example`. Use the same deployment environment for both.
+
+After changing `APP_URL` in production, refresh cached configuration with `php artisan config:clear && php artisan config:cache`, then restart long-running workers with `php artisan queue:restart`. Workers retain their boot-time configuration, so verify the supervisor has started replacement workers before expecting newly delivered invitations to use the updated URL. `.scripts/deploy.sh` refreshes the optimized config before signaling workers.
+
+Invitations use the `mail` queue. Locally, run a supervised `php artisan queue:work --queue=mail,default --tries=3 --timeout=30` worker with an asynchronous queue connection; it reads the same `.env` and `APP_URL` as the web server. JSON sessions require a coordinated reauthentication/compatibility rollout; read the report before deploying. No successful remote pipeline or production deployment is implied by local tests.

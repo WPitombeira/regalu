@@ -2,20 +2,22 @@
 
 namespace App\Models;
 
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+class User extends Authenticatable
+{
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'name',
@@ -29,7 +31,7 @@ class User extends Authenticatable {
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $hidden = [
         'password',
@@ -41,35 +43,48 @@ class User extends Authenticatable {
      *
      * @return array<string, string>
      */
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'password' => 'hashed',
         ];
     }
 
-    public function families(): BelongsToMany {
-        return $this->belongsToMany(\App\Models\Family::class, 'family_members')
+    /** @return BelongsToMany<Family, $this> */
+    public function families(): BelongsToMany
+    {
+        return $this->belongsToMany(Family::class, 'family_members')
             ->withPivot('role', 'joined_at')
             ->withTimestamps();
     }
 
-    public function familyMemberships(): HasMany {
-        return $this->hasMany(\App\Models\FamilyMember::class);
+    /** @return HasMany<FamilyMember, $this> */
+    public function familyMemberships(): HasMany
+    {
+        return $this->hasMany(FamilyMember::class);
     }
 
-    public function wishlists(): HasMany {
-        return $this->hasMany(\App\Models\Wishlist::class);
+    /** @return HasMany<Wishlist, $this> */
+    public function wishlists(): HasMany
+    {
+        return $this->hasMany(Wishlist::class);
     }
 
-    public function organizedEvents(): HasMany {
-        return $this->hasMany(\App\Models\AmigoSecretoEvent::class, 'organizer_id');
+    /** @return HasMany<AmigoSecretoEvent, $this> */
+    public function organizedEvents(): HasMany
+    {
+        return $this->hasMany(AmigoSecretoEvent::class, 'organizer_id');
     }
 
-    public function eventParticipations(): HasMany {
-        return $this->hasMany(\App\Models\AmigoSecretoParticipant::class);
+    /** @return HasMany<AmigoSecretoParticipant, $this> */
+    public function eventParticipations(): HasMany
+    {
+        return $this->hasMany(AmigoSecretoParticipant::class);
     }
 
-    public function userNotifications(): HasMany {
-        return $this->hasMany(\App\Models\Notification::class);
+    /** @return HasMany<Notification, $this> */
+    public function userNotifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
     }
 }

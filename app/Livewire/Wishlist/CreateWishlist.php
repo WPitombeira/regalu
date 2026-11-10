@@ -10,7 +10,8 @@ use Livewire\Attributes\Rule;
 use Livewire\Component;
 use Livewire\Features\SupportRedirects\Redirector;
 
-class CreateWishlist extends Component {
+class CreateWishlist extends Component
+{
     #[Rule(['required', 'string', 'min:2', 'max:255'])]
     public string $name = '';
 
@@ -26,8 +27,14 @@ class CreateWishlist extends Component {
     #[Rule(['nullable', 'exists:families,id'])]
     public ?int $family_id = null;
 
-    public function create(): Redirector|RedirectResponse {
+    public function create(): Redirector|RedirectResponse
+    {
+        abort_unless(Auth::check(), 403);
         $this->validate();
+
+        if ($this->family_id !== null) {
+            abort_unless(Auth::user()->families()->whereKey($this->family_id)->where('is_archived', false)->exists(), 403);
+        }
 
         $wishlist = Wishlist::create([
             'user_id' => Auth::id(),
@@ -39,13 +46,15 @@ class CreateWishlist extends Component {
             'is_archived' => false,
         ]);
 
-        $this->dispatch('notification', ["message" => __("messages.wishlist.created"), "type" => "success"]);
+        $this->dispatch('notification', ['message' => __('messages.wishlist.created'), 'type' => 'success']);
 
         return redirect()->route('wishlists.show', $wishlist);
     }
 
-    public function render(): View {
-        $families = Auth::user()->families;
+    public function render(): View
+    {
+        abort_unless(Auth::check(), 403);
+        $families = Auth::user()->families()->where('is_archived', false)->get();
 
         return view('livewire.wishlist.create-wishlist', [
             'families' => $families,

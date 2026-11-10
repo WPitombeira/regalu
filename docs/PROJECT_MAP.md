@@ -1,6 +1,8 @@
-# Regalu — project map
+# Regalu — architecture and historical baseline audit
 
 Inspected 2026-11-09, starting from `20f16a6`. This is an implementation inventory, not a production-readiness approval. The dependency refresh is recorded separately in [DEPENDENCY_UPGRADE.md](DEPENDENCY_UPGRADE.md).
+
+> Historical snapshot: the application modernization subsequently repaired many findings below. Read [LARAVEL_13_MODERNIZATION.md](LARAVEL_13_MODERNIZATION.md) for current behavior, verification and remaining limits. This baseline is retained as audit evidence, not as the current defect list.
 
 ## Architecture
 

@@ -2,32 +2,31 @@
 
 namespace App\Livewire\Home;
 
-use App\Http\Controllers\UserController;
 use App\Models\User;
+use App\Services\LoginAttemptService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Component;
 use Livewire\Attributes\Rule;
-use Livewire\Features\SupportRedirects\Redirector;
+use Livewire\Component;
 
-class LoginForm extends Component {
-    protected UserController $userController;
-
-    public function __construct() {
-        $this->userController = new UserController();
-    }
-
+class LoginForm extends Component
+{
     public const VALID_PROVIDERS = ['google', 'apple'];
+
     public bool $showLogin = true;
+
     public bool $showRegister = false;
 
     // Toggles between the login and register forms
-    public function toggleForm(): void {
-        $this->showLogin = !$this->showLogin;
-        $this->showRegister = !$this->showRegister;
+    public function toggleForm(): void
+    {
+        $this->showLogin = ! $this->showLogin;
+        $this->showRegister = ! $this->showRegister;
     }
 
-    public function render() {
+    public function render(): View
+    {
         return view('livewire.home.login-form');
     }
 
@@ -55,31 +54,40 @@ class LoginForm extends Component {
     #[Rule(['required', 'string', 'min:8'])]
     public string $registerPasswordConfirm = '';
 
-    public function login() {
-        $this->validate();
+    public function login(): ?RedirectResponse
+    {
+        $this->validateOnly('email');
+        $this->validateOnly('password');
 
-        if ($this->userController->loginWithoutRedirect($this->email, $this->password, $this->remember)) {
-            $this->dispatch('notification', ["message" => __("messages.action.login_success"), "type" => 'success']);
-            return redirect()->intended('home');
+        if (app(LoginAttemptService::class)->attempt($this->email, $this->password, $this->remember, request()->ip())) {
+            session()->regenerate();
+            $this->dispatch('notification', ['message' => __('messages.action.login_success'), 'type' => 'success']);
+
+            return redirect()->intended(route('dashboard'));
         }
 
-        $this->addError('loginError', __("messages.form_messages.wrongcredentials"));
+        $this->addError('loginError', __('messages.form_messages.wrongcredentials'));
+
+        return null;
     }
 
-    public function register() {
+    public function register(): ?RedirectResponse
+    {
         $this->validateOnly('registerName');
         $this->validateOnly('registerEmail');
         $this->validateOnly('registerPassword');
         $this->validateOnly('registerPasswordConfirm');
 
         if ($this->registerPassword !== $this->registerPasswordConfirm) {
-            $this->addError('registerPasswordConfirm', __("messages.auth.password_mismatch"));
-            return;
+            $this->addError('registerPasswordConfirm', __('messages.auth.password_mismatch'));
+
+            return null;
         }
 
         if (User::where('email', $this->registerEmail)->exists()) {
-            $this->addError('registerEmail', __("messages.auth.email_taken"));
-            return;
+            $this->addError('registerEmail', __('messages.auth.email_taken'));
+
+            return null;
         }
 
         $user = User::create([
@@ -90,16 +98,14 @@ class LoginForm extends Component {
 
         Auth::login($user);
 
-        $this->dispatch('notification', ["message" => __("messages.auth.register_success"), "type" => 'success']);
+        $this->dispatch('notification', ['message' => __('messages.auth.register_success'), 'type' => 'success']);
 
-        return redirect()->route('dashboard');
+        return redirect()->intended(route('dashboard'));
     }
 
     // Checks if the given provider is valid
-    public function isValidProvider(?string $provider = null): bool {
-        if (in_array(strtolower($provider), self::VALID_PROVIDERS))
-            return true;
-
-        return false;
+    public function isValidProvider(?string $provider = null): bool
+    {
+        return is_string($provider) && in_array(strtolower($provider), self::VALID_PROVIDERS, true);
     }
 }

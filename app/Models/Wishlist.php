@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
+use Database\Factories\WishlistFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Gate;
 
-class Wishlist extends Model {
-    /** @use HasFactory<\Database\Factories\WishlistFactory> */
+class Wishlist extends Model
+{
+    /** @use HasFactory<WishlistFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -22,47 +25,53 @@ class Wishlist extends Model {
         'is_archived',
     ];
 
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
             'is_archived' => 'boolean',
         ];
     }
 
     /** @return BelongsTo<User, $this> */
-    public function user(): BelongsTo {
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
 
     /** @return BelongsTo<Family, $this> */
-    public function family(): BelongsTo {
+    public function family(): BelongsTo
+    {
         return $this->belongsTo(Family::class);
     }
 
     /** @return HasMany<WishlistItem, $this> */
-    public function items(): HasMany {
+    public function items(): HasMany
+    {
         return $this->hasMany(WishlistItem::class);
     }
 
     /** @return HasMany<WishlistShare, $this> */
-    public function shares(): HasMany {
+    public function shares(): HasMany
+    {
         return $this->hasMany(WishlistShare::class);
     }
 
     /**
      * Determine if the given user can see this wishlist.
      */
-    public function isVisibleTo(User $user): bool {
+    public function isVisibleTo(User $user): bool
+    {
         // Owner can always see their own wishlist
         if ($this->user_id === $user->id) {
             return true;
         }
 
-        // Family privacy: user must share a family with the owner
+        // Archived membership must not grant ongoing access to private lists.
         if ($this->privacy === 'FAMILY') {
-            $ownerFamilyIds = FamilyMember::where('user_id', $this->user_id)->pluck('family_id');
-            $userFamilyIds = FamilyMember::where('user_id', $user->id)->pluck('family_id');
-
-            return $ownerFamilyIds->intersect($userFamilyIds)->isNotEmpty();
+            return FamilyMember::where('user_id', $user->id)
+                ->whereHas('family', fn (Builder $query) => $query->where('is_archived', false))
+                ->whereIn('family_id', FamilyMember::select('family_id')->where('user_id', $this->user_id))
+                ->exists();
         }
 
         // Specific privacy: user must be in the shares list
@@ -76,15 +85,14 @@ class Wishlist extends Model {
 
     /**
      * Return items query scoped for the given user.
-     * Owners see all items; non-owners see items but bought_by info is hidden at the view layer.
+     * Buyer identity is omitted from the query, not merely hidden in Blade.
      */
     /** @return Builder<WishlistItem> */
-    public function visibleItemsFor(User $user): Builder {
-        if ($this->user_id === $user->id) {
-            return $this->items()->getQuery();
-        }
+    public function visibleItemsFor(User $user): Builder
+    {
+        Gate::forUser($user)->authorize('view', $this);
 
-        // Non-owners get all items but without bought_by_user_id exposed
+        // Never disclose gift-giver identities in a listing payload.
         return $this->items()
             ->select([
                 'id',

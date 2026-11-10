@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\AmigoSecreto\ExecuteDraw;
 use App\Models\AmigoSecretoDraw;
 use App\Models\AmigoSecretoEvent;
 use App\Models\AmigoSecretoExclusion;
@@ -9,6 +10,7 @@ use Livewire\Livewire;
 
 describe('amigo secreto draw', function () {
     it('can execute draw with valid participants', function () {
+        app()->setLocale('en');
         $organizer = User::factory()->create();
         $users = User::factory()->count(3)->create();
 
@@ -35,7 +37,7 @@ describe('amigo secreto draw', function () {
         }
 
         Livewire::actingAs($organizer)
-            ->test(\App\Livewire\AmigoSecreto\ExecuteDraw::class, ['event' => $event])
+            ->test(ExecuteDraw::class, ['event' => $event])
             ->call('executeDraw')
             ->assertDispatched('notification');
 
@@ -46,6 +48,7 @@ describe('amigo secreto draw', function () {
         expect($drawCount)->toBe(4); // organizer + 3 users
 
         // Verify no one drew themselves
+        expect(__('messages.amigo_secreto.draw_complete'))->toBe('Draw completed! Participants can view their assignments.');
         $draws = AmigoSecretoDraw::where('event_id', $event->id)->get();
         foreach ($draws as $draw) {
             expect($draw->drawer_user_id)->not->toBe($draw->target_user_id);
@@ -81,7 +84,7 @@ describe('amigo secreto draw', function () {
         ]);
 
         Livewire::actingAs($organizer)
-            ->test(\App\Livewire\AmigoSecreto\ExecuteDraw::class, ['event' => $event])
+            ->test(ExecuteDraw::class, ['event' => $event])
             ->call('executeDraw')
             ->assertDispatched('notification');
 
@@ -126,7 +129,7 @@ describe('amigo secreto draw', function () {
         ]);
 
         Livewire::actingAs($organizer)
-            ->test(\App\Livewire\AmigoSecreto\ExecuteDraw::class, ['event' => $event])
+            ->test(ExecuteDraw::class, ['event' => $event])
             ->call('executeDraw')
             ->assertDispatched('notification');
 
@@ -137,13 +140,13 @@ describe('amigo secreto draw', function () {
         expect($drawCount)->toBe(0);
     });
 
-    it('cannot draw twice', function () {
+    it('cannot draw after a final event status', function (string $status) {
         $organizer = User::factory()->create();
         $users = User::factory()->count(2)->create();
 
         $event = AmigoSecretoEvent::factory()->create([
             'organizer_id' => $organizer->id,
-            'status' => 'DRAWS_COMPLETE',
+            'status' => $status,
         ]);
 
         AmigoSecretoParticipant::create([
@@ -163,12 +166,13 @@ describe('amigo secreto draw', function () {
         }
 
         Livewire::actingAs($organizer)
-            ->test(\App\Livewire\AmigoSecreto\ExecuteDraw::class, ['event' => $event])
+            ->test(ExecuteDraw::class, ['event' => $event])
             ->call('executeDraw')
             ->assertDispatched('notification');
 
-        // No draws should have been created since status was already DRAWS_COMPLETE
+        // Final event states cannot be moved backwards or draw again.
         $drawCount = AmigoSecretoDraw::where('event_id', $event->id)->count();
         expect($drawCount)->toBe(0);
-    });
+        expect($event->fresh()->status)->toBe($status);
+    })->with(['DRAWS_COMPLETE', 'REVEALED', 'COMPLETED']);
 });

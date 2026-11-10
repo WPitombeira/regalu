@@ -1,8 +1,13 @@
 <?php
 
+use App\Livewire\Family\CreateFamily;
+use App\Livewire\Family\FamilyRoster;
+use App\Livewire\Family\FamilySettings;
+use App\Livewire\Family\JoinFamily;
 use App\Models\Family;
 use App\Models\FamilyMember;
 use App\Models\User;
+use Livewire\Livewire;
 
 describe('family management', function () {
     it('can create a family', function () {
@@ -12,8 +17,8 @@ describe('family management', function () {
             ->get(route('families.create'))
             ->assertStatus(200);
 
-        \Livewire\Livewire::actingAs($user)
-            ->test(\App\Livewire\Family\CreateFamily::class)
+        Livewire::actingAs($user)
+            ->test(CreateFamily::class)
             ->set('name', 'Test Family')
             ->set('description', 'A test family description')
             ->call('create')
@@ -29,8 +34,8 @@ describe('family management', function () {
     it('creator becomes admin', function () {
         $user = User::factory()->create();
 
-        \Livewire\Livewire::actingAs($user)
-            ->test(\App\Livewire\Family\CreateFamily::class)
+        Livewire::actingAs($user)
+            ->test(CreateFamily::class)
             ->set('name', 'Admin Family')
             ->call('create');
 
@@ -49,8 +54,8 @@ describe('family management', function () {
 
         $joiner = User::factory()->create();
 
-        \Livewire\Livewire::actingAs($joiner)
-            ->test(\App\Livewire\Family\JoinFamily::class)
+        Livewire::actingAs($joiner)
+            ->test(JoinFamily::class)
             ->set('inviteCode', $family->invite_code)
             ->call('join')
             ->assertRedirect();
@@ -65,8 +70,8 @@ describe('family management', function () {
     it('cannot join with invalid invite code', function () {
         $user = User::factory()->create();
 
-        \Livewire\Livewire::actingAs($user)
-            ->test(\App\Livewire\Family\JoinFamily::class)
+        Livewire::actingAs($user)
+            ->test(JoinFamily::class)
             ->set('inviteCode', 'INVALIDCODE12')
             ->call('join')
             ->assertHasErrors(['inviteCode']);
@@ -85,8 +90,8 @@ describe('family management', function () {
             'joined_at' => now(),
         ]);
 
-        \Livewire\Livewire::actingAs($joiner)
-            ->test(\App\Livewire\Family\JoinFamily::class)
+        Livewire::actingAs($joiner)
+            ->test(JoinFamily::class)
             ->set('inviteCode', $family->invite_code)
             ->call('join')
             ->assertHasErrors(['inviteCode']);
@@ -111,8 +116,8 @@ describe('family management', function () {
             'joined_at' => now(),
         ]);
 
-        \Livewire\Livewire::actingAs($admin)
-            ->test(\App\Livewire\Family\FamilyRoster::class, ['family' => $family])
+        Livewire::actingAs($admin)
+            ->test(FamilyRoster::class, ['family' => $family])
             ->call('removeMember', $membership->id);
 
         $this->assertDatabaseMissing('family_members', [
@@ -131,8 +136,8 @@ describe('family management', function () {
             'joined_at' => now(),
         ]);
 
-        \Livewire\Livewire::actingAs($admin)
-            ->test(\App\Livewire\Family\FamilySettings::class, ['family' => $family])
+        Livewire::actingAs($admin)
+            ->test(FamilySettings::class, ['family' => $family])
             ->call('archive');
 
         $this->assertDatabaseHas('families', [

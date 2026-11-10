@@ -58,10 +58,11 @@
                     @endif
 
                     <p class="text-sm text-gray-500">
-                        {{ $event->participants_count ?? $event->participants->count() }} {{ __("messages.amigo_secreto.participants") }}
+                        {{ $event->participants_count }} {{ __("messages.amigo_secreto.participants") }}
                     </p>
                 </a>
             @endforeach
         </div>
     @endif
+    <div class="mt-6">{{ $events->links() }}</div>
 </div>

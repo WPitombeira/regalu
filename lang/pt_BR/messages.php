@@ -69,10 +69,14 @@ return [
         'wrongcredentials' => 'Email ou Senha incorretos ou não cadastrados',
         'success' => 'Login efetuado com sucesso',
     ],
+    'amigo_secreto' => [
+        'invite_queued' => 'Convite na fila de envio.',
+        'draw_complete' => 'Sorteio concluído! Os participantes podem consultar quem tiraram.',
+    ],
     'errors' => [
         '404' => [
             'title' => 'Página não encontrada',
             'description' => 'A página que você está procurando não foi encontrada.',
         ],
-    ]
+    ],
 ];

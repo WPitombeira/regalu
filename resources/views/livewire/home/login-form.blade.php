@@ -44,7 +44,7 @@
                                         <label for="remember" class="text-gray-500 dark:text-gray-300">{{ __("messages.login.remember_me") }}</label>
                                     </div>
                                 </div>
-                                <a href="#"
+                                <a href="{{ route('password.request') }}"
                                     class="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500">{{ __("messages.login.forgot_password") }}</a>
                             </div>
                             <button type="submit"
@@ -91,7 +91,7 @@
                         <form class="space-y-4 md:space-y-6" wire:submit="register">
                             <div>
                                 <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">{{ __("messages.login.form_fields.name") }}</label>
-                                <input type="text" wire:model="name" placeholder="{{ __("messages.login.form_fields.name_placeholder") }}" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                <input type="text" wire:model="registerName" placeholder="{{ __("messages.login.form_fields.name_placeholder") }}" class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                             </div>
                             <div>
                                 <label class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">{{ __("messages.login.form_fields.email") }}</label>

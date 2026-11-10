@@ -1,16 +1,26 @@
 <?php
 
-use App\Models\User;
-use Livewire\Livewire;
 use App\Livewire\Profile\Settings;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Livewire\Livewire;
 
 describe('profile settings', function () {
+    it('rejects a component refresh after logout', function () {
+        $component = Livewire::actingAs(User::factory()->create())->test(Settings::class);
+        Auth::logout();
+
+        $component->call('$refresh')->assertUnauthorized();
+    });
+
     it('can view settings page', function () {
         $user = User::factory()->create();
 
         $this->actingAs($user)
             ->get(route('settings'))
-            ->assertOk();
+            ->assertOk()
+            ->assertSee('wire:submit="updatePassword"', false);
     });
 
     it('can update name and phone', function () {
@@ -50,6 +60,7 @@ describe('profile settings', function () {
         $user = User::factory()->create([
             'password' => 'correctpassword',
         ]);
+        $oldRememberToken = $user->remember_token;
 
         Livewire::actingAs($user)
             ->test(Settings::class)
@@ -59,5 +70,9 @@ describe('profile settings', function () {
             ->call('updatePassword')
             ->assertHasNoErrors()
             ->assertDispatched('notification');
+
+        $user->refresh();
+        expect(Hash::check('newpassword123', $user->password))->toBeTrue();
+        expect($user->remember_token)->not->toBe($oldRememberToken);
     });
 });
