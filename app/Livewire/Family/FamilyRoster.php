@@ -3,21 +3,54 @@
 namespace App\Livewire\Family;
 
 use App\Models\Family;
+use App\Models\FamilyInvitation;
 use App\Models\FamilyMember;
+use App\Models\User;
+use App\Services\FamilyInvitationService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class FamilyRoster extends Component
 {
+    use WithPagination;
+
     public Family $family;
+
+    public string $inviteEmail = '';
 
     public function mount(Family $family): void
     {
         $this->family = $family;
         $this->family = $this->authorizedFamily();
+    }
+
+    public function inviteByEmail(): void
+    {
+        $family = $this->authorizedFamily('update');
+        $this->inviteEmail = strtolower(trim($this->inviteEmail));
+        $this->validate(['inviteEmail' => ['required', 'email', 'max:255']]);
+
+        $sender = Auth::user();
+        abort_unless($sender instanceof User, 403);
+        app(FamilyInvitationService::class)->invite($family, $sender, $this->inviteEmail);
+
+        $this->inviteEmail = '';
+        $this->resetPage('invitationsPage');
+        $this->dispatch('notification', ['message' => __('family_invitations.sent'), 'type' => 'success']);
+    }
+
+    public function cancelInvitation(int $invitationId): void
+    {
+        $family = $this->authorizedFamily('update');
+        $sender = Auth::user();
+        abort_unless($sender instanceof User, 403);
+        if (app(FamilyInvitationService::class)->cancel($family, $sender, $invitationId)) {
+            $this->dispatch('notification', ['message' => __('family_invitations.status.cancelled'), 'type' => 'success']);
+        }
     }
 
     /** @return Collection<int, FamilyMember> */
@@ -63,6 +96,10 @@ class FamilyRoster extends Component
 
         return view('livewire.family.family-roster', [
             'members' => $this->getMembers(),
+            'invitations' => Gate::allows('manage', $this->family)
+                ? FamilyInvitation::where('family_id', $this->family->id)->latest('updated_at')->latest('id')
+                    ->paginate(10, ['id', 'email', 'status', 'expires_at'], 'invitationsPage')
+                : null,
         ]);
     }
 

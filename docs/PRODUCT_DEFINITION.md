@@ -92,6 +92,8 @@ A family-oriented platform for wishlists and **Amigo Secreto** (Secret Santa). B
 
 ### B. Family Management
 
+Implementation contract for email invitations, recipient decisions and cancellation/reissue: [FAMILY_EMAIL_INVITATIONS.md](FAMILY_EMAIL_INVITATIONS.md). QR invitations remain a separate follow-up.
+
 - Create family with shareable invite code + QR
 - Invite members via email link
 - Accept/reject invitations

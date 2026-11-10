@@ -1,0 +1,32 @@
+<?php
+
+return [
+    'heading' => 'Convite para a família',
+    'admin_heading' => 'Convites por e-mail',
+    'email' => 'Endereço de e-mail',
+    'send' => 'Enviar convite',
+    'sent' => 'Convite adicionado à fila de envio por e-mail.',
+    'cancel' => 'Cancelar convite',
+    'cancel_confirm' => 'Cancelar este convite? O link enviado por e-mail não permitirá mais a entrada.',
+    'help' => 'Convide alguém por e-mail. A pessoa precisa aceitar antes de entrar. Os links expiram em sete dias; você pode cancelar um convite pendente e enviar outro.',
+    'empty' => 'Nenhum convite por e-mail ainda.',
+    'expires' => 'Expira em :date',
+    'expired' => 'Expirado',
+    'mail_subject' => 'Você recebeu um convite para participar de :family!',
+    'mail_body' => 'Um administrador convidou você para uma família no :app. Entre ou cadastre-se usando este e-mail e escolha aceitar ou recusar. O link expira sete dias após a criação do convite. Abri-lo não adiciona você à família.',
+    'mail_ignore' => 'Se você não esperava este convite, pode ignorar este e-mail. Não encaminhe este link pessoal de convite.',
+    'review' => 'Revisar convite',
+    'summary' => 'Você recebeu um convite para participar de :family.',
+    'accept' => 'Aceitar convite',
+    'decline' => 'Recusar convite',
+    'unavailable' => 'Este convite não está disponível. Entre com o e-mail convidado ou peça um novo convite a um administrador da família.',
+    'back' => 'Voltar para minhas famílias',
+    'already_invited' => 'Este e-mail já foi convidado ou pertence a um membro da família.',
+    'rate_limited' => 'Muitas tentativas de convite. Tente novamente em uma hora.',
+    'status' => [
+        'pending' => 'Pendente',
+        'accepted' => 'Convite aceito.',
+        'declined' => 'Convite recusado.',
+        'cancelled' => 'Convite cancelado.',
+    ],
+];

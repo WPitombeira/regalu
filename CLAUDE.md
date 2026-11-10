@@ -66,6 +66,7 @@ The app uses a hybrid controller + Livewire approach:
 - `User` — standard auth model with `oauth_tokens` field (nullable, for future OAuth)
 - `Newsletter` — email subscriptions with `active` flag
 - `Family`, `FamilyMember` — groups and memberships/roles
+- `FamilyInvitation` — recipient-bound email invitations, separate from memberships; see `docs/FAMILY_EMAIL_INVITATIONS.md` for lifecycle, final-write authorization and delivery limits
 - `Wishlist`, `WishlistItem`, `WishlistShare` — lists, gifts, and per-user sharing
 - `AmigoSecretoEvent`, `AmigoSecretoParticipant`, `AmigoSecretoExclusion`, `AmigoSecretoDraw` — event/draw lifecycle
 - `Notification` — persistent user notifications, separate from toast events

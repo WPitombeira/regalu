@@ -21,7 +21,7 @@ class FamilyInviteMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "You've been invited to join {$this->familyName}!",
+            subject: __('family_invitations.mail_subject', ['family' => $this->familyName]),
         );
     }
 
