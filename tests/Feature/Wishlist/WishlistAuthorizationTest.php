@@ -52,10 +52,14 @@ it('does not disclose buyer identity in owner item projections', function () {
 it('atomically keeps the first buyer when a stale second model tries to reserve the same gift', function () {
     $firstBuyer = User::factory()->create();
     $secondBuyer = User::factory()->create();
-    $item = WishlistItem::factory()->create(['status' => 'AVAILABLE']);
+    $wishlist = Wishlist::factory()->create(['privacy' => 'SPECIFIC']);
+    foreach ([$firstBuyer, $secondBuyer] as $buyer) {
+        WishlistShare::create(['wishlist_id' => $wishlist->id, 'shared_with_user_id' => $buyer->id, 'access_level' => 'VIEW']);
+    }
+    $item = WishlistItem::factory()->create(['wishlist_id' => $wishlist->id, 'status' => 'AVAILABLE']);
     $stale = $item->fresh();
-    $item->markAsBought($firstBuyer);
-    $stale->markAsBought($secondBuyer);
+    expect($item->markAsBought($firstBuyer))->toBeTrue();
+    expect($stale->markAsBought($secondBuyer))->toBeFalse();
     expect($item->fresh()->bought_by_user_id)->toBe($firstBuyer->id);
 });
 

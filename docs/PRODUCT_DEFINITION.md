@@ -107,6 +107,8 @@ A family-oriented platform for wishlists and **Amigo Secreto** (Secret Santa). B
 - Mark items as BOUGHT (hidden from wishlist owner, visible to others)
 - Email notification when item marked bought
 
+The ordinary wishlist purchase implementation, qualification, and delivery limits are documented in [WISHLIST_PURCHASE_FLOW.md](WISHLIST_PURCHASE_FLOW.md). Secret Santa assignment purchases remain a separate authorization path.
+
 ### D. Amigo Secreto
 
 - Create event: name, budget range, date, type

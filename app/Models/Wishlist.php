@@ -85,15 +85,15 @@ class Wishlist extends Model
 
     /**
      * Return items query scoped for the given user.
-     * Buyer identity is omitted from the query, not merely hidden in Blade.
+     * Purchase details are omitted from the query, not merely hidden in Blade.
      */
     /** @return Builder<WishlistItem> */
     public function visibleItemsFor(User $user): Builder
     {
         Gate::forUser($user)->authorize('view', $this);
 
-        // Never disclose gift-giver identities in a listing payload.
-        return $this->items()
+        // Owners receive no per-item purchase state, including its update timestamp.
+        $items = $this->items()
             ->select([
                 'id',
                 'wishlist_id',
@@ -105,12 +105,14 @@ class Wishlist extends Model
                 'price_max',
                 'category',
                 'priority',
-                'status',
-                'bought_at',
                 'notes',
                 'created_at',
-                'updated_at',
-            ])
-            ->getQuery();
+            ]);
+
+        if ($this->user_id !== $user->id) {
+            $items->addSelect('status');
+        }
+
+        return $items->getQuery();
     }
 }
