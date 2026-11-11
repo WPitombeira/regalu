@@ -25,10 +25,14 @@ class AmigoSecretoEvent extends Model
         'budget_max',
         'event_date',
         'reveal_date',
+        'recipient_visibility',
         'status',
         'is_archived',
     ];
 
+    /**
+     * @return array{budget_min: 'decimal:2', budget_max: 'decimal:2', event_date: 'date', reveal_date: 'date', is_archived: 'boolean'}
+     */
     protected function casts(): array
     {
         return [

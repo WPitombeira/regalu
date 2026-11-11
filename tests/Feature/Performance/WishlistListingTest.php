@@ -71,7 +71,7 @@ it('checks family visibility only once per wishlist detail rerender', function (
 it('bounds item listings without losing pages or exposing buyer identifiers', function () {
     $owner = User::factory()->create();
     $wishlist = Wishlist::factory()->create(['user_id' => $owner->id]);
-    $items = WishlistItem::factory()->count(23)->create(['wishlist_id' => $wishlist->id]);
+    $items = WishlistItem::factory()->count(23)->create(['wishlist_id' => $wishlist->id, 'priority' => 'MEDIUM', 'created_at' => now()]);
     Livewire::actingAs($owner)->test(WishlistDetail::class, ['wishlist' => $wishlist])
         ->assertViewHas('items', fn ($page) => $page->count() === 20 && $page->first()->is($items->last()))
         ->call('nextPage')

@@ -60,6 +60,7 @@ Route::group(['middleware' => ['auth', 'auth.session']], function () {
         Route::get('/{event}/participants', [AmigoSecretoController::class, 'participants'])->name('amigo-secreto.participants');
         Route::get('/{event}/exclusions', [AmigoSecretoController::class, 'exclusions'])->name('amigo-secreto.exclusions');
         Route::get('/{event}/draw', [AmigoSecretoController::class, 'drawPage'])->name('amigo-secreto.draw');
+        Route::get('/{event}/assignment', [AmigoSecretoController::class, 'assignment'])->name('amigo-secreto.assignment');
     });
     // Shareable links retain their URLs, but require a current authenticated session.
     Route::get('/w/{wishlist}', [WishlistController::class, 'show'])->name('wishlists.public');

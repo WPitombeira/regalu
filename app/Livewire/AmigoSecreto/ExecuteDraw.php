@@ -2,8 +2,10 @@
 
 namespace App\Livewire\AmigoSecreto;
 
+use App\Jobs\SendAssignment;
 use App\Models\AmigoSecretoDraw;
 use App\Models\AmigoSecretoEvent;
+use App\Services\AssignmentAccess;
 use App\Services\DrawAlgorithmService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
@@ -53,12 +55,13 @@ class ExecuteDraw extends Component
 
             DB::transaction(function () use ($results, $event) {
                 foreach ($results as $drawerId => $targetId) {
-                    AmigoSecretoDraw::create([
+                    $draw = AmigoSecretoDraw::create([
                         'event_id' => $event->id,
                         'drawer_user_id' => $drawerId,
                         'target_user_id' => $targetId,
                         'draw_date' => now(),
                     ]);
+                    SendAssignment::dispatch($draw->id)->afterCommit();
                 }
 
                 $event->update(['status' => 'DRAWS_COMPLETE']);
@@ -75,16 +78,10 @@ class ExecuteDraw extends Component
     public function render(): View
     {
         $this->event = $this->authorizedEvent('view');
-        $draws = $this->event->draws()
-            ->where('drawer_user_id', Auth::id())
-            ->with(['drawer', 'target'])
-            ->get();
         $isOrganizer = $this->event->organizer_id === Auth::id();
-
-        $myDraw = $draws->first();
+        $myDraw = app(AssignmentAccess::class)->summaryFor($this->event, Auth::user());
 
         return view('livewire.amigo-secreto.execute-draw', [
-            'draws' => $draws,
             'isOrganizer' => $isOrganizer,
             'myDraw' => $myDraw,
         ]);
