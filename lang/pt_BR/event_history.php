@@ -19,7 +19,7 @@ return [
     'complete_confirm' => 'Concluir este evento? O acesso às listas e às compras pelo evento será encerrado. Esta ação não pode ser desfeita.',
     'completed_notice' => 'Evento concluído.',
     'archive' => 'Arquivar evento',
-    'archive_confirm' => 'Arquivar este evento? Apenas o histórico somente para leitura continuará acessível. Esta ação não pode ser desfeita.',
+    'archive_confirm' => 'Arquivar este evento? Ele irá para o histórico e o acesso ao sorteio será encerrado. Esta ação não pode ser desfeita.',
     'closed' => 'Este evento foi concluído. O acesso às listas e às compras pelo evento está encerrado.',
     'consent_closed' => 'Não é possível compartilhar uma nova lista após a conclusão. Você ainda pode remover seu consentimento salvo.',
     'revoke' => 'Remover consentimento da lista',

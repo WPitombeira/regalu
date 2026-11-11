@@ -19,7 +19,7 @@ return [
     'complete_confirm' => 'Complete this event? Event wishlist access and purchases will end. This cannot be undone.',
     'completed_notice' => 'Event completed.',
     'archive' => 'Archive event',
-    'archive_confirm' => 'Archive this event? Only its read-only history will remain accessible. This cannot be undone.',
+    'archive_confirm' => 'Archive this event? It will move to history and assignment access will close. This cannot be undone.',
     'closed' => 'This event is complete. Event wishlist access and purchases are closed.',
     'consent_closed' => 'You cannot share a new wishlist after completion. You can still remove your saved consent.',
     'revoke' => 'Remove wishlist consent',
