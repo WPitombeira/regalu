@@ -1,0 +1,32 @@
+<?php
+
+return [
+    'heading' => 'Family invitation',
+    'admin_heading' => 'Email invitations',
+    'email' => 'Email address',
+    'send' => 'Send invitation',
+    'sent' => 'Invitation queued for email delivery.',
+    'cancel' => 'Cancel invitation',
+    'cancel_confirm' => 'Cancel this invitation? Its email link will no longer allow joining.',
+    'help' => 'Invite someone by email. They must accept before joining. Links expire after seven days; you can cancel a pending invitation and send a new one.',
+    'empty' => 'No email invitations yet.',
+    'expires' => 'Expires :date',
+    'expired' => 'Expired',
+    'mail_subject' => 'You have been invited to join :family!',
+    'mail_body' => 'An admin invited you to a family on :app. Sign in or register using this email address, then choose accept or decline. The link expires seven days after the invitation was created. Opening it does not join the family.',
+    'mail_ignore' => 'If you did not expect this invitation, you can safely ignore this email. Do not forward this personal invitation link.',
+    'review' => 'Review invitation',
+    'summary' => 'You have been invited to join :family.',
+    'accept' => 'Accept invitation',
+    'decline' => 'Decline invitation',
+    'unavailable' => 'This invitation is unavailable. Sign in with the invited email address or ask a family admin for a new invitation.',
+    'back' => 'Back to my families',
+    'already_invited' => 'This email is already invited or belongs to a family member.',
+    'rate_limited' => 'Too many invitation attempts. Please try again in an hour.',
+    'status' => [
+        'pending' => 'Pending',
+        'accepted' => 'Invitation accepted.',
+        'declined' => 'Invitation declined.',
+        'cancelled' => 'Invitation cancelled.',
+    ],
+];

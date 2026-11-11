@@ -3,6 +3,7 @@
 use App\Http\Controllers\AmigoSecretoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FamilyController;
+use App\Http\Controllers\FamilyInvitationController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\UserController;
@@ -31,6 +32,9 @@ Route::group(['middleware' => ['auth', 'auth.session']], function () {
     })->name('notifications.index');
 
     // Family routes
+    Route::get('/family-invitations/{invitation}', [FamilyInvitationController::class, 'show'])->whereNumber('invitation')->name('family-invitations.show');
+    Route::post('/family-invitations/{invitation}', [FamilyInvitationController::class, 'respond'])->whereNumber('invitation')->name('family-invitations.respond');
+
     Route::prefix('families')->group(function () {
         Route::get('/', [FamilyController::class, 'index'])->name('families.index');
         Route::get('/create', [FamilyController::class, 'create'])->name('families.create');
