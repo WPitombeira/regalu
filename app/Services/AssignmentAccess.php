@@ -32,6 +32,10 @@ class AssignmentAccess
     {
         $draw = $this->drawFor($event, $buyer);
         abort_if($draw === null, 404);
+        if ($event->status === 'COMPLETED') {
+            return null;
+        }
+
         $wishlistId = $event->participants()->where('user_id', $draw->target_user_id)
             ->where('status', 'ACCEPTED')->value('wishlist_id');
 
@@ -58,7 +62,7 @@ class AssignmentAccess
                     ->where('assignment.drawer_user_id', $buyer->id)
                     ->where('assignment.target_user_id', '!=', $buyer->id)
                     ->where('event.is_archived', false)
-                    ->whereIn('event.status', ['DRAWS_COMPLETE', 'REVEALED', 'COMPLETED'])
+                    ->whereIn('event.status', ['DRAWS_COMPLETE', 'REVEALED'])
                     ->where('buyer.status', 'ACCEPTED')
                     ->where('recipient.status', 'ACCEPTED')
                     ->where('wishlist.is_archived', false);
