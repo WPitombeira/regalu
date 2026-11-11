@@ -20,6 +20,11 @@ class AmigoSecretoEventPolicy
                 ->exists();
     }
 
+    public function viewHistory(User $user, AmigoSecretoEvent $event): bool
+    {
+        return AmigoSecretoEvent::historyFor($user)->whereKey($event->id)->exists();
+    }
+
     public function manage(User $user, AmigoSecretoEvent $event): bool
     {
         return ! $event->is_archived && $this->isOrganizer($user, $event);

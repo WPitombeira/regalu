@@ -1,5 +1,5 @@
 <div>
-    <div class="flex items-center justify-between mb-8">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <h1 class="text-3xl font-bold text-gray-100">{{ __("messages.amigo_secreto.events") }}</h1>
         <div class="flex gap-3">
             <a href="{{ route('amigo-secreto.join') }}"
@@ -13,18 +13,28 @@
         </div>
     </div>
 
+    <nav aria-label="{{ __('event_history.filter') }}" class="flex flex-wrap gap-3 mb-6">
+        @foreach (['active', 'past'] as $option)
+            <button type="button" wire:click="$set('period', '{{ $option }}')" wire:loading.attr="disabled"
+                    aria-pressed="{{ $period === $option ? 'true' : 'false' }}"
+                    class="px-4 py-2 rounded-lg text-sm font-medium {{ $period === $option ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700' }}">
+                {{ __('event_history.'.$option) }}
+            </button>
+        @endforeach
+    </nav>
+
     @if ($events->isEmpty())
         <div class="text-center py-16">
             <svg class="mx-auto h-16 w-16 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
             </svg>
-            <h3 class="mt-4 text-lg font-medium text-gray-300">No events yet</h3>
-            <p class="mt-2 text-gray-500">Create your first Secret Santa event or join one with a code.</p>
+            <h3 class="mt-4 text-lg font-medium text-gray-300">{{ __('event_history.empty_'.$period) }}</h3>
+            <p class="mt-2 text-gray-500">{{ __('event_history.empty_'.$period.'_help') }}</p>
         </div>
     @else
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach ($events as $event)
-                <a href="{{ route('amigo-secreto.show', $event) }}"
+                <a href="{{ route($period === 'past' ? 'amigo-secreto.history' : 'amigo-secreto.show', $event) }}"
                    class="block bg-gray-800 border border-gray-700 rounded-xl p-6 hover:border-blue-500 transition-colors">
                     <div class="flex items-start justify-between mb-3">
                         <h3 class="text-lg font-semibold text-gray-100 truncate">{{ $event->name }}</h3>
@@ -43,6 +53,9 @@
                     </div>
 
                     <div class="flex items-center gap-2 mb-3">
+                        @if ($event->is_archived)
+                            <span class="text-xs text-gray-400">{{ __('event_history.archived') }}</span>
+                        @endif
                         <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-gray-700 text-gray-300">
                             {{ $event->event_type }}
                         </span>

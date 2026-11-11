@@ -24,6 +24,12 @@ class AmigoSecretoController extends Controller
         return view('livewire.amigo-secreto.detail', ['event' => $event]);
     }
 
+    #[Authorize('viewHistory', 'event')]
+    public function history(AmigoSecretoEvent $event): View
+    {
+        return view('livewire.amigo-secreto.history', ['eventId' => $event->id]);
+    }
+
     #[Authorize('viewManagement', 'event')]
     public function participants(AmigoSecretoEvent $event): View
     {

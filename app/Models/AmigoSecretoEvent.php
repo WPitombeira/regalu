@@ -63,6 +63,23 @@ class AmigoSecretoEvent extends Model
     }
 
     /** @return Builder<static> */
+    public static function visibleTo(User $user): Builder
+    {
+        return static::query()->where(function (Builder $query) use ($user): void {
+            $query->where('organizer_id', $user->id)
+                ->orWhereHas('participants', fn (Builder $participants) => $participants
+                    ->where('user_id', $user->id)->where('status', 'ACCEPTED'));
+        });
+    }
+
+    /** @return Builder<static> */
+    public static function historyFor(User $user): Builder
+    {
+        return static::visibleTo($user)->where(fn (Builder $query) => $query
+            ->where('status', 'COMPLETED')->orWhere('is_archived', true));
+    }
+
+    /** @return Builder<static> */
     public static function completableBy(User $user): Builder
     {
         return static::query()->where('organizer_id', $user->id)
