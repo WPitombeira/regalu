@@ -5,6 +5,7 @@ namespace App\Livewire\AmigoSecreto;
 use App\Jobs\SendEventInvitation;
 use App\Models\AmigoSecretoEvent;
 use App\Models\AmigoSecretoParticipant;
+use App\Services\NotificationService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -47,6 +48,7 @@ class ManageParticipants extends Component
                 'invited_at' => now(),
             ]);
 
+            NotificationService::eventInvited($participant);
             SendEventInvitation::dispatch($participant->id)->afterCommit();
         });
 

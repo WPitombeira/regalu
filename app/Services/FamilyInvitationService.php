@@ -53,6 +53,7 @@ class FamilyInvitationService
                 throw ValidationException::withMessages(['inviteEmail' => __('family_invitations.already_invited')]);
             }
             $invitation = FamilyInvitation::where('family_id', $family->id)->where('email', $email)->sole();
+            NotificationService::familyInvited($invitation);
             SendFamilyInvitation::dispatch($invitation->id, $generation)->afterCommit();
         });
     }

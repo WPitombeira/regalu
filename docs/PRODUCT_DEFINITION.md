@@ -121,6 +121,10 @@ The ordinary wishlist purchase implementation, qualification, and delivery limit
 - Reveal mechanism (automatic on event date)
 - Past events archive
 
+### E. Actionable dashboard and in-app inbox
+
+Current behavior is documented in [ACTIONABLE_DASHBOARD.md](ACTIONABLE_DASHBOARD.md): active list/family shortcuts, upcoming events, protected assignment links, email-invitation reminders, and persistent generic domain notices. Email invitation confirmation remains required; notifications never grant membership or reveal gift/recipient details. Push, WhatsApp and a full activity feed remain outside this slice.
+
 ---
 
 ## 5. Proposed Data Model

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Jobs\SendWishlistPurchaseNotice;
+use App\Services\NotificationService;
 use Database\Factories\WishlistItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -56,6 +57,11 @@ class WishlistItem extends Model
      */
     public function markAsBought(User $user): bool
     {
+        return $this->getConnection()->transaction(fn (): bool => $this->purchaseWithNotice($user));
+    }
+
+    private function purchaseWithNotice(User $user): bool
+    {
         $wishlist = $this->wishlist()->first();
         if (! $wishlist) {
             return false;
@@ -101,6 +107,7 @@ class WishlistItem extends Model
         }
 
         $this->refresh();
+        NotificationService::wishlistPurchased($wishlist, $this->id);
         SendWishlistPurchaseNotice::dispatch($this->id, $wishlist->id, $wishlist->user_id)->afterCommit();
 
         return true;

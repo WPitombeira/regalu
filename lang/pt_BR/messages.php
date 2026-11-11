@@ -35,6 +35,7 @@ return [
         'dashboard' => 'Dashboard',
         'wishlists' => 'Listas de Desejos',
         'secret_santa' => 'Amigo Secreto',
+        'notifications' => 'Notificações',
         'privacy_policy' => 'Política de Privacidade',
     ],
     'footer' => [
@@ -72,6 +73,17 @@ return [
     'amigo_secreto' => [
         'invite_queued' => 'Convite na fila de envio.',
         'draw_complete' => 'Sorteio concluído! Os participantes podem consultar quem tiraram.',
+        'status_planning' => 'Planejamento',
+        'status_invites_sent' => 'Convites enviados',
+        'status_draw_pending' => 'Sorteio pendente',
+        'status_draws_complete' => 'Sorteio concluído',
+        'status_revealed' => 'Revelado',
+        'status_completed' => 'Concluído',
+    ],
+    'notifications' => [
+        'title' => 'Notificações',
+        'mark_all_read' => 'Marcar todas como lidas',
+        'no_notifications' => 'Nenhuma notificação ainda.',
     ],
     'errors' => [
         '404' => [

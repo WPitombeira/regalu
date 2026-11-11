@@ -6,6 +6,7 @@ use App\Mail\AmigoSecretoAssignmentMail;
 use App\Models\AmigoSecretoDraw;
 use App\Models\AmigoSecretoEvent;
 use App\Models\AmigoSecretoParticipant;
+use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Foundation\Bootstrap\SetRequestForConsole;
 use Illuminate\Mail\Transport\ArrayTransport;
@@ -32,6 +33,7 @@ it('queues assignments only after the draw commits and delivers privacy-safe mai
     expect(DB::table('jobs')->count())->toBe(0);
     DB::commit();
     expect(DB::table('jobs')->count())->toBe(3);
+    expect(Notification::where('kind', 'assignment_available')->count())->toBe(3);
     foreach (DB::table('jobs')->get() as $job) {
         $payload = json_decode($job->payload, true, flags: JSON_THROW_ON_ERROR);
         expect($job->queue)->toBe('mail');
@@ -74,6 +76,7 @@ it('does not publish assignment jobs when the draw transaction rolls back', func
     DB::rollBack();
     expect(DB::table('jobs')->count())->toBe(0);
     expect(AmigoSecretoDraw::count())->toBe(0);
+    expect(Notification::count())->toBe(0);
     expect($this->event->fresh()->status)->toBe('PLANNING');
 });
 
@@ -82,6 +85,7 @@ it('does not enqueue duplicate assignments for a repeated draw', function () {
     $component->call('executeDraw')->call('executeDraw');
     expect(DB::table('jobs')->count())->toBe(3);
     expect(AmigoSecretoDraw::count())->toBe(3);
+    expect(Notification::where('kind', 'assignment_available')->count())->toBe(3);
 });
 
 it('drops stale assignment deliveries after access is lost', function (string $change) {

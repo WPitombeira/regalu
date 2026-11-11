@@ -24,6 +24,8 @@ class Notification extends Model
         'related_entity_id',
         'is_read',
         'action_url',
+        'kind',
+        'deduplication_key',
     ];
 
     /**

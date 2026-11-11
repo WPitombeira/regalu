@@ -12,6 +12,22 @@ use Illuminate\Support\Facades\Gate;
 
 class AssignmentAccess
 {
+    /** @return \Illuminate\Database\Eloquent\Builder<AmigoSecretoEvent> */
+    public function activeEventsFor(User $buyer): \Illuminate\Database\Eloquent\Builder
+    {
+        return AmigoSecretoEvent::where('is_archived', false)->whereIn('status', ['DRAWS_COMPLETE', 'REVEALED'])
+            ->whereExists(function (Builder $query) use ($buyer): void {
+                $query->selectRaw('1')->from('amigo_secreto_draws as assignment')
+                    ->join('amigo_secreto_participants as buyer', 'buyer.event_id', '=', 'assignment.event_id')
+                    ->join('amigo_secreto_participants as recipient', 'recipient.event_id', '=', 'assignment.event_id')
+                    ->whereColumn('assignment.event_id', 'amigo_secreto_events.id')
+                    ->whereColumn('buyer.user_id', 'assignment.drawer_user_id')
+                    ->whereColumn('recipient.user_id', 'assignment.target_user_id')
+                    ->where('assignment.drawer_user_id', $buyer->id)->where('assignment.target_user_id', '!=', $buyer->id)
+                    ->where('buyer.status', 'ACCEPTED')->where('recipient.status', 'ACCEPTED');
+            });
+    }
+
     /** @return array{recipient_name: ?string}|null */
     public function summaryFor(AmigoSecretoEvent $event, User $buyer): ?array
     {
