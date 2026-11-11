@@ -67,7 +67,10 @@ it('explains completed assignment closure instead of promising future wishlist a
     foreach ([$buyer, $recipient] as $user) {
         AmigoSecretoParticipant::create(['event_id' => $event->id, 'user_id' => $user->id, 'status' => 'ACCEPTED']);
     }
-    AmigoSecretoDraw::create(['event_id' => $event->id, 'buyer_user_id' => $buyer->id, 'recipient_user_id' => $recipient->id]);
+    AmigoSecretoDraw::create([
+        'event_id' => $event->id, 'drawer_user_id' => $buyer->id,
+        'target_user_id' => $recipient->id, 'draw_date' => now(),
+    ]);
     $this->actingAs($buyer)->get(route('amigo-secreto.assignment', $event))->assertOk()
         ->assertSee(__('event_history.closed'))->assertDontSee(__('assignments.not_shared'));
     Livewire::actingAs($buyer)->test(EventDetail::class, ['event' => $event])
