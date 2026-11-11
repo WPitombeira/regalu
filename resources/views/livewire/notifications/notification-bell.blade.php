@@ -4,7 +4,7 @@
     x-id="['notification-panel']"
     @keydown.escape.window="if (open) { open = false; $refs.trigger.focus() }"
     @click.outside="open = false"
-    class="relative"
+    class="static sm:relative"
 >
     {{-- Bell button --}}
     <button
@@ -39,7 +39,7 @@
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100 scale-100"
         x-transition:leave-end="opacity-0 scale-95"
-        class="absolute right-0 mt-2 w-80 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50"
+        class="absolute inset-x-4 mt-2 sm:left-auto sm:right-0 sm:w-80 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50"
         style="display: none;"
     >
         {{-- Header --}}
