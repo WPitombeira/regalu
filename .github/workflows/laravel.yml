@@ -224,7 +224,8 @@ jobs:
         run: |
           python3 -m venv "$RUNNER_TEMP/regalu-browser-venv"
           "$RUNNER_TEMP/regalu-browser-venv/bin/pip" install playwright==1.65.0
-          "$RUNNER_TEMP/regalu-browser-venv/bin/playwright" install --with-deps chromium
+          # The hosted image supplies native libraries; real browser launch below verifies them.
+          "$RUNNER_TEMP/regalu-browser-venv/bin/playwright" install chromium
 
       - name: Exercise event lifecycle in English and Portuguese on desktop and mobile
         env:
