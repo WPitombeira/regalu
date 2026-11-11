@@ -47,6 +47,16 @@ class AmigoSecretoEventPolicy
             && ! in_array($event->status, ['DRAWS_COMPLETE', 'REVEALED', 'COMPLETED'], true);
     }
 
+    public function archive(User $user, AmigoSecretoEvent $event): bool
+    {
+        return $this->manage($user, $event) && $event->status === 'COMPLETED';
+    }
+
+    public function complete(User $user, AmigoSecretoEvent $event): bool
+    {
+        return AmigoSecretoEvent::completableBy($user)->whereKey($event->id)->exists();
+    }
+
     private function isOrganizer(User $user, AmigoSecretoEvent $event): bool
     {
         return $event->organizer_id === $user->id;
