@@ -84,6 +84,7 @@
         </div>
 
         {{-- Event Code --}}
+        @if ($event->status !== 'COMPLETED')
         <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 mb-8">
             <h3 class="text-sm font-medium text-gray-400 mb-2">Share this code to invite people</h3>
             <div class="flex items-center gap-3">
@@ -92,6 +93,7 @@
                 </code>
             </div>
         </div>
+        @endif
 
         <section class="bg-gray-800 border border-gray-700 rounded-xl p-6 mb-8">
             <h2 class="text-lg font-semibold text-gray-100 mb-2">{{ __('assignments.visibility') }}</h2>
@@ -118,6 +120,17 @@
 
         {{-- Assignment (if draws complete and user is participant) --}}
         @if ($isParticipant)
+            @if ($event->status === 'COMPLETED')
+                <section class="bg-gray-800 border border-gray-700 rounded-xl p-6 mb-8 space-y-3">
+                    <h2 class="text-lg font-semibold text-gray-100">{{ __('assignments.choose_wishlist') }}</h2>
+                    <p class="text-sm text-gray-400">{{ __('event_history.consent_closed') }}</p>
+                    @if ($hasWishlistConsent)
+                        <button type="button" wire:click="revokeWishlist" wire:loading.attr="disabled" class="px-4 py-2 bg-gray-700 rounded-lg text-white">{{ __('event_history.revoke') }}</button>
+                    @else
+                        <p class="text-sm text-gray-300">{{ __('assignments.no_wishlist') }}</p>
+                    @endif
+                </section>
+            @else
             <form wire:submit="saveWishlist" class="bg-gray-800 border border-gray-700 rounded-xl p-6 mb-8 space-y-3">
                 <label for="wishlist_id" class="block text-lg font-semibold text-gray-100">{{ __('assignments.choose_wishlist') }}</label>
                 <p class="text-sm text-gray-400">{{ __('assignments.consent') }}</p>
@@ -131,11 +144,30 @@
                 <p class="text-sm text-amber-300">{{ __('assignments.identity_warning') }}</p>
                 <button type="submit" wire:loading.attr="disabled" class="px-4 py-2 bg-blue-600 rounded-lg text-white">{{ __('messages.buttons.save') }}</button>
             </form>
+            @endif
         @endif
 
         @if ($myAssignment && in_array($event->status, ['DRAWS_COMPLETE', 'REVEALED', 'COMPLETED']))
             <x-amigo-secreto.assignment-summary :assignment="$myAssignment" :event="$event" />
         @endif
+
+        @if ($event->status === 'COMPLETED')
+            <section class="bg-gray-800 border border-gray-700 rounded-xl p-6 mb-8 space-y-4">
+                <p class="text-gray-300">{{ __('event_history.closed') }}</p>
+                <div class="flex flex-wrap gap-3">
+                    <a href="{{ route('amigo-secreto.history', $event) }}" class="px-4 py-2 bg-gray-700 rounded-lg text-white">{{ __('event_history.title') }}</a>
+                    @can('archive', $event)
+                        <button type="button" wire:click="archive" wire:confirm="{{ __('event_history.archive_confirm') }}" wire:loading.attr="disabled" class="px-4 py-2 bg-blue-600 rounded-lg text-white">{{ __('event_history.archive') }}</button>
+                    @endcan
+                </div>
+            </section>
+        @endif
+        @can('complete', $event)
+            <section class="bg-gray-800 border border-gray-700 rounded-xl p-6 mb-8 space-y-4">
+                <p class="text-gray-300">{{ __('event_history.complete_help') }}</p>
+                <button type="button" wire:click="complete" wire:confirm="{{ __('event_history.complete_confirm') }}" wire:loading.attr="disabled" class="px-4 py-2 bg-blue-600 rounded-lg text-white">{{ __('event_history.complete') }}</button>
+            </section>
+        @endcan
 
         {{-- Action Buttons --}}
         @if ($isOrganizer)

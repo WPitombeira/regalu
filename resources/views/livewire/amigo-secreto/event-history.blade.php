@@ -34,4 +34,7 @@
             </div>
         @endif
     </dl>
+    @if (! $event->is_archived)
+        <a href="{{ route('amigo-secreto.show', $event) }}" class="inline-flex px-4 py-2 bg-gray-700 rounded-lg text-white">{{ __('event_history.details') }}</a>
+    @endif
 </div>

@@ -43,8 +43,9 @@ class EventDetail extends Component
         Gate::authorize('update', $event);
         $this->validate();
 
-        // The conditional write also rejects a draw committed since authorization.
+        // The final write rejects ownership changes and a draw since authorization.
         $updated = AmigoSecretoEvent::query()->whereKey($event->id)
+            ->where('organizer_id', Auth::id())
             ->where('is_archived', false)
             ->whereNotIn('status', ['DRAWS_COMPLETE', 'REVEALED', 'COMPLETED'])
             ->update([
@@ -63,6 +64,7 @@ class EventDetail extends Component
         $updated = AmigoSecretoEvent::completableBy(Auth::user())->whereKey($event->id)
             ->update(['status' => 'COMPLETED']);
         abort_unless($updated === 1, 403);
+        $this->dispatch('notification', ['message' => __('event_history.completed_notice'), 'type' => 'success']);
     }
 
     public function archive(): void
@@ -73,7 +75,13 @@ class EventDetail extends Component
             ->where('organizer_id', Auth::id())->where('is_archived', false)->where('status', 'COMPLETED')
             ->update(['is_archived' => true]);
         abort_unless($updated === 1, 403);
-        $this->redirectRoute('amigo-secreto.index');
+        $this->redirectRoute('amigo-secreto.index', ['period' => 'past']);
+    }
+
+    public function revokeWishlist(): void
+    {
+        $this->wishlist_id = null;
+        $this->saveWishlist();
     }
 
     public function saveWishlist(): void
@@ -128,16 +136,17 @@ class EventDetail extends Component
 
         $isOrganizer = $this->event->organizer_id === Auth::id();
 
-        $isParticipant = $this->event->participants()
+        $participant = $this->event->participants()
             ->where('user_id', Auth::id())
             ->where('status', 'ACCEPTED')
-            ->exists();
+            ->first(['wishlist_id']);
 
         return view('livewire.amigo-secreto.event-detail', [
             'myAssignment' => $myAssignment,
             'isOrganizer' => $isOrganizer,
-            'isParticipant' => $isParticipant,
-            'ownWishlists' => Wishlist::query()->where('user_id', Auth::id())
+            'isParticipant' => $participant !== null,
+            'hasWishlistConsent' => $participant?->wishlist_id !== null,
+            'ownWishlists' => $this->event->status === 'COMPLETED' ? collect() : Wishlist::query()->where('user_id', Auth::id())
                 ->where('is_archived', false)->orderBy('name')->get(['id', 'name']),
             'statusSteps' => $this->getStatusSteps(),
         ]);
