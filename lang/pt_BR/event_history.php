@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'active' => 'Eventos atuais',
+    'past' => 'Eventos passados',
+    'filter' => 'Período dos eventos',
+    'title' => 'Histórico do evento',
+    'back' => 'Voltar aos eventos passados',
+    'archived' => 'Arquivado',
+    'privacy' => 'Este histórico somente para leitura preserva os detalhes do evento, sem convites, resultados do sorteio ou listas privadas.',
+    'accepted' => 'Participantes confirmados',
+    'undated' => 'Sem data definida',
+    'empty_active' => 'Nenhum evento atual',
+    'empty_active_help' => 'Crie um amigo secreto ou entre em um evento usando um código.',
+    'empty_past' => 'Ainda não há eventos passados',
+    'empty_past_help' => 'Eventos concluídos e arquivados que você organizou ou aceitou aparecerão aqui.',
+    'complete' => 'Concluir evento',
+    'complete_help' => 'A troca de presentes terminou? Conclua o evento para encerrar o acesso às listas e às compras.',
+    'complete_confirm' => 'Concluir este evento? O acesso às listas e às compras pelo evento será encerrado. Esta ação não pode ser desfeita.',
+    'completed_notice' => 'Evento concluído.',
+    'archive' => 'Arquivar evento',
+    'archive_confirm' => 'Arquivar este evento? Ele irá para o histórico e o acesso ao sorteio será encerrado. Esta ação não pode ser desfeita.',
+    'closed' => 'Este evento foi concluído. O acesso às listas e às compras pelo evento está encerrado.',
+    'consent_closed' => 'Não é possível compartilhar uma nova lista após a conclusão. Você ainda pode remover seu consentimento salvo.',
+    'revoke' => 'Remover consentimento da lista',
+    'details' => 'Abrir evento concluído',
+];

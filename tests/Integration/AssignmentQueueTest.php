@@ -91,6 +91,7 @@ it('drops stale assignment deliveries after access is lost', function (string $c
     $job = new SendAssignment($draw->id);
     match ($change) {
         'archived' => $this->event->update(['is_archived' => true]),
+        'completed' => $this->event->update(['status' => 'COMPLETED']),
         'deleted' => $draw->delete(),
         'buyer' => $this->event->participants()->where('user_id', $draw->drawer_user_id)->update(['status' => 'WITHDRAWN']),
         'target' => $this->event->participants()->where('user_id', $draw->target_user_id)->update(['status' => 'WITHDRAWN']),
@@ -98,7 +99,23 @@ it('drops stale assignment deliveries after access is lost', function (string $c
     };
     $job->handle();
     Mail::assertNothingSent();
-})->with(['archived', 'deleted', 'buyer', 'target', 'not-drawn']);
+})->with(['archived', 'completed', 'deleted', 'buyer', 'target', 'not-drawn']);
+
+it('drains obsolete assignment jobs without mail after event completion', function () {
+    Livewire::actingAs($this->host)->test(ExecuteDraw::class, ['event' => $this->event])->call('executeDraw');
+    expect(DB::table('jobs')->count())->toBe(3);
+    $this->event->update(['status' => 'COMPLETED']);
+
+    foreach ($this->participants as $participant) {
+        $this->artisan('queue:work', ['connection' => 'database', '--queue' => 'mail', '--once' => true])->assertSuccessful();
+    }
+
+    expect(DB::table('jobs')->count())->toBe(0);
+    expect(DB::table('failed_jobs')->count())->toBe(0);
+    $transport = Mail::mailer()->getSymfonyTransport();
+    expect($transport)->toBeInstanceOf(ArrayTransport::class);
+    expect($transport->messages())->toHaveCount(0);
+});
 
 it('resolves the current visibility rather than a serialized recipient name', function () {
     Mail::fake();

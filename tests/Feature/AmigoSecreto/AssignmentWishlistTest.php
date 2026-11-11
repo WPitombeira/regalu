@@ -81,6 +81,7 @@ it('rejects a stale purchase after event or participation access is revoked', fu
     $token = $component->viewData('items')->first()['token'];
     match ($change) {
         'event' => $this->event->update(['is_archived' => true]),
+        'completed' => $this->event->update(['status' => 'COMPLETED']),
         'buyer' => $this->buyerParticipant->update(['status' => 'WITHDRAWN']),
         'recipient' => $this->recipientParticipant->update(['status' => 'WITHDRAWN']),
         'consent' => $this->recipientParticipant->update(['wishlist_id' => null]),
@@ -93,7 +94,7 @@ it('rejects a stale purchase after event or participation access is revoked', fu
         expect($this->item->fresh()->status)->toBe('AVAILABLE');
     }
 })->with([
-    ['event', 403], ['buyer', 403], ['recipient', 404], ['consent', 404],
+    ['event', 403], ['completed', 404], ['buyer', 403], ['recipient', 404], ['consent', 404],
     ['list', 404], ['deleted', 404], ['draw', 404],
 ]);
 
@@ -119,6 +120,7 @@ it('rejects authorization revoked at the final purchase write', function (string
             'recipient' => $this->recipientParticipant->update(['status' => 'WITHDRAWN']),
             'event' => $this->event->update(['is_archived' => true]),
             'event-status' => $this->event->update(['status' => 'PLANNING']),
+            'completed' => $this->event->update(['status' => 'COMPLETED']),
             'draw' => $this->draw->delete(),
             'reassigned' => $this->draw->update(['target_user_id' => $this->event->organizer_id]),
             'self' => $this->draw->update(['target_user_id' => $this->buyer->id]),
@@ -134,8 +136,19 @@ it('rejects authorization revoked at the final purchase write', function (string
     $component->assertNotFound();
 })->with([
     'consent', 'selected-list', 'list', 'owner', 'buyer', 'recipient',
-    'event', 'event-status', 'draw', 'reassigned', 'self', 'item-list',
+    'event', 'event-status', 'completed', 'draw', 'reassigned', 'self', 'item-list',
 ]);
+
+it('ends event wishlist access at completion without changing the permitted identity summary', function () {
+    $component = Livewire::actingAs($this->buyer)->test(AssignmentWishlist::class, ['event' => $this->event]);
+    $this->event->update(['status' => 'COMPLETED', 'reveal_date' => today()]);
+    $component->call('$refresh')->assertSee('HiddenRecipientSentinel')
+        ->assertDontSee('A useful gift')->assertDontSee('markAsBought', false);
+    expect($component->viewData('items'))->toBeNull();
+    $this->actingAs($this->buyer)->get(route('amigo-secreto.assignment', $this->event))
+        ->assertOk()->assertSee('HiddenRecipientSentinel')->assertDontSee('A useful gift');
+    $this->get(route('wishlists.show', $this->wishlist))->assertForbidden();
+});
 
 it('does not let hosts or unrelated participants inspect someone else’s assignment', function (string $role) {
     $user = $role === 'host' ? $this->event->organizer : User::factory()->create();

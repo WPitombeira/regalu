@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'active' => 'Current events',
+    'past' => 'Past events',
+    'filter' => 'Event period',
+    'title' => 'Event history',
+    'back' => 'Back to past events',
+    'archived' => 'Archived',
+    'privacy' => 'This read-only history keeps the event details, not invitations, pairings or private wishlists.',
+    'accepted' => 'Accepted participants',
+    'undated' => 'No date set',
+    'empty_active' => 'No current events',
+    'empty_active_help' => 'Create a Secret Santa event or join one with a code.',
+    'empty_past' => 'No past events yet',
+    'empty_past_help' => 'Completed and archived events you organized or accepted will appear here.',
+    'complete' => 'Complete event',
+    'complete_help' => 'Finished exchanging gifts? Complete this event to close wishlist access and purchases.',
+    'complete_confirm' => 'Complete this event? Event wishlist access and purchases will end. This cannot be undone.',
+    'completed_notice' => 'Event completed.',
+    'archive' => 'Archive event',
+    'archive_confirm' => 'Archive this event? It will move to history and assignment access will close. This cannot be undone.',
+    'closed' => 'This event is complete. Event wishlist access and purchases are closed.',
+    'consent_closed' => 'You cannot share a new wishlist after completion. You can still remove your saved consent.',
+    'revoke' => 'Remove wishlist consent',
+    'details' => 'Open completed event',
+];

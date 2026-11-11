@@ -28,7 +28,7 @@ class SendAssignment implements ShouldQueue
         $draw = AmigoSecretoDraw::with(['event', 'drawer'])->find($this->drawId);
         $event = $draw?->event;
         $buyer = $draw?->drawer;
-        if ($event === null || $buyer === null || Gate::forUser($buyer)->denies('view', $event)) {
+        if ($event === null || $event->status === 'COMPLETED' || $buyer === null || Gate::forUser($buyer)->denies('view', $event)) {
             return;
         }
 

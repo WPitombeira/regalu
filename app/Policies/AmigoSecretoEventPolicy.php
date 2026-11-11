@@ -20,6 +20,11 @@ class AmigoSecretoEventPolicy
                 ->exists();
     }
 
+    public function viewHistory(User $user, AmigoSecretoEvent $event): bool
+    {
+        return AmigoSecretoEvent::historyFor($user)->whereKey($event->id)->exists();
+    }
+
     public function manage(User $user, AmigoSecretoEvent $event): bool
     {
         return ! $event->is_archived && $this->isOrganizer($user, $event);
@@ -45,6 +50,16 @@ class AmigoSecretoEventPolicy
     {
         return ! $event->is_archived
             && ! in_array($event->status, ['DRAWS_COMPLETE', 'REVEALED', 'COMPLETED'], true);
+    }
+
+    public function archive(User $user, AmigoSecretoEvent $event): bool
+    {
+        return $this->manage($user, $event) && $event->status === 'COMPLETED';
+    }
+
+    public function complete(User $user, AmigoSecretoEvent $event): bool
+    {
+        return AmigoSecretoEvent::completableBy($user)->whereKey($event->id)->exists();
     }
 
     private function isOrganizer(User $user, AmigoSecretoEvent $event): bool
