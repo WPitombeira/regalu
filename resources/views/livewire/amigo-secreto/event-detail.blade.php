@@ -29,9 +29,9 @@
 
         {{-- Status Progression --}}
         <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 mb-8">
-            <div class="flex items-center justify-between">
+            <div class="grid grid-cols-3 gap-x-2 gap-y-4 sm:flex sm:items-center sm:justify-between sm:gap-0">
                 @foreach ($statusSteps as $index => $step)
-                    <div class="flex flex-col items-center flex-1">
+                    <div class="flex min-w-0 flex-col items-center sm:flex-1">
                         <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold mb-2
                             {{ $step['completed'] ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-500' }}
                             {{ $step['current'] ? 'ring-2 ring-blue-400' : '' }}
@@ -49,7 +49,7 @@
                         </span>
                     </div>
                     @if (!$loop->last)
-                        <div class="flex-1 h-0.5 mx-2 mt-[-20px] {{ $step['completed'] ? 'bg-blue-600' : 'bg-gray-700' }}"></div>
+                        <div class="hidden sm:block flex-1 h-0.5 mx-2 mt-[-20px] {{ $step['completed'] ? 'bg-blue-600' : 'bg-gray-700' }}"></div>
                     @endif
                 @endforeach
             </div>
