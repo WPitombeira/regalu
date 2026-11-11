@@ -85,7 +85,7 @@ it('lets the organizer archive a completed event without deleting its history', 
     $organizer = User::factory()->create();
     $event = AmigoSecretoEvent::factory()->create(['organizer_id' => $organizer->id, 'status' => 'COMPLETED']);
     Livewire::actingAs($organizer)->test(EventDetail::class, ['event' => $event])
-        ->call('archive')->assertRedirect(route('amigo-secreto.index'));
+        ->call('archive')->assertRedirect(route('amigo-secreto.index', ['period' => 'past']));
     expect($event->fresh()->status)->toBe('COMPLETED');
     expect($event->fresh()->is_archived)->toBeTrue();
 });

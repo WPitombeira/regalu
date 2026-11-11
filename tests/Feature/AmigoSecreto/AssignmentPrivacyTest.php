@@ -5,6 +5,7 @@ use App\Livewire\AmigoSecreto\EventDetail;
 use App\Models\AmigoSecretoEvent;
 use App\Models\AmigoSecretoParticipant;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 it('lets the host choose recipient visibility when creating an event', function (string $visibility) {
@@ -76,4 +77,24 @@ it('keeps named assignments as the backward-compatible default', function () {
     Livewire::actingAs(User::factory()->create())->test(CreateEvent::class)
         ->set('name', 'Traditional exchange')->call('create')->assertHasNoErrors();
     expect(AmigoSecretoEvent::sole()->recipient_visibility)->toBe('NAMED');
+});
+
+it('rejects a privacy write after the organizer changes at the final mutation', function () {
+    $host = User::factory()->create();
+    $other = User::factory()->create();
+    $event = AmigoSecretoEvent::factory()->create(['organizer_id' => $host->id]);
+    $component = Livewire::actingAs($host)->test(EventDetail::class, ['event' => $event])
+        ->set('recipient_visibility', 'ANONYMOUS_UNTIL_REVEAL')
+        ->set('reveal_date', today()->addWeek()->toDateString());
+    $interleaved = false;
+    DB::connection()->beforeExecuting(function (string $sql) use ($event, $other, &$interleaved): void {
+        if (! $interleaved && str_starts_with($sql, 'update "amigo_secreto_events" set ')) {
+            $interleaved = true;
+            $event->update(['organizer_id' => $other->id]);
+        }
+    });
+    $component->call('savePrivacy');
+    expect($interleaved)->toBeTrue();
+    expect($event->fresh()->recipient_visibility)->toBe('NAMED');
+    $component->assertForbidden();
 });
