@@ -17,6 +17,11 @@ beforeEach(function () {
     Http::fake(['https://catalog.example.com/gift' => Http::response('<title>A thoughtful gift</title><meta property="product:price:amount" content="29.95"><meta property="product:price:currency" content="USD">')]);
 });
 
+it('sends price review inputs to the server on blur', function (string $property) {
+    Livewire::actingAs($this->owner)->test(AddItem::class, ['wishlistId' => $this->wishlist->id])
+        ->assertSee('wire:model.live.blur="'.$property.'"', false);
+})->with(['url', 'price_min', 'price_max']);
+
 it('reviews an imported price before explicitly applying and saving its currency', function () {
     $component = Livewire::actingAs($this->owner)->test(AddItem::class, ['wishlistId' => $this->wishlist->id])
         ->set('url', 'https://catalog.example.com/gift')

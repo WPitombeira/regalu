@@ -17,7 +17,7 @@
                     {{ __('price_import.product_url') }}
                 </label>
                 <div class="flex flex-col sm:flex-row gap-2">
-                    <input wire:model.blur="url" type="url" id="item-url" wire:loading.attr="disabled" wire:target="fetchMeta"
+                    <input wire:model.live.blur="url" type="url" id="item-url" wire:loading.attr="disabled" wire:target="fetchMeta"
                         class="min-w-0 flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="https://example.com/product" />
                     <button wire:click="fetchMeta" type="button" wire:loading.attr="disabled" wire:target="fetchMeta,applySuggestedPrice"
@@ -89,7 +89,7 @@
                     <label for="item-price-min" class="block text-sm font-medium text-gray-300 mb-2">
                         {{ __('price_import.minimum') }}
                     </label>
-                    <input wire:model.blur="price_min" type="number" step="0.01" min="0" max="99999999.99" id="item-price-min"
+                    <input wire:model.live.blur="price_min" type="number" step="0.01" min="0" max="99999999.99" id="item-price-min"
                         class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="0.00" />
                     @error('price_min')
@@ -100,7 +100,7 @@
                     <label for="item-price-max" class="block text-sm font-medium text-gray-300 mb-2">
                         {{ __('price_import.maximum') }}
                     </label>
-                    <input wire:model.blur="price_max" type="number" step="0.01" min="0" max="99999999.99" id="item-price-max"
+                    <input wire:model.live.blur="price_max" type="number" step="0.01" min="0" max="99999999.99" id="item-price-max"
                         class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="0.00" />
                     @error('price_max')

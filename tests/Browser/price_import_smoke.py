@@ -13,12 +13,14 @@ LABELS = {
         "add": "Add item", "fetch": "Fetch details", "apply": "Use this price", "save": "Save",
         "currency": "Currency", "quote": "USD 29.95", "legacy": "Currency not specified 12.34",
         "fallback": "No reliable price was found. You can enter it manually.",
+        "manual_notice": "Your prices were kept. Clear both price fields first if you want to use the imported price.",
         "manual": "EUR 0.00 – 10.00", "zero": "BRL 0.00",
     },
     "pt_BR": {
         "add": "Adicionar item", "fetch": "Buscar detalhes", "apply": "Usar este preço", "save": "Salvar",
         "currency": "Moeda", "quote": "USD 29,95", "legacy": "Moeda não informada 12,34",
         "fallback": "Nenhum preço confiável foi encontrado. Você pode informá-lo manualmente.",
+        "manual_notice": "Seus preços foram mantidos. Limpe os dois campos de preço para usar o preço importado.",
         "manual": "EUR 0,00 – 10,00", "zero": "BRL 0,00",
     },
 }
@@ -84,6 +86,23 @@ def journey(browser, locale, viewport, output):
             apply = form.get_by_role("button", name=labels["apply"], exact=True)
             expect(apply).to_be_enabled()
             capture("review-price")
+            # Each price blur must update the server-rendered Apply control,
+            # without a fetch or another action masking a deferred binding.
+            manual_notice = form.get_by_text(labels["manual_notice"], exact=True)
+            expect(manual_notice).to_have_count(0)
+            for field, manual_value in ((minimum, "0"), (maximum, "10.00")):
+                field.fill(manual_value)
+                field.press("Tab")
+                # Loading also disables Apply; this notice proves the DOM morph.
+                expect(manual_notice).to_be_visible()
+                expect(apply).to_be_disabled()
+                expect(field).to_have_value(manual_value)
+                field.fill("")
+                field.press("Tab")
+                expect(manual_notice).to_have_count(0)
+                expect(apply).to_be_enabled()
+            expect(minimum).to_have_value("")
+            expect(maximum).to_have_value("")
             apply.focus()
             with page.expect_response(lambda response: call_response(response, "applySuggestedPrice")) as pending:
                 page.keyboard.press("Enter")
