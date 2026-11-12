@@ -54,7 +54,7 @@ COPY = {
         "danger": "Zona de atenção", "archive": "Arquivar",
         "archive_confirm": "Arquivar esta família? Ela não aparecerá mais na lista dos membros.",
         "join": "Entrar na família", "placeholder": "Digite o código de convite",
-        "size": "O campo código de convite deve ter 12 caracteres.", "invalid": "Código de convite inválido.",
+        "size": "O campo código de convite deve ser 12 caracteres.", "invalid": "Código de convite inválido.",
         "admin": "Administrador", "member": "Membro", "members": "Membros",
         "promote": "Promover", "promoted": "Membro promovido a administrador.",
         "promote_confirm": "Promover este membro a administrador?",
@@ -111,6 +111,7 @@ def journey(browser, locale, viewport, output):
                 })""")
                 geometry.append({"screen": name, **bounds})
                 (output / "geometry.json").write_text(json.dumps(geometry, indent=2))
+                assert bounds["content"] <= bounds["viewport"] + 1 and not bounds["outside"], f"Layout overflow at {name}: {bounds}"
                 assert not errors, f"JavaScript errors: {errors}"
 
             assert owner.goto(origin + "/families").status == 200
@@ -221,16 +222,18 @@ def journey(browser, locale, viewport, output):
             invitations.get_by_label(copy["email"], exact=True).fill("Invitee@Example.test")
             action(owner, invitations.get_by_role("button", name=copy["send"], exact=True), "inviteByEmail")
             expect(invitations.get_by_text("invitee@example.test", exact=True)).to_be_visible()
-            expect(invitations.get_by_text(copy["pending"], exact=False)).to_be_visible()
+            invitation = invitations.locator("article").filter(has=owner.get_by_text("invitee@example.test", exact=True))
+            expect(invitation).to_have_count(1)
+            expect(invitation.get_by_text(copy["pending"], exact=False)).to_be_visible()
             expect(owner.locator("#toast-parent").get_by_text(copy["sent"], exact=True)).to_be_visible()
             invitation_id, status = row(database, "select id, status from family_invitations where family_id = ? and email = ?", (family_id, "invitee@example.test"))
             assert status == "PENDING"
-            cancel = invitations.get_by_role("button", name=copy["cancel_invitation"], exact=True)
+            cancel = invitation.get_by_role("button", name=copy["cancel_invitation"], exact=True)
             confirmed(owner, cancel, "cancelInvitation", copy["cancel_confirm"], accept=False)
             assert row(database, "select status from family_invitations where id = ?", (invitation_id,)) == ("PENDING",)
             capture(owner, "pending-invitation")
             confirmed(owner, cancel, "cancelInvitation", copy["cancel_confirm"])
-            expect(invitations.get_by_text(copy["cancelled"], exact=True)).to_be_visible()
+            expect(invitation.get_by_text(copy["cancelled"], exact=True)).to_be_visible()
             assert row(database, "select status from family_invitations where id = ?", (invitation_id,)) == ("CANCELLED",)
 
             # Presentation fixtures only, inserted in the private database already owned by application().

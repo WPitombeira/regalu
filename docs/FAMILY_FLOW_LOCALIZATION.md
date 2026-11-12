@@ -7,6 +7,7 @@ The authenticated family index, create, join-by-code, settings and roster surfac
 - A successful settings update reports an update, not family creation; promotion reports the completed action, not only the role name.
 - Clipboard feedback uses the toast listener's existing positional-array event payload, like the server-side notice producers. Livewire forwards browser event detail as listener arguments; a flat object would pass strings to the typed array listener and prevent the toast from rendering. The clipboard API behavior itself is unchanged.
 - Family names, descriptions, emails, invite codes and persisted role/status enums remain data. They are not translated.
+- Member actions stack below the identity on narrow screens; desktop rows retain their side-by-side layout. Names and emails can wrap without hiding the role or action controls.
 - Existing authorization, invite acceptance, queue routing and archival rules are unchanged. Email invitation operations still use the existing invitation service; entering a code remains a separate flow.
 - Invitation pagination uses a scoped copy of the Livewire 4.4.8 Tailwind template, changing its accessible label keys without overriding pagination throughout the app.
 - This is not a complete application-wide translation sweep. Unrelated shared-shell copy and other product areas remain separate work.
@@ -22,7 +23,7 @@ The browser gate is `tests/Browser/family_flow_smoke.py --output <evidence-direc
 
 The required browser matrix is English/Brazilian Portuguese × desktop 1280×900/mobile 390×844. Each case has fresh authenticated browser contexts and a disposable SQLite database. It checks creation, validation, copy feedback and clipboard content, member counts, settings, cancel/accept confirmations, code regeneration and invalidation, joining, role controls, promotion/removal, email invitation/cancellation, pagination and archival. Mutations are checked against persisted data; UI waits use the matching Livewire action followed by the rendered state. Pagination status rows are explicitly synthetic presentation fixtures, not proof of recipient email delivery. Outbound browser requests are blocked and mail uses the array transport.
 
-Screenshots and geometry are captured throughout the journey. A case fails on JavaScript errors or viewport overflow, including visible controls outside either edge. Reports retain the source commit/tree, dirty-state flag and built-manifest digest. The workflow runs this gate as a required step and uploads the results, geometry and screenshots even after failure. These authored checks are not evidence of browser success until they actually run.
+Screenshots and geometry are captured throughout the journey. Each capture immediately checks JavaScript errors and viewport overflow, including visible controls outside either edge, so a later assertion cannot obscure a layout failure. Invitation status and cancellation checks are scoped to the exact invitee's article, not the section's explanatory copy. Reports retain the source commit/tree, dirty-state flag and built-manifest digest. The workflow runs this gate as a required step and uploads the results, geometry and screenshots even after failure. These authored checks are not evidence of browser success until they actually run.
 
 ## Local checkpoint before publication
 
