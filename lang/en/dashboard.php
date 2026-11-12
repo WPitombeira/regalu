@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'title' => 'Your gift plans',
+    'view_all' => 'View all',
+    'empty_events' => 'No upcoming events. Bring your group together for the next celebration.',
+    'create_event' => 'Plan a Secret Santa',
+    'empty_notifications' => 'Nothing to catch up on yet.',
+    'empty_wishlists' => 'Save a few gift ideas so people know what you would love.',
+    'start_wishlists' => 'Start your first wishlist',
+    'empty_families' => 'Share wishlists with the people closest to you.',
+    'start_families' => 'Join a family',
+    'notifications' => 'Recent notifications',
+    'all_notifications' => 'All notifications',
+    'assignments' => 'Ready for your next gift?',
+    'assignment_help' => 'Your assignments are ready. Recipient details stay inside each event’s protected assignment page.',
+    'open_assignment' => 'Open my assignment',
+    'events' => 'Upcoming Secret Santa events',
+    'all_events' => 'All events',
+    'date_pending' => 'Date to be decided',
+    'wishlists' => 'Your wishlists',
+    'families' => 'Your families',
+    'check_email' => 'Check your email',
+    'invitation_help' => 'Open the invitation in your email to respond. A notification alone does not join a family or event.',
+    'family_invitations' => '{1} :count pending family invitation|[2,*] :count pending family invitations',
+    'event_invitations' => '{1} :count pending Secret Santa invitation|[2,*] :count pending Secret Santa invitations',
+];

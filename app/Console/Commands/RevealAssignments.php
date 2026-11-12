@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\AmigoSecretoEvent;
+use App\Services\NotificationService;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -31,6 +32,7 @@ class RevealAssignments extends Command
                 $updated = (clone $eligible)->whereKey($event->id)->update(['status' => 'REVEALED']);
                 if ($updated === 1) {
                     $event->draws()->whereNull('revealed_at')->update(['revealed_at' => now()]);
+                    NotificationService::assignmentsAvailable($event->refresh(), revealed: true);
                 }
 
                 return $updated;

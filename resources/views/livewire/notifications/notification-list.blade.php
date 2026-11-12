@@ -18,8 +18,8 @@
     <div class="space-y-2">
         @forelse ($notifications as $notification)
             <div
-                wire:click="markAsRead({{ $notification->id }})"
-                class="flex items-start gap-4 p-4 rounded-lg border transition-colors cursor-pointer
+                wire:key="notice-{{ $notification->id }}"
+                class="flex items-start gap-4 p-4 rounded-lg border transition-colors
                     {{ !$notification->is_read
                         ? 'bg-gray-800/80 border-gray-700 hover:bg-gray-700/80'
                         : 'bg-gray-800/30 border-gray-800 hover:bg-gray-800/50' }}"
@@ -52,15 +52,20 @@
                 {{-- Content --}}
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
-                        <p class="text-sm font-semibold text-white">
+                        <button type="button" wire:click="markAsRead({{ $notification->id }})" wire:loading.attr="disabled"
+                                class="rounded-lg py-2 text-left text-sm font-semibold text-white hover:underline focus-visible:outline-2 focus-visible:outline-blue-400">
                             {{ $notification->title }}
-                        </p>
+                            <span class="sr-only">{{ $notification->action_url ? __('inbox.open') : __('inbox.mark_read') }}</span>
+                            @if (!$notification->is_read)
+                                <span class="sr-only">{{ __('inbox.unread') }}</span>
+                            @endif
+                        </button>
                         @if (!$notification->is_read)
                             <span class="shrink-0 w-2 h-2 bg-blue-500 rounded-full"></span>
                         @endif
                     </div>
                     <p class="text-sm text-gray-400 mt-1">
-                        {{ $notification->message }}
+                        {{ $notification->available ? $notification->message : __('inbox.unavailable') }}
                     </p>
                     <p class="text-xs text-gray-500 mt-2">
                         {{ $notification->created_at->diffForHumans() }}

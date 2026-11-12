@@ -7,6 +7,7 @@ use App\Models\AmigoSecretoDraw;
 use App\Models\AmigoSecretoEvent;
 use App\Services\AssignmentAccess;
 use App\Services\DrawAlgorithmService;
+use App\Services\NotificationService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -65,6 +66,7 @@ class ExecuteDraw extends Component
                 }
 
                 $event->update(['status' => 'DRAWS_COMPLETE']);
+                NotificationService::assignmentsAvailable($event);
             });
 
             $this->event = $event->refresh();
