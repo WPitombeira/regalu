@@ -53,9 +53,17 @@ def journey(browser, locale, viewport, output):
             page = user("owner@example.test")
             assert page.goto(f'{origin}/wishlists/{fixture["wishlist"]}').status == 200
             expect(page.get_by_text(labels["legacy"], exact=True)).to_be_visible()
-            page.get_by_role("button", name=labels["add"], exact=True).click()
             form = page.locator('form[wire\\:submit="save"]')
-            expect(form).to_be_visible()
+
+            def open_form():
+                assert page is not None
+                # A saved item's parent refresh can close the reset form.
+                # Start each new item through the same visible control a user uses.
+                if not form.is_visible():
+                    page.get_by_role("button", name=labels["add"], exact=True).click()
+                expect(form).to_be_visible()
+
+            open_form()
             expect(form.get_by_label(labels["currency"], exact=True)).to_have_value("BRL")
             capture("empty-form")
             url = form.locator("#item-url")
@@ -91,6 +99,7 @@ def journey(browser, locale, viewport, output):
             persisted("Imported gift", ("29.95", "29.95", "USD"))
             capture("saved-price")
 
+            open_form()
             name.fill("Manual range")
             form.locator("#item-description").fill("Keep my notes")
             minimum.fill("0")
@@ -121,6 +130,7 @@ def journey(browser, locale, viewport, output):
             expect(page.get_by_text(labels["manual"], exact=True)).to_be_visible()
             persisted("Manual range", ("0.00", "10.00", "EUR"))
 
+            open_form()
             name.fill("Zero gift")
             minimum.fill("0")
             maximum.fill("0")
@@ -129,6 +139,7 @@ def journey(browser, locale, viewport, output):
             expect(page.get_by_text(labels["zero"], exact=True)).to_be_visible()
             persisted("Zero gift", ("0.00", "0.00", "BRL"))
 
+            open_form()
             url.fill("https://catalog.example.com/ambiguous")
             action(page, fetch, "fetchMeta")
             expect(form.get_by_text(labels["fallback"], exact=True)).to_be_visible()
