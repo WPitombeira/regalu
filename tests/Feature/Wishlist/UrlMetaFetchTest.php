@@ -104,9 +104,9 @@ describe('URL metadata fetching', function () {
         expect($optionsSeen['allow_redirects'])->toBeFalse();
         expect($optionsSeen['proxy'])->toBe(['no' => '*']);
 
-        $hashedKey = 'url-meta:v1:'.hash('sha256', $url);
+        $hashedKey = 'url-meta:v2:'.hash('sha256', $url);
         expect(Cache::get($hashedKey))->toBe($expected);
-        expect(Cache::has('url-meta:v1:'.$url))->toBeFalse();
+        expect(Cache::has('url-meta:v2:'.$url))->toBeFalse();
     });
 
     it('rejects HTTP failures, redirects, timeouts, and oversized response bodies', function () {
