@@ -9,6 +9,7 @@ The authenticated family index, create, join-by-code, settings and roster surfac
 - Family names, descriptions, emails, invite codes and persisted role/status enums remain data. They are not translated.
 - Member actions stack below the identity on narrow screens; desktop rows retain their side-by-side layout. Names and emails can wrap without hiding the role or action controls.
 - Existing authorization, invite acceptance, queue routing and archival rules are unchanged. Email invitation operations still use the existing invitation service; entering a code remains a separate flow.
+- Archiving keeps the user on settings with a localized success notice; it does not automatically redirect. The browser gate verifies the notice and persisted archive flag before explicitly opening the family index and checking that the family is absent.
 - Invitation pagination uses a scoped copy of the Livewire 4.4.8 Tailwind template, changing its accessible label keys without overriding pagination throughout the app.
 - This is not a complete application-wide translation sweep. Unrelated shared-shell copy and other product areas remain separate work.
 - No schema migration, new dependency, provider activation or deployment configuration is introduced. This independent `master`-based slice does not include the separate family mutation-boundary PR.

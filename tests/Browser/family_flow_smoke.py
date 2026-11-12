@@ -22,7 +22,7 @@ COPY = {
         "code": "Invite Code", "copy": "Copy", "copied": "Copied!",
         "regenerate": "Regenerate", "regenerated": "Invite code regenerated.",
         "regenerate_confirm": "Regenerate the invite code? The old code will stop working.",
-        "danger": "Danger Zone", "archive": "Archive",
+        "danger": "Danger Zone", "archive": "Archive", "archived": "Family archived.",
         "archive_confirm": "Archive this family? Members will no longer see it in their list.",
         "join": "Join Family", "placeholder": "Enter invite code",
         "size": "The invite code field must be 12 characters.", "invalid": "Invalid invite code.",
@@ -51,7 +51,7 @@ COPY = {
         "code": "Código de convite", "copy": "Copiar", "copied": "Copiado!",
         "regenerate": "Gerar novo código", "regenerated": "Novo código de convite gerado.",
         "regenerate_confirm": "Gerar um novo código de convite? O código anterior deixará de funcionar.",
-        "danger": "Zona de atenção", "archive": "Arquivar",
+        "danger": "Zona de atenção", "archive": "Arquivar", "archived": "Família arquivada.",
         "archive_confirm": "Arquivar esta família? Ela não aparecerá mais na lista dos membros.",
         "join": "Entrar na família", "placeholder": "Digite o código de convite",
         "size": "O campo código de convite deve ser 12 caracteres.", "invalid": "Código de convite inválido.",
@@ -269,10 +269,12 @@ def journey(browser, locale, viewport, output):
             confirmed(owner, archive, "archive", copy["archive_confirm"], accept=False)
             assert row(database, "select is_archived from families where id = ?", (family_id,)) == (0,)
             confirmed(owner, archive, "archive", copy["archive_confirm"])
-            owner.wait_for_url(origin + "/families")
+            expect(owner.locator("#toast-parent").get_by_text(copy["archived"], exact=True)).to_be_visible()
+            assert row(database, "select is_archived from families where id = ?", (family_id,)) == (1,)
+            assert owner.url == settings
+            assert owner.goto(origin + "/families").status == 200
             expect(owner.get_by_text(copy["empty"], exact=True)).to_be_visible()
             expect(owner.get_by_text("Família <atualizada>", exact=True)).to_have_count(0)
-            assert row(database, "select is_archived from families where id = ?", (family_id,)) == (1,)
             capture(owner, "archived-index")
             failures = [item for item in geometry if item["content"] > item["viewport"] + 1 or item["outside"]]
             assert not failures, f"Layout overflow: {failures}"
