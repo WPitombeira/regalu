@@ -139,7 +139,7 @@ def journey(browser, locale, viewport, output):
             expect(owner.get_by_role("heading", name="Família <amigos>", exact=True)).to_be_visible()
             expect(owner.get_by_text(copy["admin"], exact=True)).to_be_visible()
             expect(owner.get_by_text(copy["invitation_empty"], exact=True)).to_be_visible()
-            owner.get_by_role("button", name=copy["copy"], exact=True).click()
+            action(owner, owner.get_by_role("button", name=copy["copy"], exact=True), "__dispatch")
             expect(owner.locator("#toast-parent").get_by_text(copy["copied"], exact=True)).to_be_visible()
             assert owner.evaluate("navigator.clipboard.readText()") == old_code
             capture(owner, "created-roster")

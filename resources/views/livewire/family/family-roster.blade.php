@@ -22,7 +22,7 @@
                 <p class="text-lg font-mono text-white mt-1" x-ref="inviteCode">{{ $family->invite_code }}</p>
             </div>
             <button x-data
-                    x-on:click="navigator.clipboard.writeText($refs.inviteCode?.closest('[x-ref]')?.textContent.trim() ?? '{{ $family->invite_code }}'); $dispatch('notification', { message: @js(__('family_forms.copied')), type: 'success' })"
+                    x-on:click="navigator.clipboard.writeText($refs.inviteCode?.closest('[x-ref]')?.textContent.trim() ?? '{{ $family->invite_code }}'); $dispatch('notification', [{ message: @js(__('family_forms.copied')), type: 'success' }])"
                     class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
                 {{ __('family_forms.copy') }}
             </button>

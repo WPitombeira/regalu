@@ -5,6 +5,7 @@
 The authenticated family index, create, join-by-code, settings and roster surfaces use English and Brazilian Portuguese copy. This includes empty states, member-count pluralization, validation attribute names, role labels, mutation notices, confirmation dialogs, clipboard feedback and invitation pagination accessibility labels.
 
 - A successful settings update reports an update, not family creation; promotion reports the completed action, not only the role name.
+- Clipboard feedback uses the toast listener's existing positional-array event payload, like the server-side notice producers. Livewire forwards browser event detail as listener arguments; a flat object would pass strings to the typed array listener and prevent the toast from rendering. The clipboard API behavior itself is unchanged.
 - Family names, descriptions, emails, invite codes and persisted role/status enums remain data. They are not translated.
 - Existing authorization, invite acceptance, queue routing and archival rules are unchanged. Email invitation operations still use the existing invitation service; entering a code remains a separate flow.
 - Invitation pagination uses a scoped copy of the Livewire 4.4.8 Tailwind template, changing its accessible label keys without overriding pagination throughout the app.
@@ -14,6 +15,8 @@ The authenticated family index, create, join-by-code, settings and roster surfac
 ## Verification contract
 
 `tests/Feature/Family/FamilyFlowLocalizationTest.php` exercises both locales through the real components and family index, including validation, literal persisted values, create/join/update/promote/remove/archive outcomes and escaped user content. `FamilyLocalizationContractTest.php` adds catalog/placeholder parity without fallback, invitation validation and lifecycle, all invitation status labels, pluralization, real pagination, and authorization/archival denial invariants. Literal expectations are independent of the application translator.
+
+`FamilyClipboardNotificationTest.php` pins the rendered browser event's argument shape and exercises that shape through the real Livewire event listener in both locales. It is a markup/server-boundary regression, not clipboard execution evidence. The browser gate additionally requires the listener HTTP response, the visible translated toast, and the actual clipboard contents.
 
 The browser gate is `tests/Browser/family_flow_smoke.py --output <evidence-directory>`, using the existing isolated `event_history_smoke.application()` fixture. It requires the pinned PHP runtime, installed Composer dependencies, a real frontend build, Playwright 1.65.0 with Chromium, and task-owned `TMPDIR` or hosted `RUNNER_TEMP`.
 
