@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Database\Factories\FamilyFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class Family extends Model
@@ -39,6 +41,20 @@ class Family extends Model
                 $family->invite_code = Str::upper(Str::random(12));
             }
         });
+    }
+
+    /** @param Builder<Family> $query */
+    public function scopeEditableBy(Builder $query, int $userId): void
+    {
+        // Keep mutable administration grants inside the final database write.
+        $query->where('families.is_archived', false)
+            ->where(function (Builder $family) use ($userId): void {
+                $family->where('families.creator_id', $userId)
+                    ->orWhereExists(DB::table('family_members as administrators')->selectRaw('1')
+                        ->whereColumn('administrators.family_id', 'families.id')
+                        ->where('administrators.user_id', $userId)
+                        ->where('administrators.role', 'ADMIN'));
+            });
     }
 
     /** @return BelongsTo<User, $this> */
