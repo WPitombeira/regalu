@@ -22,6 +22,12 @@ class FamilyRoster extends Component
 
     public string $inviteEmail = '';
 
+    /** @return array<string, string> */
+    protected function validationAttributes(): array
+    {
+        return ['inviteEmail' => __('family_forms.attribute_email')];
+    }
+
     public function mount(Family $family): void
     {
         $this->family = $family;
@@ -87,7 +93,7 @@ class FamilyRoster extends Component
 
         $member->update(['role' => 'ADMIN']);
 
-        $this->dispatch('notification', ['message' => __('messages.family.role_admin'), 'type' => 'success']);
+        $this->dispatch('notification', ['message' => __('family_forms.promoted'), 'type' => 'success']);
     }
 
     public function render(): View

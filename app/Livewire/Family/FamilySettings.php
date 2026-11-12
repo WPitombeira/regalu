@@ -19,6 +19,12 @@ class FamilySettings extends Component
     #[Rule(['nullable'])]
     public ?string $description = null;
 
+    /** @return array<string, string> */
+    protected function validationAttributes(): array
+    {
+        return ['name' => __('family_forms.attribute_name')];
+    }
+
     public function mount(Family $family): void
     {
         $this->family = $family;
@@ -37,7 +43,7 @@ class FamilySettings extends Component
             'description' => $this->description,
         ]);
 
-        $this->dispatch('notification', ['message' => __('messages.family.created'), 'type' => 'success']);
+        $this->dispatch('notification', ['message' => __('family_forms.updated'), 'type' => 'success']);
     }
 
     public function archive(): void

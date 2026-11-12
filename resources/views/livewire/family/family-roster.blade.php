@@ -22,9 +22,9 @@
                 <p class="text-lg font-mono text-white mt-1" x-ref="inviteCode">{{ $family->invite_code }}</p>
             </div>
             <button x-data
-                    x-on:click="navigator.clipboard.writeText($refs.inviteCode?.closest('[x-ref]')?.textContent.trim() ?? '{{ $family->invite_code }}'); $dispatch('notification', { message: 'Copied!', type: 'success' })"
+                    x-on:click="navigator.clipboard.writeText($refs.inviteCode?.closest('[x-ref]')?.textContent.trim() ?? '{{ $family->invite_code }}'); $dispatch('notification', { message: @js(__('family_forms.copied')), type: 'success' })"
                     class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-                Copy
+                {{ __('family_forms.copy') }}
             </button>
         </div>
     </div>
@@ -70,7 +70,7 @@
                     <p class="text-sm text-gray-400">{{ __('family_invitations.empty') }}</p>
                 @endforelse
             </div>
-            <div class="mt-4">{{ $invitations->links() }}</div>
+            <div class="mt-4">{{ $invitations->links('livewire.family.invitation-pagination') }}</div>
         </section>
     @endcan
 
@@ -103,16 +103,16 @@
                     <div class="flex items-center gap-2">
                         @if($member->role !== 'ADMIN')
                             <button wire:click="promoteMember({{ $member->id }})"
-                                    wire:confirm="Promote this member to admin?"
+                                    wire:confirm="{{ __('family_forms.promote_confirm') }}"
                                     class="px-3 py-1.5 text-xs font-medium text-blue-400 bg-blue-900/30 border border-blue-800 rounded-lg hover:bg-blue-900/50 transition-colors">
-                                Promote
+                                {{ __('family_forms.promote') }}
                             </button>
                         @endif
                         @if($member->user_id !== $family->creator_id)
                             <button wire:click="removeMember({{ $member->id }})"
-                                    wire:confirm="Remove this member from the family?"
+                                    wire:confirm="{{ __('family_forms.remove_confirm') }}"
                                     class="px-3 py-1.5 text-xs font-medium text-red-400 bg-red-900/30 border border-red-800 rounded-lg hover:bg-red-900/50 transition-colors">
-                                Remove
+                                {{ __('family_forms.remove') }}
                             </button>
                         @endif
                     </div>
