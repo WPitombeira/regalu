@@ -278,6 +278,21 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Exercise account menu keyboard and avatar behavior in both locales and three viewports
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/account_menu_smoke.py --output coverage/account-menu-browser
+
+      - name: Upload account menu browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: account-menu-browser
+          path: |
+            coverage/account-menu-browser/results.json
+            coverage/account-menu-browser/**/*.json
+            coverage/account-menu-browser/**/*.png
       - name: Exercise family flows in English and Portuguese on desktop and mobile
         env:
           PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
