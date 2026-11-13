@@ -152,3 +152,16 @@ test('Dependabot checks Composer, npm, and GitHub Actions weekly with grouped pa
     assert.equal((dependabot.match(/^\s+- minor$/gm) ?? []).length, 3);
     assert.equal((dependabot.match(/^\s+- patch$/gm) ?? []).length, 3);
 });
+
+test('toast browser journeys and fail-closed evidence validation run in required CI', () => {
+    const tests = job('tests');
+    const step = tests.match(/      - name: Exercise localized toast feedback[\s\S]*?(?=      - name:)/)?.[0];
+    assert.ok(step, 'missing toast browser step');
+    assert.match(step, /PLAYWRIGHT_BROWSERS_PATH: \$\{\{ runner\.temp \}\}\/regalu-browser-cache/);
+    assert.match(step, /set -euo pipefail/);
+    assert.match(step, /python" -B tests\/Browser\/toast_feedback_smoke\.py --output coverage\/toast-browser/);
+    assert.match(step, /python" -B tests\/Browser\/toast_feedback_report_test\.py coverage\/toast-browser\/results\.json/);
+    assert.doesNotMatch(step, /--case|continue-on-error|\|\| true/);
+    assert.match(tests, /name: Upload toast browser evidence\n\s+if: always\(\)\n\s+uses: actions\/upload-artifact@/);
+    assert.match(tests, /name: toast-feedback-browser\n\s+path: \|\n\s+coverage\/toast-browser\/results\.json\n\s+coverage\/toast-browser\/\*\*\/\*\.png/);
+});
