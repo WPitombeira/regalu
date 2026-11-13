@@ -261,6 +261,25 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Exercise event budgets in English and Portuguese on desktop and mobile
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          set -euo pipefail
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/event_budget_smoke.py --output coverage/event-budget-browser
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/event_budget_report_test.py --output coverage/event-budget-browser
+
+      - name: Upload event budget browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: event-budget-browser
+          path: |
+            coverage/event-budget-browser/report.json
+            coverage/event-budget-browser/**/*.png
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Upload PHP coverage reports
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

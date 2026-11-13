@@ -91,6 +91,20 @@ test('release smoke builds caches and migrates a disposable SQLite database both
     assert.match(tests, /rm -f bootstrap\/cache\/config\.php/);
 });
 
+test('event budgets run the complete browser matrix and fail-closed validator with retained evidence', () => {
+    const tests = job('tests');
+    const start = tests.indexOf('      - name: Exercise event budgets');
+    assert.ok(start >= 0, 'missing event-budget browser gate');
+    const gate = tests.slice(start, tests.indexOf('      - name: Upload event budget', start));
+    assert.match(gate, /set -euo pipefail/);
+    assert.match(gate, /tests\/Browser\/event_budget_smoke\.py --output coverage\/event-budget-browser/);
+    assert.match(gate, /tests\/Browser\/event_budget_report_test\.py --output coverage\/event-budget-browser/);
+    assert.doesNotMatch(gate, /--case|continue-on-error|\|\| true/);
+    assert.match(tests, /name: Upload event budget browser evidence\n\s+if: always\(\)\n\s+uses: actions\/upload-artifact@/);
+    assert.match(tests, /name: event-budget-browser/);
+    assert.match(tests, /coverage\/event-budget-browser\/report\.json\n\s+coverage\/event-budget-browser\/\*\*\/\*\.png/);
+});
+
 test('Dependabot checks Composer, npm, and GitHub Actions weekly with grouped patch/minor updates', () => {
     for (const ecosystem of ['composer', 'npm', 'github-actions']) {
         assert.match(dependabot, new RegExp(`package-ecosystem: ${ecosystem}`));

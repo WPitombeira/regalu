@@ -41,25 +41,30 @@
             </div>
 
             {{-- Budget Range --}}
-            <div class="grid grid-cols-2 gap-4">
+            <div data-event-budget class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                     <label for="budget_min" class="block text-sm font-medium text-gray-300 mb-1">
-                        {{ __("messages.amigo_secreto.budget") }} (Min)
+                        {{ __('event_budget.minimum_label') }}
                     </label>
-                    <input type="number" id="budget_min" wire:model="budget_min" step="0.01" min="0"
-                           class="w-full rounded-lg border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                    <input type="number" id="budget_min" wire:model="budget_min" step="0.01" min="0" max="99999999.99"
+                           aria-invalid="{{ $errors->has('budget_min') ? 'true' : 'false' }}"
+                           aria-describedby="event-budget-help{{ $errors->has('budget_min') ? ' budget_min-error' : '' }}"
+                           class="min-h-11 w-full rounded-lg border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
                            placeholder="20.00">
-                    @error('budget_min') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
+                    @error('budget_min') <p id="budget_min-error" role="alert" class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label for="budget_max" class="block text-sm font-medium text-gray-300 mb-1">
-                        {{ __("messages.amigo_secreto.budget") }} (Max)
+                        {{ __('event_budget.maximum_label') }}
                     </label>
-                    <input type="number" id="budget_max" wire:model="budget_max" step="0.01" min="0"
-                           class="w-full rounded-lg border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                    <input type="number" id="budget_max" wire:model="budget_max" step="0.01" min="0" max="99999999.99"
+                           aria-invalid="{{ $errors->has('budget_max') ? 'true' : 'false' }}"
+                           aria-describedby="event-budget-help{{ $errors->has('budget_max') ? ' budget_max-error' : '' }}"
+                           class="min-h-11 w-full rounded-lg border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
                            placeholder="100.00">
-                    @error('budget_max') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
+                    @error('budget_max') <p id="budget_max-error" role="alert" class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
                 </div>
+                <p id="event-budget-help" class="col-span-full text-sm text-gray-300">{{ __('event_budget.help') }}</p>
             </div>
 
             <div>
