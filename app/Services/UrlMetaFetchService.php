@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\WishlistPrice;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
 use Illuminate\Support\Facades\Cache;
@@ -19,9 +20,9 @@ class UrlMetaFetchService
     public function __construct(private PublicUrlResolver $urlResolver) {}
 
     /**
-     * Fetch Open Graph meta (title and image) from a given URL.
+     * Fetch reviewable product metadata from a given URL.
      *
-     * @return array{title?: string, image?: string}
+     * @return array{title?: string, image?: string, price?: string, currency?: string}
      */
     public function fetch(string $url): array
     {
@@ -31,7 +32,7 @@ class UrlMetaFetchService
             return [];
         }
 
-        $cacheKey = 'url-meta:v1:'.hash('sha256', $url);
+        $cacheKey = 'url-meta:v2:'.hash('sha256', $url);
         $cached = Cache::get($cacheKey);
 
         if ($this->isValidMetadata($cached)) {
@@ -123,7 +124,7 @@ class UrlMetaFetchService
     }
 
     /**
-     * @return array{title?: string, image?: string}
+     * @return array{title?: string, image?: string, price?: string, currency?: string}
      */
     private function parseMetadata(string $html, string $sourceUrl): array
     {
@@ -172,7 +173,7 @@ class UrlMetaFetchService
                 }
             }
 
-            return $metadata;
+            return [...$metadata, ...app(ProductPriceMetadata::class)->fromDocument($document)];
         } catch (\Throwable) {
             return [];
         } finally {
@@ -216,11 +217,16 @@ class UrlMetaFetchService
         }
 
         foreach ($metadata as $key => $value) {
-            if (! in_array($key, ['title', 'image'], true) || ! is_string($value) || $value === '') {
+            if (! in_array($key, ['title', 'image', 'price', 'currency'], true) || ! is_string($value) || $value === '') {
                 return false;
             }
         }
 
-        return true;
+        if (isset($metadata['price']) !== isset($metadata['currency'])) {
+            return false;
+        }
+
+        return ! isset($metadata['price']) || (WishlistPrice::normalize($metadata['price']) === $metadata['price']
+            && in_array($metadata['currency'], WishlistPrice::CURRENCIES, true));
     }
 }

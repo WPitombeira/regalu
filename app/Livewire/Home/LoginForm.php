@@ -54,6 +54,19 @@ class LoginForm extends Component
     #[Rule(['required', 'string', 'min:8'])]
     public string $registerPasswordConfirm = '';
 
+    /** @return array<string, string> */
+    protected function validationAttributes(): array
+    {
+        return [
+            'email' => __('auth_forms.fields.email'),
+            'password' => __('auth_forms.fields.password'),
+            'registerName' => __('auth_forms.fields.name'),
+            'registerEmail' => __('auth_forms.fields.email'),
+            'registerPassword' => __('auth_forms.fields.password'),
+            'registerPasswordConfirm' => __('auth_forms.fields.confirmation'),
+        ];
+    }
+
     public function login(): ?RedirectResponse
     {
         $this->validateOnly('email');
@@ -61,12 +74,12 @@ class LoginForm extends Component
 
         if (app(LoginAttemptService::class)->attempt($this->email, $this->password, $this->remember, request()->ip())) {
             session()->regenerate();
-            $this->dispatch('notification', ['message' => __('messages.action.login_success'), 'type' => 'success']);
+            $this->dispatch('notification', ['message' => __('auth_forms.login_success'), 'type' => 'success']);
 
             return redirect()->intended(route('dashboard'));
         }
 
-        $this->addError('loginError', __('messages.form_messages.wrongcredentials'));
+        $this->addError('loginError', __('auth_forms.errors.credentials'));
 
         return null;
     }
@@ -79,13 +92,13 @@ class LoginForm extends Component
         $this->validateOnly('registerPasswordConfirm');
 
         if ($this->registerPassword !== $this->registerPasswordConfirm) {
-            $this->addError('registerPasswordConfirm', __('messages.auth.password_mismatch'));
+            $this->addError('registerPasswordConfirm', __('auth_forms.errors.password_mismatch'));
 
             return null;
         }
 
         if (User::where('email', $this->registerEmail)->exists()) {
-            $this->addError('registerEmail', __('messages.auth.email_taken'));
+            $this->addError('registerEmail', __('auth_forms.errors.email_taken'));
 
             return null;
         }
@@ -98,7 +111,7 @@ class LoginForm extends Component
 
         Auth::login($user);
 
-        $this->dispatch('notification', ['message' => __('messages.auth.register_success'), 'type' => 'success']);
+        $this->dispatch('notification', ['message' => __('auth_forms.register_success'), 'type' => 'success']);
 
         return redirect()->intended(route('dashboard'));
     }

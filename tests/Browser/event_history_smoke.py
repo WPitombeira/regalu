@@ -49,6 +49,11 @@ def row(database, sql, args):
 
 @contextmanager
 def application(locale, seed_script="seed-event-history.php"):
+    if seed_script not in ("seed-event-history.php", "seed-dashboard.php", "seed-newsletter.php",
+                           "seed-price-import.php"):
+        raise ValueError("Unknown browser fixture")
+    # Array cache is request-local: newsletter HTTP throttling needs a real shared store.
+    cache_store = "database" if seed_script == "seed-newsletter.php" else "array"
     scratch = os.environ.get("RUNNER_TEMP") or os.environ.get("TMPDIR")
     if not scratch:
         raise RuntimeError("Set RUNNER_TEMP or TMPDIR to task-owned scratch storage")
@@ -64,7 +69,10 @@ def application(locale, seed_script="seed-event-history.php"):
         env = dict(os.environ, APP_ENV="testing", APP_DEBUG="false", APP_URL=origin,
                    APP_KEY="base64:" + base64.b64encode(secrets.token_bytes(32)).decode(),
                    APP_LOCALE=locale, APP_FALLBACK_LOCALE="en", DB_URL="", DB_CONNECTION="sqlite",
-                   DB_DATABASE=str(database), CACHE_STORE="array", CACHE_LIMITER="array",
+                   DB_DATABASE=str(database), CACHE_STORE=cache_store, CACHE_LIMITER=cache_store,
+                   DB_CACHE_CONNECTION="sqlite", DB_CACHE_TABLE="cache",
+                   DB_CACHE_LOCK_CONNECTION="sqlite", DB_CACHE_LOCK_TABLE="cache_locks",
+                   CACHE_PREFIX="browser_" + secrets.token_hex(8) + "_",
                    MAIL_MAILER="array", QUEUE_CONNECTION="sync", SESSION_DRIVER="database",
                    SESSION_CONNECTION="sqlite", SESSION_DOMAIN="null", SESSION_SECURE_COOKIE="false",
                    SESSION_COOKIE="regalu_browser_" + secrets.token_hex(8),
@@ -73,8 +81,6 @@ def application(locale, seed_script="seed-event-history.php"):
                    APP_SERVICES_CACHE=str(directory / "services.php"), APP_PACKAGES_CACHE=str(directory / "packages.php"),
                    VIEW_COMPILED_PATH=str(directory / "views"), LOG_CHANNEL="stderr")
         (directory / "views").mkdir()
-        if seed_script not in ("seed-event-history.php", "seed-dashboard.php"):
-            raise ValueError("Unknown browser fixture")
         seed = subprocess.run(["php", str(ROOT / "tests/Browser" / seed_script)],
                               cwd=ROOT, env=env, capture_output=True, text=True, timeout=60)
         if seed.returncode:
@@ -82,6 +88,8 @@ def application(locale, seed_script="seed-event-history.php"):
             raise RuntimeError(f"Fixture seed failed (exit {seed.returncode})")
         fixture = json.loads(seed.stdout)
         router = ROOT / "vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php"
+        if seed_script == "seed-price-import.php":
+            router = ROOT / "tests/Browser/price-import-router.php"
         with (directory / "server.log").open("w") as log:
             server = subprocess.Popen(["php", "-S", f"127.0.0.1:{port}", str(router)],
                                       cwd=ROOT / "public", env=env, stdout=log, stderr=log)

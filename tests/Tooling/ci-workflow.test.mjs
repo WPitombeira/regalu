@@ -101,6 +101,33 @@ test('profile settings runs the full browser matrix and validates its always-upl
     assert.match(tests, /name: profile-settings-browser\n\s+path: \|\n\s+coverage\/profile-settings-browser\/results\.json\n\s+coverage\/profile-settings-browser\/\*\*\/\*\.png/);
 });
 
+test('password recovery runs the complete browser matrix and preserves per-case evidence', () => {
+    const tests = job('tests');
+    const command = tests.split('\n').find(line => line.includes('tests/Browser/password_recovery_smoke.py'));
+
+    assert.ok(command, 'missing password recovery browser runner');
+    assert.match(command, /-B tests\/Browser\/password_recovery_smoke\.py --output coverage\/password-recovery-browser\s*$/);
+    assert.doesNotMatch(command, /--case/);
+    assert.match(tests, /name: Upload password recovery browser evidence\n\s+if: always\(\)\n\s+uses: actions\/upload-artifact@/);
+    assert.match(tests, /name: password-recovery-browser\n\s+path: \|\n\s+coverage\/password-recovery-browser\/results\.json\n\s+coverage\/password-recovery-browser\/\*\*\/result\.json\n\s+coverage\/password-recovery-browser\/\*\*\/\*\.png\n\s+if-no-files-found: error/);
+});
+
+test('auth forms run real browser journeys and retain only structured evidence and screenshots', () => {
+    const tests = job('tests');
+    const run = tests.match(/      - name: Exercise auth forms[\s\S]*?(?=\n      - name:)/)?.[0];
+    assert.ok(run, 'missing auth form browser gate');
+    assert.match(run, /PLAYWRIGHT_BROWSERS_PATH: \$\{\{ runner\.temp \}\}\/regalu-browser-cache/);
+    assert.match(run, /"\$RUNNER_TEMP\/regalu-browser-venv\/bin\/python" -B tests\/Browser\/auth_forms_smoke\.py --output coverage\/auth-forms-browser/);
+    assert.doesNotMatch(run, /continue-on-error|\|\| true|if: always/);
+
+    const upload = tests.match(/      - name: Upload auth form browser evidence[\s\S]*?(?=\n      - name:)/)?.[0];
+    assert.ok(upload, 'missing auth form browser artifact');
+    assert.match(upload, /if: always\(\)/);
+    assert.match(upload, /actions\/upload-artifact@[a-f0-9]{40}/);
+    assert.match(upload, /name: auth-forms-browser/);
+    assert.match(upload, /coverage\/auth-forms-browser\/results\.json\n\s+coverage\/auth-forms-browser\/\*\*\/\*\.png/);
+});
+
 test('Dependabot checks Composer, npm, and GitHub Actions weekly with grouped patch/minor updates', () => {
     for (const ecosystem of ['composer', 'npm', 'github-actions']) {
         assert.match(dependabot, new RegExp(`package-ecosystem: ${ecosystem}`));

@@ -32,6 +32,18 @@ class WishlistSettings extends Component
     #[Rule(['nullable', 'email'])]
     public string $shareEmail = '';
 
+    /** @return array<string, string> */
+    protected function validationAttributes(): array
+    {
+        return [
+            'name' => __('wishlist_forms.attribute_name'),
+            'description' => __('wishlist_forms.attribute_description'),
+            'type' => __('wishlist_forms.attribute_type'),
+            'privacy' => __('wishlist_forms.attribute_privacy'),
+            'shareEmail' => __('wishlist_forms.attribute_email'),
+        ];
+    }
+
     public function mount(Wishlist $wishlist): void
     {
         Gate::authorize('update', $wishlist);
@@ -54,7 +66,7 @@ class WishlistSettings extends Component
             'type' => $this->type,
         ]);
 
-        $this->dispatch('notification', ['message' => __('messages.wishlist.updated'), 'type' => 'success']);
+        $this->dispatch('notification', ['message' => __('wishlist_forms.updated'), 'type' => 'success']);
     }
 
     public function addShare(): void
@@ -65,13 +77,13 @@ class WishlistSettings extends Component
         $user = User::where('email', $this->shareEmail)->first();
 
         if (! $user) {
-            $this->addError('shareEmail', 'User not found with that email.');
+            $this->addError('shareEmail', __('wishlist_forms.share_not_found'));
 
             return;
         }
 
         if ($user->id === Auth::id()) {
-            $this->addError('shareEmail', 'You cannot share a wishlist with yourself.');
+            $this->addError('shareEmail', __('wishlist_forms.share_self'));
 
             return;
         }
@@ -81,7 +93,7 @@ class WishlistSettings extends Component
             ->exists();
 
         if ($exists) {
-            $this->addError('shareEmail', 'This user already has access.');
+            $this->addError('shareEmail', __('wishlist_forms.share_exists'));
 
             return;
         }
@@ -95,7 +107,7 @@ class WishlistSettings extends Component
         $this->shareEmail = '';
         $this->wishlist->refresh();
 
-        $this->dispatch('notification', ['message' => 'User added successfully.', 'type' => 'success']);
+        $this->dispatch('notification', ['message' => __('wishlist_forms.share_added'), 'type' => 'success']);
     }
 
     public function removeShare(int $shareId): void
@@ -107,7 +119,7 @@ class WishlistSettings extends Component
 
         $this->wishlist->refresh();
 
-        $this->dispatch('notification', ['message' => 'User removed.', 'type' => 'success']);
+        $this->dispatch('notification', ['message' => __('wishlist_forms.share_removed'), 'type' => 'success']);
     }
 
     public function archive(): void
@@ -115,7 +127,7 @@ class WishlistSettings extends Component
         $this->authorizeUpdate();
         $this->wishlist->update(['is_archived' => true]);
 
-        $this->dispatch('notification', ['message' => __('messages.wishlist.updated'), 'type' => 'success']);
+        $this->dispatch('notification', ['message' => __('wishlist_forms.updated'), 'type' => 'success']);
 
         redirect()->route('wishlists.index');
     }
@@ -125,7 +137,7 @@ class WishlistSettings extends Component
         $this->authorizeUpdate();
         $this->wishlist->delete();
 
-        $this->dispatch('notification', ['message' => __('messages.wishlist.deleted'), 'type' => 'success']);
+        $this->dispatch('notification', ['message' => __('wishlist_forms.deleted'), 'type' => 'success']);
 
         redirect()->route('wishlists.index');
     }
