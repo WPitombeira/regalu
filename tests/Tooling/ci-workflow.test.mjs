@@ -91,6 +91,16 @@ test('release smoke builds caches and migrates a disposable SQLite database both
     assert.match(tests, /rm -f bootstrap\/cache\/config\.php/);
 });
 
+test('profile settings runs the full browser matrix and validates its always-uploaded evidence', () => {
+    const tests = job('tests');
+
+    assert.match(tests, /"\$RUNNER_TEMP\/regalu-browser-venv\/bin\/python" -B tests\/Browser\/profile_settings_runtime_test\.py\s*$/m);
+    assert.match(tests, /"\$RUNNER_TEMP\/regalu-browser-venv\/bin\/python" -B tests\/Browser\/profile_settings_smoke\.py --output coverage\/profile-settings-browser\s*$/m);
+    assert.match(tests, /"\$RUNNER_TEMP\/regalu-browser-venv\/bin\/python" -B tests\/Browser\/profile_settings_report_test\.py --output coverage\/profile-settings-browser\s*$/m);
+    assert.match(tests, /name: Upload profile settings browser evidence\n\s+if: always\(\)\n\s+uses: actions\/upload-artifact@/);
+    assert.match(tests, /name: profile-settings-browser\n\s+path: \|\n\s+coverage\/profile-settings-browser\/results\.json\n\s+coverage\/profile-settings-browser\/\*\*\/\*\.png/);
+});
+
 test('password recovery runs the complete browser matrix and preserves per-case evidence', () => {
     const tests = job('tests');
     const command = tests.split('\n').find(line => line.includes('tests/Browser/password_recovery_smoke.py'));
