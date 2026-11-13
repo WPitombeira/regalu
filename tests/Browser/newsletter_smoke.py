@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+import traceback
 
 from playwright.sync_api import expect, sync_playwright
 from event_history_smoke import ROOT, action, application, call_response, row
@@ -54,6 +55,24 @@ def consent(page):
     expect(page.locator("#newsletter-consent")).to_be_checked()
 
 
+def submit_server_probe(page, form):
+    # Livewire morphs remove client-only attributes. Bypass native validation only
+    # in the same JS task as this negative probe, never across an awaited update.
+    expect(form.locator('button[type="submit"]')).to_be_enabled()
+    with page.expect_response(lambda response: call_response(response, "registerNewsletter")) as pending:
+        form.evaluate("""form => {
+            if (form.noValidate) throw new Error('Native validation unexpectedly disabled');
+            form.noValidate = true;
+            try {
+                form.requestSubmit(form.querySelector('button[type="submit"]'));
+            } finally {
+                form.noValidate = false;
+            }
+        }""")
+    assert pending.value.status == 200
+    assert not form.evaluate("form => form.noValidate")
+
+
 def source_identity():
     paths = subprocess.check_output(["git", "ls-files", "-c", "-o", "--exclude-standard", "-z"], cwd=ROOT).decode().split("\0")
     files = {path: hashlib.sha256((ROOT / path).read_bytes()).hexdigest()
@@ -88,6 +107,7 @@ def journey(browser, locale, viewport, output):
 
         def capture(page, name):
             section = page.locator("#newsletter")
+            assert not section.locator("form").evaluate("form => form.noValidate")
             section.scroll_into_view_if_needed()
             widths = page.evaluate("({content: document.documentElement.scrollWidth, viewport: innerWidth})")
             boxes = section.locator('input[type="email"], label[for="newsletter-consent"], button[type="submit"]').evaluate_all(
@@ -133,10 +153,12 @@ def journey(browser, locale, viewport, output):
             assert requests == [] and not errors
             contact.screenshot(path=str(output / "contact-unavailable.png"), animations="disabled")
 
-            # Deliberately bypass only HTML validation to exercise server-side consent.
-            form.evaluate("form => form.noValidate = true")
             edit_email(page, "reader@example.test")
-            action(page, submit, "registerNewsletter")
+            # Native consent validation must still work after a Livewire update.
+            submit.click()
+            expect(checkbox).to_be_focused()
+            assert requests == []
+            submit_server_probe(page, form)
             expect(page.locator("#newsletter-consent-error")).to_have_text(labels["required_consent"])
             expect(checkbox).to_have_attribute("aria-invalid", "true")
             assert row(database, "select count(*) from newsletters", ()) == (1,)
@@ -144,7 +166,7 @@ def journey(browser, locale, viewport, output):
 
             edit_email(page, "not-an-email")
             consent(page)
-            action(page, submit, "registerNewsletter")
+            submit_server_probe(page, form)
             expect(page.locator("#newsletter-email-error")).to_have_text(labels["invalid"])
             expect(email).to_have_attribute("aria-invalid", "true")
             assert row(database, "select count(*) from newsletters", ()) == (1,)
@@ -214,6 +236,13 @@ def main():
                         case["passed"] = True
                     except Exception as error:
                         case["error"] = str(error)
+                        # Record only source locations, never frame locals or request data.
+                        case["locations"] = [
+                            {"file": str(Path(frame.filename).resolve().relative_to(ROOT)),
+                             "line": frame.lineno, "function": frame.name}
+                            for frame in traceback.extract_tb(error.__traceback__)
+                            if Path(frame.filename).resolve().is_relative_to(ROOT)
+                        ]
                     results.append(case)
                     print(json.dumps(case), flush=True)
                     (args.output / "results.json").write_text(json.dumps({**identity, "cache": "database", "cases": results}, indent=2))
