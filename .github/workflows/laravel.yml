@@ -244,6 +244,23 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Exercise private-first onboarding in English and Portuguese on desktop and mobile
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/onboarding_smoke.py --output coverage/onboarding-browser
+
+      - name: Upload onboarding browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: onboarding-browser
+          path: |
+            coverage/onboarding-browser/results.json
+            coverage/onboarding-browser/**/*.png
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Exercise dashboard and inbox in English and Portuguese on desktop and mobile
         env:
           PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache

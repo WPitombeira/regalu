@@ -1,7 +1,6 @@
 <?php
 
 return [
-    'add_item' => 'Add item',
     'product_url' => 'Product link',
     'fetch' => 'Fetch details',
     'fetching' => 'Fetching details…',

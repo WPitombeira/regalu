@@ -10,14 +10,14 @@ from event_history_smoke import ROOT, action, application, call_response, login,
 
 LABELS = {
     "en": {
-        "add": "Add item", "fetch": "Fetch details", "apply": "Use this price", "save": "Save",
+        "add": "Add Item", "fetch": "Fetch details", "apply": "Use this price", "save": "Save",
         "currency": "Currency", "quote": "USD 29.95", "legacy": "Currency not specified 12.34",
         "fallback": "No reliable price was found. You can enter it manually.",
         "manual_notice": "Your prices were kept. Clear both price fields first if you want to use the imported price.",
         "manual": "EUR 0.00 – 10.00", "zero": "BRL 0.00",
     },
     "pt_BR": {
-        "add": "Adicionar item", "fetch": "Buscar detalhes", "apply": "Usar este preço", "save": "Salvar",
+        "add": "Adicionar Item", "fetch": "Buscar detalhes", "apply": "Usar este preço", "save": "Salvar",
         "currency": "Moeda", "quote": "USD 29,95", "legacy": "Moeda não informada 12,34",
         "fallback": "Nenhum preço confiável foi encontrado. Você pode informá-lo manualmente.",
         "manual_notice": "Seus preços foram mantidos. Limpe os dois campos de preço para usar o preço importado.",
