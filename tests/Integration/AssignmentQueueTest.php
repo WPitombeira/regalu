@@ -58,12 +58,15 @@ it('queues assignments only after the draw commits and delivers privacy-safe mai
         $buyer = User::where('email', $message->getTo()[0]->getAddress())->sole();
         $target = AmigoSecretoDraw::where('event_id', $this->event->id)->where('drawer_user_id', $buyer->id)->sole()->target;
         $content = $message->getSubject().$message->getHtmlBody();
+        // The HTML body escapes the rendered name, so compare the escaped form.
+        $escapedTargetName = e($target->name);
         expect($content)->toContain('http://127.0.0.1:8123/secret-santa/'.$this->event->id.'/assignment');
-        expect($content)->not->toContain($target->email, '/wishlists/');
+        expect($content)->not->toContain($target->email);
+        expect($content)->not->toContain('/wishlists/');
         if ($visibility === 'NAMED') {
-            expect($content)->toContain($target->name);
+            expect($content)->toContain($escapedTargetName);
         } else {
-            expect($content)->not->toContain($target->name);
+            expect($content)->not->toContain($escapedTargetName);
             expect($content)->toContain(__('assignments.hidden_recipient'));
         }
     }

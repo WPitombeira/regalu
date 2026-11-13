@@ -6,6 +6,7 @@ use App\Models\Family;
 use App\Models\FamilyMember;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
@@ -47,12 +48,21 @@ class JoinFamily extends Component
             return null;
         }
 
-        FamilyMember::create([
+        $values = [
             'family_id' => $family->id,
             'user_id' => auth()->id(),
             'role' => 'MEMBER',
             'joined_at' => now(),
-        ]);
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+        // Admission must still be valid in the INSERT, after the earlier UI checks.
+        $eligible = DB::table('families')->where('id', $family->id)
+            ->where('invite_code', $this->inviteCode)->where('is_archived', false)
+            ->whereExists(DB::table('users')->selectRaw('1')->where('id', auth()->id()));
+        $changed = DB::table('family_members')->insertOrIgnoreUsing(array_keys($values),
+            $eligible->selectRaw(implode(', ', array_fill(0, count($values), '?')), array_values($values)));
+        abort_unless($changed === 1, 409);
 
         $this->dispatch('notification', ['message' => __('messages.family.joined'), 'type' => 'success']);
 

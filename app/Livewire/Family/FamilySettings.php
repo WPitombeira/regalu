@@ -4,6 +4,7 @@ namespace App\Livewire\Family;
 
 use App\Models\Family;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Rule;
@@ -38,10 +39,15 @@ class FamilySettings extends Component
         $family = $this->authorizedFamily('update');
         $this->validate();
 
-        $family->update([
+        $editable = Family::query()->whereKey($family->id)->editableBy((int) Auth::id());
+        $values = [
             'name' => $this->name,
             'description' => $this->description,
-        ]);
+        ];
+        $changed = $editable->update($values);
+
+        // Some drivers report zero for an unchanged row; never retry the write.
+        abort_unless($changed === 1 || ($changed === 0 && $editable->useWritePdo()->where($values)->exists()), 409);
 
         $this->dispatch('notification', ['message' => __('family_forms.updated'), 'type' => 'success']);
     }
@@ -49,7 +55,9 @@ class FamilySettings extends Component
     public function archive(): void
     {
         $family = $this->authorizedFamily('archive');
-        $family->update(['is_archived' => true]);
+        $changed = Family::query()->whereKey($family->id)->editableBy((int) Auth::id())
+            ->update(['is_archived' => true]);
+        abort_unless($changed === 1, 409);
 
         $this->dispatch('notification', ['message' => __('messages.family.archived'), 'type' => 'success']);
     }
@@ -57,9 +65,10 @@ class FamilySettings extends Component
     public function regenerateCode(): void
     {
         $family = $this->authorizedFamily('update');
-        $family->update([
+        $changed = Family::query()->whereKey($family->id)->editableBy((int) Auth::id())->update([
             'invite_code' => Str::upper(Str::random(12)),
         ]);
+        abort_unless($changed === 1, 409);
 
         $this->dispatch('notification', ['message' => __('messages.family.code_regenerated'), 'type' => 'success']);
     }

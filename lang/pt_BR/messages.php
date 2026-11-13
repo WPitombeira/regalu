@@ -110,6 +110,9 @@ return [
         'mark_all_read' => 'Marcar todas como lidas',
         'no_notifications' => 'Nenhuma notificação ainda.',
     ],
+    'wishlist' => [
+        'add_item' => 'Adicionar Item',
+    ],
     'errors' => [
         '404' => [
             'title' => 'Página não encontrada',
