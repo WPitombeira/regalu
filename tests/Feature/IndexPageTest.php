@@ -1,5 +1,9 @@
 <?php
 
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
+use Livewire\Livewire;
+
 it('renders the hero section', function () {
     $response = $this->get(route('home'));
     $response->assertStatus(200);
@@ -32,8 +36,8 @@ it('renders the newsletter section', function () {
     $response->assertSee(__('messages.newsletter.headline'));
     $response->assertSee(__('messages.newsletter.subheadline'));
     $response->assertSee(__('messages.buttons.notify_me'));
-    $response->assertSee(__('messages.newsletter.caredata'));
-    $response->assertSee(__('messages.newsletter.privacy_policy'));
+    $response->assertSee(__('newsletter.purpose'));
+    $response->assertSee(__('newsletter.consent'));
 });
 
 it('renders the contact section', function () {
@@ -45,3 +49,34 @@ it('renders the contact section', function () {
     $response->assertSee('Your message');
     $response->assertSee('Sending unavailable');
 });
+
+it('handles contact submission without falsely acknowledging delivery', function (string $alias, string $locale, string $message) {
+    app()->setLocale($locale);
+    Mail::fake();
+    Queue::fake();
+
+    Livewire::test($alias)
+        ->set('feedback_name', 'Reader')
+        ->set('feedback_email', 'reader@example.test')
+        ->set('feedback_message', 'Please keep my message until it can be sent.')
+        ->call('registerFeedback')
+        ->assertStatus(200)
+        ->assertHasErrors(['feedback'])
+        ->assertHasNoErrors(['email', 'newsletterConsent'])
+        ->assertSet('feedback_name', 'Reader')
+        ->assertSet('feedback_email', 'reader@example.test')
+        ->assertSet('feedback_message', 'Please keep my message until it can be sent.')
+        ->assertSet('newsletterSubmitted', false)
+        ->assertSee($message)
+        ->assertSee('id="contact-error" role="alert"', false)
+        ->assertNotDispatched('notification');
+
+    $this->assertDatabaseCount('newsletters', 0);
+    Mail::assertNothingOutgoing();
+    Queue::assertNothingPushed();
+})->with([
+    'mounted English' => ['home.index', 'en', 'Contact messages cannot be sent right now. Your message has not been sent.'],
+    'legacy English' => ['home', 'en', 'Contact messages cannot be sent right now. Your message has not been sent.'],
+    'mounted Portuguese' => ['home.index', 'pt_BR', 'Não é possível enviar mensagens de contato no momento. Sua mensagem não foi enviada.'],
+    'legacy Portuguese' => ['home', 'pt_BR', 'Não é possível enviar mensagens de contato no momento. Sua mensagem não foi enviada.'],
+]);

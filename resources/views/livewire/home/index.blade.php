@@ -76,19 +76,34 @@
     </section>
 
     <section id="newsletter" class="bg-white mt-10 dark:bg-gray-900 py-10">
-        <div class="w-auto m-auto justify-center flex">
-            <div class="grid lg:grid-cols-2 gap-4 place-content-center">
-                <div class="max-w-lg md:px-4">
-                    <h1 class="text-xl font-bold tracking-tight leading-none md:text-xl xl:text-2xl dark:text-white">{{ __("messages.newsletter.headline") }}</h1>
-                    <p class="mb-6 font-light text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">{{ __("messages.newsletter.subheadline") }}</h2>
+        <div class="mx-auto max-w-6xl px-4">
+            <div class="grid gap-6 lg:grid-cols-2">
+                <div class="min-w-0 max-w-lg md:px-4">
+                    <h2 class="text-xl font-bold tracking-tight leading-none md:text-xl xl:text-2xl dark:text-white">{{ __("messages.newsletter.headline") }}</h2>
+                    <p class="mt-3 font-light text-gray-500 md:text-lg lg:text-xl dark:text-gray-400">{{ __("messages.newsletter.subheadline") }}</p>
                 </div>
-                <div class="align-middle flex flex-col justify-center">
-                    <form class="flex flex-col" wire:submit="registerNewsletter">
-                        <div class="grid grid-cols-3 gap-4">
-                            <input wire:model="email"  class="inset-0 py-2 px-3.5 text-sm h-9 col-span-2 form-input rounded-md px-4 py-3" type="email" placeholder="Your best e-mail" required="">
-                            <button type="submit" class="hover:text-violet-900 hover:bg-gray-200 transition hover:duration-200 ease-in-out shadow-xs text-violet-800 bg-white text-black font-bold text-sm rounded-md py-2 px-3.5">{{ __("messages.buttons.notify_me") }}</button>
+                <div class="min-w-0">
+                    <form class="flex flex-col gap-3" wire:submit="registerNewsletter">
+                        <label for="newsletter-email" class="text-sm font-medium text-gray-900 dark:text-white">{{ __('newsletter.email') }}</label>
+                        <input id="newsletter-email" wire:model.live.blur="email" class="form-input min-h-11 w-full min-w-0 rounded-md border-gray-300 px-4 py-3 text-base text-gray-900 focus:border-violet-500 focus:ring-violet-500" type="email" autocomplete="email" maxlength="254" required aria-invalid="{{ $errors->has('email') ? 'true' : 'false' }}" aria-describedby="newsletter-purpose{{ $errors->has('email') ? ' newsletter-email-error' : '' }}">
+                        @error('email')
+                            <p id="newsletter-email-error" role="alert" class="text-sm text-red-700 dark:text-red-300">{{ $message }}</p>
+                        @enderror
+                        <p id="newsletter-purpose" class="text-sm text-gray-600 dark:text-gray-300">{{ __('newsletter.purpose') }}</p>
+                        <div class="flex min-h-11 items-start gap-3">
+                            <input id="newsletter-consent" wire:model.live="newsletterConsent" type="checkbox" required class="mt-3 h-5 w-5 shrink-0 rounded border-gray-300 text-violet-700 focus:ring-violet-500" aria-invalid="{{ $errors->has('newsletterConsent') ? 'true' : 'false' }}" @if($errors->has('newsletterConsent')) aria-describedby="newsletter-consent-error" @endif>
+                            <label for="newsletter-consent" class="min-h-11 cursor-pointer py-2 text-sm text-gray-900 dark:text-white">{{ __('newsletter.consent') }}</label>
                         </div>
-                        <span class="m-auto text-base">{{ __("messages.newsletter.caredata") }} <a href="#" class="font-bold">{{ __("messages.newsletter.privacy_policy") }}</a></span>
+                        @error('newsletterConsent')
+                            <p id="newsletter-consent-error" role="alert" class="text-sm text-red-700 dark:text-red-300">{{ $message }}</p>
+                        @enderror
+                        <button type="submit" wire:loading.attr="disabled" wire:target="registerNewsletter" class="min-h-11 w-full rounded-md bg-white px-4 py-3 text-sm font-bold text-violet-800 shadow-xs transition hover:bg-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 disabled:cursor-wait disabled:opacity-60 sm:w-auto sm:self-start">{{ __("messages.buttons.notify_me") }}</button>
+                        @error('newsletter')
+                            <p id="newsletter-error" role="alert" class="text-sm text-red-700 dark:text-red-300">{{ $message }}</p>
+                        @enderror
+                        @if($newsletterSubmitted)
+                            <p id="newsletter-status" role="status" aria-live="polite" class="text-sm text-green-800 dark:text-green-300">{{ __('newsletter.success') }}</p>
+                        @endif
                     </form>
                 </div>
             </div>

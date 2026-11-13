@@ -94,18 +94,8 @@
                             <p class="text-gray-400 text-sm mb-1">{{ $item->description }}</p>
                         @endif
 
-                        <div class="flex items-center gap-4 text-sm text-gray-500">
-                            @if ($item->price_min || $item->price_max)
-                                <span>
-                                    @if ($item->price_min && $item->price_max)
-                                        ${{ number_format($item->price_min, 2) }} - ${{ number_format($item->price_max, 2) }}
-                                    @elseif ($item->price_min)
-                                        From ${{ number_format($item->price_min, 2) }}
-                                    @else
-                                        Up to ${{ number_format($item->price_max, 2) }}
-                                    @endif
-                                </span>
-                            @endif
+                        <div class="flex flex-wrap items-center gap-4 text-sm text-gray-400">
+                            <x-wishlist.price :minimum="$item->price_min" :maximum="$item->price_max" :currency="$item->currency" />
 
                             @if ($item->url)
                                 <a href="{{ $item->url }}" target="_blank" rel="noopener noreferrer"
