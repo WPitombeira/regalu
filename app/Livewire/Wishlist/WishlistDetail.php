@@ -9,6 +9,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -23,6 +24,12 @@ class WishlistDetail extends Component
     {
         Gate::authorize('view', $wishlist);
         $this->wishlist = $wishlist;
+    }
+
+    #[On('item-added')]
+    public function refreshItems(): void
+    {
+        $this->resetPage();
     }
 
     public function markAsBought(int $itemId): void

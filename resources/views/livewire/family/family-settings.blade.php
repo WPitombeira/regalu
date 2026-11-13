@@ -40,9 +40,9 @@
                 {{ $family->invite_code }}
             </span>
             <button wire:click="regenerateCode"
-                    wire:confirm="Regenerate the invite code? The old code will stop working."
+                    wire:confirm="{{ __('family_forms.regenerate_confirm') }}"
                     class="px-4 py-2.5 text-sm font-medium text-yellow-400 bg-yellow-900/30 border border-yellow-800 rounded-lg hover:bg-yellow-900/50 transition-colors">
-                Regenerate
+                {{ __('family_forms.regenerate') }}
             </button>
         </div>
     </div>
@@ -51,9 +51,9 @@
 
     {{-- Archive Section --}}
     <div>
-        <h3 class="text-lg font-semibold text-white mb-3">Danger Zone</h3>
+        <h3 class="text-lg font-semibold text-white mb-3">{{ __('family_forms.danger_zone') }}</h3>
         <button wire:click="archive"
-                wire:confirm="Archive this family? Members will no longer see it in their list."
+                wire:confirm="{{ __('family_forms.archive_confirm') }}"
                 class="px-5 py-2.5 text-sm font-medium text-red-400 bg-red-900/30 border border-red-800 rounded-lg hover:bg-red-900/50 transition-colors">
             {{ __("messages.buttons.archive") }}
         </button>
