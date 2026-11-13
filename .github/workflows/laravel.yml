@@ -261,6 +261,24 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Exercise profile settings in English and Portuguese with and without JavaScript
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/profile_settings_smoke.py --output coverage/profile-settings-browser
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/profile_settings_report_test.py --output coverage/profile-settings-browser
+
+      - name: Upload profile settings browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: profile-settings-browser
+          path: |
+            coverage/profile-settings-browser/results.json
+            coverage/profile-settings-browser/**/*.png
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Upload PHP coverage reports
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

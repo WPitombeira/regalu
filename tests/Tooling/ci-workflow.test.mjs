@@ -91,6 +91,15 @@ test('release smoke builds caches and migrates a disposable SQLite database both
     assert.match(tests, /rm -f bootstrap\/cache\/config\.php/);
 });
 
+test('profile settings runs the full browser matrix and validates its always-uploaded evidence', () => {
+    const tests = job('tests');
+
+    assert.match(tests, /"\$RUNNER_TEMP\/regalu-browser-venv\/bin\/python" -B tests\/Browser\/profile_settings_smoke\.py --output coverage\/profile-settings-browser\s*$/m);
+    assert.match(tests, /"\$RUNNER_TEMP\/regalu-browser-venv\/bin\/python" -B tests\/Browser\/profile_settings_report_test\.py --output coverage\/profile-settings-browser\s*$/m);
+    assert.match(tests, /name: Upload profile settings browser evidence\n\s+if: always\(\)\n\s+uses: actions\/upload-artifact@/);
+    assert.match(tests, /name: profile-settings-browser\n\s+path: \|\n\s+coverage\/profile-settings-browser\/results\.json\n\s+coverage\/profile-settings-browser\/\*\*\/\*\.png/);
+});
+
 test('Dependabot checks Composer, npm, and GitHub Actions weekly with grouped patch/minor updates', () => {
     for (const ecosystem of ['composer', 'npm', 'github-actions']) {
         assert.match(dependabot, new RegExp(`package-ecosystem: ${ecosystem}`));
