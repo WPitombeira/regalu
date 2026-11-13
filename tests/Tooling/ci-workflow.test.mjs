@@ -91,6 +91,17 @@ test('release smoke builds caches and migrates a disposable SQLite database both
     assert.match(tests, /rm -f bootstrap\/cache\/config\.php/);
 });
 
+test('password recovery runs the complete browser matrix and preserves per-case evidence', () => {
+    const tests = job('tests');
+    const command = tests.split('\n').find(line => line.includes('tests/Browser/password_recovery_smoke.py'));
+
+    assert.ok(command, 'missing password recovery browser runner');
+    assert.match(command, /-B tests\/Browser\/password_recovery_smoke\.py --output coverage\/password-recovery-browser\s*$/);
+    assert.doesNotMatch(command, /--case/);
+    assert.match(tests, /name: Upload password recovery browser evidence\n\s+if: always\(\)\n\s+uses: actions\/upload-artifact@/);
+    assert.match(tests, /name: password-recovery-browser\n\s+path: \|\n\s+coverage\/password-recovery-browser\/results\.json\n\s+coverage\/password-recovery-browser\/\*\*\/result\.json\n\s+coverage\/password-recovery-browser\/\*\*\/\*\.png\n\s+if-no-files-found: error/);
+});
+
 test('auth forms run real browser journeys and retain only structured evidence and screenshots', () => {
     const tests = job('tests');
     const run = tests.match(/      - name: Exercise auth forms[\s\S]*?(?=\n      - name:)/)?.[0];
