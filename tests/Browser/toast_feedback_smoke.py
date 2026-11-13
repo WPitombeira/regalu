@@ -29,6 +29,10 @@ LABELS = {
     'en': ['Dismiss notification', 'Success', 'Error', 'Warning', 'Information'],
     'pt_BR': ['Dispensar notificação', 'Sucesso', 'Erro', 'Atenção', 'Informação'],
 }
+PROFILE_SAVED = {
+    'en': 'Profile updated successfully.',
+    'pt_BR': 'Perfil atualizado com sucesso.',
+}
 CHECKPOINTS = {'profile': 1, 'stack': 2, 'appended': 2, 'long': 1, 'timer': 1}
 INPUTS = (
     'composer.json', 'composer.lock', 'package.json', 'package-lock.json', 'vite.config.js',
@@ -255,8 +259,8 @@ def journey(browser, locale, scheme, width, output, result):
                     page.locator('form[wire\\:submit="updateProfile"] button[type=submit]').click()
                 assert saved.value.status == 200, 'save_http'
             assert notice.value.status == 200, 'listener_http'
-            # The existing profile producer falls back to EN on this master; PR25 owns its localization.
-            success = card('Profile updated successfully.')
+            # The profile producer is localized once the settings copy lands.
+            success = card(PROFILE_SAVED[locale])
             expect(success).to_be_visible()
             with sqlite3.connect(f'file:{database}?mode=ro', uri=True) as connection:
                 assert connection.execute('select name from users where email=?', ('toast@example.test',)).fetchone() == ('Browser Toast Saved',), 'profile_not_saved'
