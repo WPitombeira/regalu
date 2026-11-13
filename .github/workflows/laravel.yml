@@ -261,6 +261,25 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Exercise localized footer navigation
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          set -euo pipefail
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/footer_navigation_smoke.py --output coverage/footer-browser
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/footer_navigation_report_test.py coverage/footer-browser/report.json
+
+      - name: Upload footer browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: footer-browser
+          path: |
+            coverage/footer-browser/report.json
+            coverage/footer-browser/**/*.png
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Upload PHP coverage reports
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

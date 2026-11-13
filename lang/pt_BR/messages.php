@@ -8,7 +8,7 @@ return [
     ],
     'features' => [
         'headline' => 'Nossos Recursos',
-        'subheadline' => ['Descubra uma variedade de recursos projetados para melhorar sua experiência.'],
+        'subheadline' => 'Descubra uma variedade de recursos projetados para melhorar sua experiência.',
         'wishlist' => [
             'headline' => 'Gerenciamento de Lista de Desejos',
             'subheadline' => 'Crie e gerencie suas listas de desejos sem esforço.',

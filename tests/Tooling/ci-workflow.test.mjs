@@ -91,6 +91,16 @@ test('release smoke builds caches and migrates a disposable SQLite database both
     assert.match(tests, /rm -f bootstrap\/cache\/config\.php/);
 });
 
+test('footer navigation runs the full browser matrix and fail-closed report validation', () => {
+    const tests = job('tests');
+    assert.match(tests, /name: Exercise localized footer navigation[\s\S]*?set -euo pipefail/);
+    assert.match(tests, /python" -B tests\/Browser\/footer_navigation_smoke\.py --output coverage\/footer-browser\s*$/m);
+    assert.match(tests, /python" -B tests\/Browser\/footer_navigation_report_test\.py coverage\/footer-browser\/report\.json\s*$/m);
+    assert.match(tests, /name: Upload footer browser evidence\n\s+if: always\(\)/);
+    assert.match(tests, /name: footer-browser/);
+    assert.match(tests, /coverage\/footer-browser\/report\.json\n\s+coverage\/footer-browser\/\*\*\/\*\.png/);
+});
+
 test('Dependabot checks Composer, npm, and GitHub Actions weekly with grouped patch/minor updates', () => {
     for (const ecosystem of ['composer', 'npm', 'github-actions']) {
         assert.match(dependabot, new RegExp(`package-ecosystem: ${ecosystem}`));
