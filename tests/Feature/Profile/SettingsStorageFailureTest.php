@@ -54,6 +54,7 @@ it('preserves the whole profile and draft when the avatar disk cannot write', fu
         ->assertSet('avatarPreview', '/storage/avatars/current.png')
         ->assertNotDispatched('notification');
     expect($component->get('avatar'))->toBeInstanceOf(TemporaryUploadedFile::class);
+    expect($component->html())->toMatch('#/livewire-[a-z0-9-]+/preview-file/#');
     expect($public->get('avatars/current.png'))->toBe(avatarStoragePng());
     expect($public->allFiles())->toBe(['avatars/current.png']);
 
@@ -61,6 +62,7 @@ it('preserves the whole profile and draft when the avatar disk cannot write', fu
     expect($public->deleteDirectory($path))->toBeTrue();
     $component->call('updateProfile')->assertOk()->assertHasNoErrors()
         ->assertSet('avatar', null)
+        ->assertSet('avatarStorageFailed', false)
         ->assertSet('avatarPreview', '/storage/'.$path)
         ->assertDispatched('notification');
     $saved = $user->fresh();

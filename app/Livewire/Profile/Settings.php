@@ -29,6 +29,9 @@ class Settings extends Component
 
     public string $avatarPreview = '';
 
+    /** The chosen draft stays previewable even when the disk refused the write. */
+    public bool $avatarStorageFailed = false;
+
     #[Rule(['required', 'string'])]
     public string $currentPassword = '';
 
@@ -70,6 +73,8 @@ class Settings extends Component
             'phone' => $this->phone,
         ];
 
+        $this->avatarStorageFailed = false;
+
         if ($this->avatar) {
             $this->validateOnly('avatar');
             $path = 'avatars/'.$this->avatar->hashName();
@@ -87,6 +92,7 @@ class Settings extends Component
             }
 
             if (! $stored) {
+                $this->avatarStorageFailed = true;
                 $this->addError('avatar', __('avatar_upload.failed'));
 
                 return;
