@@ -28,6 +28,9 @@ beforeEach(function () {
 
 it('queues assignments only after the draw commits and delivers privacy-safe mail through a real worker', function (string $visibility) {
     $this->event->update(['recipient_visibility' => $visibility]);
+    foreach ($this->participants as $participant) {
+        $participant->update(['name' => "Assignment O'{$participant->id} <recipient>"]);
+    }
     DB::beginTransaction();
     Livewire::actingAs($this->host)->test(ExecuteDraw::class, ['event' => $this->event])->call('executeDraw');
     expect(DB::table('jobs')->count())->toBe(0);
@@ -61,9 +64,9 @@ it('queues assignments only after the draw commits and delivers privacy-safe mai
         expect($content)->toContain('http://127.0.0.1:8123/secret-santa/'.$this->event->id.'/assignment');
         expect($content)->not->toContain($target->email, '/wishlists/');
         if ($visibility === 'NAMED') {
-            expect($content)->toContain($target->name);
+            expect($content)->toContain(e($target->name))->not->toContain($target->name);
         } else {
-            expect($content)->not->toContain($target->name);
+            expect($content)->not->toContain($target->name, e($target->name));
             expect($content)->toContain(__('assignments.hidden_recipient'));
         }
     }
@@ -129,5 +132,7 @@ it('resolves the current visibility rather than a serialized recipient name', fu
     $this->event->update(['recipient_visibility' => 'ANONYMOUS_UNTIL_REVEAL']);
     $job->handle();
     Mail::assertSent(AmigoSecretoAssignmentMail::class, fn ($mail) => $mail->hasTo($this->host->email)
-        && $mail->targetName === null && ! str_contains($mail->render(), $draw->target->name));
+        && $mail->targetName === null
+        && ! str_contains($mail->render(), $draw->target->name)
+        && ! str_contains($mail->render(), e($draw->target->name)));
 });
