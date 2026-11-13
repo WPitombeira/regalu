@@ -22,6 +22,7 @@ Route::group(['middleware' => 'guest'], function () {
 
 Route::group(['middleware' => ['auth', 'auth.session']], function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::view('/getting-started', 'onboarding.index')->name('onboarding');
     Route::post('/logout', [UserController::class, 'logout'])->name('logout');
     Route::get('/settings', [UserController::class, 'viewSettings'])->name('settings');
     Route::get('/profile', [UserController::class, 'viewSettings'])->name('profile');

@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'entry' => 'Primeiros passos',
+    'title' => 'Sua primeira lista, passo a passo',
+    'private_first' => 'Novas listas começam privadas. Você decide se e quando compartilhar.',
+    'create' => 'Criar uma lista',
+    'dashboard' => 'Voltar ao painel',
+    'intro' => 'Comece com uma lista e uma ideia de presente. Você pode sair deste guia a qualquer momento e reabri-lo pelo painel.',
+    'create_help' => 'Dê um nome à lista, como Ideias de aniversário. O formulário começa com a opção Privada selecionada.',
+    'created' => 'Lista criada',
+    'add' => 'Adicione seu primeiro presente',
+    'add_help' => 'Abra sua lista e escolha Adicionar Item. Um nome basta para começar; link, imagem e preço são opcionais.',
+    'open' => 'Abrir sua lista',
+    'added' => 'Ideia de presente adicionada',
+    'privacy' => 'Escolha quem pode ver',
+    'privacy_help' => 'Manter sua lista privada é uma escolha válida.',
+    'review' => 'Revisar privacidade e compartilhamento',
+    'private' => 'Privada: só você pode abrir a lista pelo compartilhamento comum.',
+    'family' => 'Família: pessoas que compartilham uma família ativa com você podem ver a lista.',
+    'specific' => 'Pessoas específicas: apenas quem você adicionar explicitamente pode ver a lista.',
+    'sharing_help' => 'Um link não concede acesso: é preciso entrar na conta e ter permissão. O consentimento de lista no amigo secreto é separado e gerenciado em cada evento.',
+    'ready' => 'Sua lista tem uma ideia de presente. Revise sua escolha abaixo e volte ao painel quando quiser.',
+    'waiting' => 'Crie sua lista primeiro.',
+    'next' => 'Próximo passo',
+];

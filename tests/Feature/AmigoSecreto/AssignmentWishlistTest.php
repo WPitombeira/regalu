@@ -53,6 +53,15 @@ it('provides an anonymous shopping page without granting general access to the p
     $this->get(route('wishlists.show', $this->wishlist))->assertForbidden();
 });
 
+it('shows the actual currency through the anonymous item projection', function (string $locale, string $expected) {
+    app()->setLocale($locale);
+    $this->item->update(['price_min' => '29.95', 'price_max' => '29.95', 'currency' => 'USD']);
+    $component = Livewire::actingAs($this->buyer)->test(AssignmentWishlist::class, ['event' => $this->event])
+        ->assertSee($expected)->assertDontSee('HiddenRecipientSentinel')->assertDontSee('IdentifyingWishlistTitle');
+    $item = $component->viewData('items')->first();
+    expect($item)->toHaveKey('currency', 'USD')->not->toHaveKeys(['id', 'wishlist_id', 'bought_by_user_id']);
+})->with([['en', 'USD 29.95'], ['pt_BR', 'USD 29,95']]);
+
 it('does not leak a hidden recipient through the existing assignment surfaces', function (string $route) {
     $this->actingAs($this->buyer)->get(route($route, $this->event))
         ->assertOk()->assertDontSee('HiddenRecipientSentinel')
