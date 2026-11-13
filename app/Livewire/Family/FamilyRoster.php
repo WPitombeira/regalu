@@ -22,6 +22,12 @@ class FamilyRoster extends Component
 
     public string $inviteEmail = '';
 
+    /** @return array<string, string> */
+    protected function validationAttributes(): array
+    {
+        return ['inviteEmail' => __('family_forms.attribute_email')];
+    }
+
     public function mount(Family $family): void
     {
         $this->family = $family;
@@ -75,7 +81,12 @@ class FamilyRoster extends Component
             return;
         }
 
-        $member->delete();
+        $changed = FamilyMember::query()->whereKey($member->id)
+            ->where('family_id', $family->id)->where('user_id', $member->user_id)
+            ->whereExists(Family::query()->selectRaw('1')->whereKey($family->id)->editableBy((int) Auth::id())
+                ->whereColumn('families.creator_id', '!=', 'family_members.user_id')->toBase())
+            ->delete();
+        abort_unless($changed === 1, 409);
 
         $this->dispatch('notification', ['message' => __('messages.family.removed'), 'type' => 'success']);
     }
@@ -85,9 +96,15 @@ class FamilyRoster extends Component
         $family = $this->authorizedFamily('update');
         $member = $family->members()->findOrFail($memberId);
 
-        $member->update(['role' => 'ADMIN']);
+        $eligible = FamilyMember::query()->whereKey($member->id)
+            ->where('family_id', $family->id)->where('user_id', $member->user_id)
+            ->whereExists(Family::query()->selectRaw('1')->whereKey($family->id)->editableBy((int) Auth::id())->toBase());
+        $changed = $eligible->update(['role' => 'ADMIN']);
 
-        $this->dispatch('notification', ['message' => __('messages.family.role_admin'), 'type' => 'success']);
+        // Confirm an already-admin membership using the same identity and grant.
+        abort_unless($changed === 1 || ($changed === 0 && $eligible->useWritePdo()->where('role', 'ADMIN')->exists()), 409);
+
+        $this->dispatch('notification', ['message' => __('family_forms.promoted'), 'type' => 'success']);
     }
 
     public function render(): View

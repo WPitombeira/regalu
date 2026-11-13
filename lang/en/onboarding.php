@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'entry' => 'Getting started',
+    'title' => 'Your first wishlist, step by step',
+    'private_first' => 'New wishlists start private. You decide if and when to share.',
+    'create' => 'Create a wishlist',
+    'dashboard' => 'Back to dashboard',
+    'intro' => 'Start small: one list and one gift idea. You can leave this guide at any time and reopen it from your dashboard.',
+    'create_help' => 'Give your list a name, such as Birthday ideas. The creation form starts with Private selected.',
+    'created' => 'List created',
+    'add' => 'Add your first gift',
+    'add_help' => 'Open your list and choose Add Item. A name is enough to start; a link, image and price are optional.',
+    'open' => 'Open your wishlist',
+    'added' => 'Gift idea added',
+    'privacy' => 'Choose who can see it',
+    'privacy_help' => 'Keeping your list private is a valid choice.',
+    'review' => 'Review privacy and sharing',
+    'private' => 'Private: only you can open the list through ordinary sharing.',
+    'family' => 'Family: people who share an active family with you can see the list.',
+    'specific' => 'Specific people: only people you explicitly add can see the list.',
+    'sharing_help' => 'A link does not grant access: visitors must sign in and have permission. Secret Santa wishlist consent is separate and is managed in each event.',
+    'ready' => 'Your list has a gift idea. Review your choice below, then return to your dashboard whenever you are ready.',
+    'waiting' => 'Create your list first.',
+    'next' => 'Next step',
+];
