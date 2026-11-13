@@ -9,20 +9,20 @@ describe('password reset', function () {
     it('can view forgot password form', function () {
         $this->get(route('password.request'))
             ->assertOk()
-            ->assertSee(__('messages.auth.forgot_password'));
+            ->assertSee(__('password_recovery.forgot_title'));
     });
 
     it('can request a reset link', function () {
         $user = User::factory()->create(['email' => 'reset@example.com']);
 
         $this->post(route('password.email'), ['email' => 'reset@example.com'])
-            ->assertSessionHas('status', __('messages.auth.reset_link_sent'));
+            ->assertSessionHas('status', __('password_recovery.requested'));
     });
 
     it('cannot request reset for non-existent email', function () {
         // Should still return success for security (no email enumeration)
         $this->post(route('password.email'), ['email' => 'nonexistent@example.com'])
-            ->assertSessionHas('status', __('messages.auth.reset_link_sent'));
+            ->assertSessionHas('status', __('password_recovery.requested'));
     });
 
     it('rejects a non-string reset token without calling the password broker', function () {

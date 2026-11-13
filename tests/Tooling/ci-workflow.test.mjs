@@ -48,6 +48,22 @@ test('PHP quality checks Composer validity and security, Pint, and Larastan', ()
     assert.match(quality, /vendor\/bin\/phpstan analyse --no-progress/);
 });
 
+test('avatar storage refusal and retry run with runtime and receipt gates and always-uploaded evidence', () => {
+    const tests = job('tests');
+    const step = tests.match(/      - name: Exercise avatar storage refusal and retry\n([\s\S]*?)(?=      - name:)/)?.[1];
+    assert.ok(step, 'missing required avatar browser step');
+    assert.doesNotMatch(step, /continue-on-error|if:|\|\|\s*true/);
+    assert.match(step, /PLAYWRIGHT_BROWSERS_PATH: \$\{\{ runner\.temp \}\}\/regalu-browser-cache/);
+    const commands = [...step.matchAll(/"\$RUNNER_TEMP\/regalu-browser-venv\/bin\/python" -B (.+)/g)].map(([, command]) => command);
+    assert.deepEqual(commands, [
+        'tests/Browser/avatar_storage_report_test.py',
+        'tests/Browser/avatar_storage_smoke.py --output coverage/avatar-storage-browser',
+        'tests/Browser/avatar_storage_report_test.py --report coverage/avatar-storage-browser/results.json',
+    ]);
+    assert.match(tests, /name: Upload avatar storage browser evidence\n\s+if: always\(\)\n\s+uses: actions\/upload-artifact@/);
+    assert.match(tests, /name: avatar-storage-browser\n\s+path: \|\n\s+coverage\/avatar-storage-browser\/results\.json\n\s+coverage\/avatar-storage-browser\/\*\*\/\*\.png/);
+});
+
 test('assets run native Vite, portable tooling smoke tests, npm audit, and publish the native build', () => {
     const assets = job('assets');
 
@@ -91,6 +107,7 @@ test('release smoke builds caches and migrates a disposable SQLite database both
     assert.match(tests, /rm -f bootstrap\/cache\/config\.php/);
 });
 
+
 test('event budgets run the complete browser matrix and fail-closed validator with retained evidence', () => {
     const tests = job('tests');
     const start = tests.indexOf('      - name: Exercise event budgets');
@@ -105,6 +122,54 @@ test('event budgets run the complete browser matrix and fail-closed validator wi
     assert.match(tests, /coverage\/event-budget-browser\/report\.json\n\s+coverage\/event-budget-browser\/\*\*\/\*\.png/);
 });
 
+
+test('footer navigation runs the full browser matrix and fail-closed report validation', () => {
+    const tests = job('tests');
+    assert.match(tests, /name: Exercise localized footer navigation[\s\S]*?set -euo pipefail/);
+    assert.match(tests, /python" -B tests\/Browser\/footer_navigation_smoke\.py --output coverage\/footer-browser\s*$/m);
+    assert.match(tests, /python" -B tests\/Browser\/footer_navigation_report_test\.py coverage\/footer-browser\/report\.json\s*$/m);
+    assert.match(tests, /name: Upload footer browser evidence\n\s+if: always\(\)/);
+    assert.match(tests, /name: footer-browser/);
+    assert.match(tests, /coverage\/footer-browser\/report\.json\n\s+coverage\/footer-browser\/\*\*\/\*\.png/);
+});
+
+test('profile settings runs the full browser matrix and validates its always-uploaded evidence', () => {
+    const tests = job('tests');
+
+    assert.match(tests, /"\$RUNNER_TEMP\/regalu-browser-venv\/bin\/python" -B tests\/Browser\/profile_settings_runtime_test\.py\s*$/m);
+    assert.match(tests, /"\$RUNNER_TEMP\/regalu-browser-venv\/bin\/python" -B tests\/Browser\/profile_settings_smoke\.py --output coverage\/profile-settings-browser\s*$/m);
+    assert.match(tests, /"\$RUNNER_TEMP\/regalu-browser-venv\/bin\/python" -B tests\/Browser\/profile_settings_report_test\.py --output coverage\/profile-settings-browser\s*$/m);
+    assert.match(tests, /name: Upload profile settings browser evidence\n\s+if: always\(\)\n\s+uses: actions\/upload-artifact@/);
+    assert.match(tests, /name: profile-settings-browser\n\s+path: \|\n\s+coverage\/profile-settings-browser\/results\.json\n\s+coverage\/profile-settings-browser\/\*\*\/\*\.png/);
+});
+
+test('password recovery runs the complete browser matrix and preserves per-case evidence', () => {
+    const tests = job('tests');
+    const command = tests.split('\n').find(line => line.includes('tests/Browser/password_recovery_smoke.py'));
+
+    assert.ok(command, 'missing password recovery browser runner');
+    assert.match(command, /-B tests\/Browser\/password_recovery_smoke\.py --output coverage\/password-recovery-browser\s*$/);
+    assert.doesNotMatch(command, /--case/);
+    assert.match(tests, /name: Upload password recovery browser evidence\n\s+if: always\(\)\n\s+uses: actions\/upload-artifact@/);
+    assert.match(tests, /name: password-recovery-browser\n\s+path: \|\n\s+coverage\/password-recovery-browser\/results\.json\n\s+coverage\/password-recovery-browser\/\*\*\/result\.json\n\s+coverage\/password-recovery-browser\/\*\*\/\*\.png\n\s+if-no-files-found: error/);
+});
+
+test('auth forms run real browser journeys and retain only structured evidence and screenshots', () => {
+    const tests = job('tests');
+    const run = tests.match(/      - name: Exercise auth forms[\s\S]*?(?=\n      - name:)/)?.[0];
+    assert.ok(run, 'missing auth form browser gate');
+    assert.match(run, /PLAYWRIGHT_BROWSERS_PATH: \$\{\{ runner\.temp \}\}\/regalu-browser-cache/);
+    assert.match(run, /"\$RUNNER_TEMP\/regalu-browser-venv\/bin\/python" -B tests\/Browser\/auth_forms_smoke\.py --output coverage\/auth-forms-browser/);
+    assert.doesNotMatch(run, /continue-on-error|\|\| true|if: always/);
+
+    const upload = tests.match(/      - name: Upload auth form browser evidence[\s\S]*?(?=\n      - name:)/)?.[0];
+    assert.ok(upload, 'missing auth form browser artifact');
+    assert.match(upload, /if: always\(\)/);
+    assert.match(upload, /actions\/upload-artifact@[a-f0-9]{40}/);
+    assert.match(upload, /name: auth-forms-browser/);
+    assert.match(upload, /coverage\/auth-forms-browser\/results\.json\n\s+coverage\/auth-forms-browser\/\*\*\/\*\.png/);
+});
+
 test('Dependabot checks Composer, npm, and GitHub Actions weekly with grouped patch/minor updates', () => {
     for (const ecosystem of ['composer', 'npm', 'github-actions']) {
         assert.match(dependabot, new RegExp(`package-ecosystem: ${ecosystem}`));
@@ -112,4 +177,17 @@ test('Dependabot checks Composer, npm, and GitHub Actions weekly with grouped pa
     assert.equal((dependabot.match(/interval: weekly/g) ?? []).length, 3);
     assert.equal((dependabot.match(/^\s+- minor$/gm) ?? []).length, 3);
     assert.equal((dependabot.match(/^\s+- patch$/gm) ?? []).length, 3);
+});
+
+test('toast browser journeys and fail-closed evidence validation run in required CI', () => {
+    const tests = job('tests');
+    const step = tests.match(/      - name: Exercise localized toast feedback[\s\S]*?(?=      - name:)/)?.[0];
+    assert.ok(step, 'missing toast browser step');
+    assert.match(step, /PLAYWRIGHT_BROWSERS_PATH: \$\{\{ runner\.temp \}\}\/regalu-browser-cache/);
+    assert.match(step, /set -euo pipefail/);
+    assert.match(step, /python" -B tests\/Browser\/toast_feedback_smoke\.py --output coverage\/toast-browser/);
+    assert.match(step, /python" -B tests\/Browser\/toast_feedback_report_test\.py coverage\/toast-browser\/results\.json/);
+    assert.doesNotMatch(step, /--case|continue-on-error|\|\| true/);
+    assert.match(tests, /name: Upload toast browser evidence\n\s+if: always\(\)\n\s+uses: actions\/upload-artifact@/);
+    assert.match(tests, /name: toast-feedback-browser\n\s+path: \|\n\s+coverage\/toast-browser\/results\.json\n\s+coverage\/toast-browser\/\*\*\/\*\.png/);
 });

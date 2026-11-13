@@ -50,6 +50,9 @@ return [
         'generic_error' => 'Whoops, something went wrong.',
         'login_success' => 'You have successfully logged in.',
     ],
+    'contact' => [
+        'unavailable' => 'Contact messages cannot be sent right now. Your message has not been sent.',
+    ],
     'newsletter' => [
         'caredata' => 'We care about your data. Read our',
         'privacy_policy' => 'Privacy Policy',

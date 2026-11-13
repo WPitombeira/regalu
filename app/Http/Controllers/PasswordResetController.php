@@ -22,12 +22,12 @@ class PasswordResetController extends Controller
     {
         $request->validate([
             'email' => ['required', 'email'],
-        ]);
+        ], [], ['email' => __('password_recovery.attributes.email')]);
 
         Password::sendResetLink($request->only('email'));
 
-        // Always return success to prevent email enumeration
-        return back()->with('status', __('messages.auth.reset_link_sent'));
+        // Acknowledge every well-formed request without disclosing account existence.
+        return back()->with('status', __('password_recovery.requested'));
     }
 
     public function showResetForm(Request $request, string $token): View
@@ -44,6 +44,10 @@ class PasswordResetController extends Controller
             'token' => ['required', 'string'],
             'email' => ['required', 'email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ], [], [
+            'email' => __('password_recovery.attributes.email'),
+            'password' => __('password_recovery.attributes.password'),
+            'token' => __('password_recovery.attributes.token'),
         ]);
 
         $status = Password::reset(
@@ -61,9 +65,9 @@ class PasswordResetController extends Controller
         );
 
         if ($status === Password::PASSWORD_RESET) {
-            return redirect()->route('dashboard')->with('status', __('messages.auth.reset_success'));
+            return redirect()->route('dashboard')->with('status', __('password_recovery.success'));
         }
 
-        return back()->withErrors(['email' => __('messages.auth.invalid_token')]);
+        return back()->withErrors(['email' => __('password_recovery.invalid_link')]);
     }
 }
