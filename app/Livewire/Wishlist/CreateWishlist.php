@@ -27,6 +27,18 @@ class CreateWishlist extends Component
     #[Rule(['nullable', 'exists:families,id'])]
     public ?int $family_id = null;
 
+    /** @return array<string, string> */
+    protected function validationAttributes(): array
+    {
+        return [
+            'name' => __('wishlist_forms.attribute_name'),
+            'description' => __('wishlist_forms.attribute_description'),
+            'type' => __('wishlist_forms.attribute_type'),
+            'privacy' => __('wishlist_forms.attribute_privacy'),
+            'family_id' => __('wishlist_forms.attribute_family'),
+        ];
+    }
+
     public function create(): Redirector|RedirectResponse
     {
         abort_unless(Auth::check(), 403);
@@ -46,7 +58,7 @@ class CreateWishlist extends Component
             'is_archived' => false,
         ]);
 
-        $this->dispatch('notification', ['message' => __('messages.wishlist.created'), 'type' => 'success']);
+        $this->dispatch('notification', ['message' => __('wishlist_forms.created'), 'type' => 'success']);
 
         return redirect()->route('wishlists.show', $wishlist);
     }

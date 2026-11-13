@@ -153,7 +153,8 @@ describe('wishlists', function () {
         $response = $this->actingAs($owner)->get(route('wishlists.show', $wishlist));
 
         $response->assertStatus(200);
-        $response->assertSee(__('messages.wishlist.buyer_hidden'));
+        $response->assertSee(trans_choice('wishlist_purchase.summary', 1, ['count' => 1]));
+        $response->assertDontSee(__('messages.wishlist.buyer_hidden'));
         $response->assertDontSee($buyer->name);
     });
 

@@ -4,6 +4,7 @@ namespace App\Livewire\Notifications;
 
 use App\Models\Notification;
 use App\Models\User;
+use App\Services\NotificationInbox;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -14,24 +15,15 @@ class NotificationList extends Component
     use WithPagination;
 
     /**
-     * Mark a single notification as read. If it has an action_url, redirect to it.
+     * Mark an owned notification read and resolve its current authorized action.
      */
     public function markAsRead(int $notificationId): void
     {
         $user = $this->currentUser();
 
-        $notification = Notification::where('user_id', $user->id)
-            ->where('id', $notificationId)
-            ->first();
-
-        if (! $notification) {
-            return;
-        }
-
-        $notification->update(['is_read' => true]);
-
-        if ($notification->action_url) {
-            $this->redirect($notification->action_url);
+        $destination = app(NotificationInbox::class)->open($user, $notificationId);
+        if ($destination !== null) {
+            $this->redirect($destination);
         }
     }
 
@@ -59,9 +51,7 @@ class NotificationList extends Component
     {
         $user = $this->currentUser();
 
-        $notifications = Notification::where('user_id', $user->id)
-            ->orderByDesc('created_at')
-            ->paginate(15);
+        $notifications = app(NotificationInbox::class)->pageFor($user);
 
         return view('livewire.notifications.notification-list', [
             'notifications' => $notifications,

@@ -66,6 +66,7 @@ The app uses a hybrid controller + Livewire approach:
 - `User` — standard auth model with `oauth_tokens` field (nullable, for future OAuth)
 - `Newsletter` — email subscriptions with `active` flag
 - `Family`, `FamilyMember` — groups and memberships/roles
+- `FamilyInvitation` — recipient-bound email invitations, separate from memberships; see `docs/FAMILY_EMAIL_INVITATIONS.md` for lifecycle, final-write authorization and delivery limits
 - `Wishlist`, `WishlistItem`, `WishlistShare` — lists, gifts, and per-user sharing
 - `AmigoSecretoEvent`, `AmigoSecretoParticipant`, `AmigoSecretoExclusion`, `AmigoSecretoDraw` — event/draw lifecycle
 - `Notification` — persistent user notifications, separate from toast events
@@ -76,3 +77,4 @@ The app uses a hybrid controller + Livewire approach:
 - CI: separate PHP quality, assets, and test jobs on push/PR to `master`; pinned actions/runtimes, audits, Pint/Larastan, native/portable builds, 80% PCOV coverage and disposable release cache/migration/rollback smoke
 - Invitation jobs use Laravel 13 queue routing to `mail`, after-commit dispatch and bounded retry/timeout attributes. Keep supervised workers listening on `mail,default`
 - Assignment jobs use the same `mail` queue. Secret Santa recipient secrecy, explicit wishlist consent and scheduled reveals are documented in `docs/SECRET_SANTA_PRIVACY.md`; keep the Laravel scheduler running every minute. Never expose raw recipient/list identifiers in anonymous assignment payloads or grant hosts other participants' pairings.
+- Secret Santa completion/archive actions and metadata-only history are documented in `docs/SECRET_SANTA_EVENT_HISTORY.md`. Completion closes event wishlist access and purchases; archival also closes normal detail/assignment access. Keep history separate from organizer-only read-only management views.

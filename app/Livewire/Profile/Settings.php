@@ -6,7 +6,9 @@ use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use League\Flysystem\FilesystemException;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -27,6 +29,9 @@ class Settings extends Component
 
     public string $avatarPreview = '';
 
+    /** The chosen draft stays previewable even when the disk refused the write. */
+    public bool $avatarStorageFailed = false;
+
     #[Rule(['required', 'string'])]
     public string $currentPassword = '';
 
@@ -35,6 +40,19 @@ class Settings extends Component
 
     #[Rule(['required', 'string', 'min:8'])]
     public string $newPasswordConfirm = '';
+
+    /** @return array<string, string> */
+    protected function validationAttributes(): array
+    {
+        return [
+            'name' => __('profile_settings.name'),
+            'phone' => __('profile_settings.phone'),
+            'avatar' => __('profile_settings.avatar'),
+            'currentPassword' => __('profile_settings.current_password'),
+            'newPassword' => __('profile_settings.new_password'),
+            'newPasswordConfirm' => __('profile_settings.confirm_password'),
+        ];
+    }
 
     public function mount(): void
     {
@@ -55,9 +73,31 @@ class Settings extends Component
             'phone' => $this->phone,
         ];
 
+        $this->avatarStorageFailed = false;
+
         if ($this->avatar) {
             $this->validateOnly('avatar');
-            $path = $this->avatar->store('avatars', 'public');
+            $path = 'avatars/'.$this->avatar->hashName();
+            $stream = $this->avatar->readStream();
+
+            try {
+                // Livewire's store() returns a path even when the disk write fails.
+                $stored = is_resource($stream) && Storage::disk('public')->put($path, $stream);
+            } catch (FilesystemException) {
+                $stored = false;
+            } finally {
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
+            }
+
+            if (! $stored) {
+                $this->avatarStorageFailed = true;
+                $this->addError('avatar', __('avatar_upload.failed'));
+
+                return;
+            }
+
             $data['avatar_url'] = '/storage/'.$path;
             $this->avatarPreview = $data['avatar_url'];
             $this->avatar = null;
@@ -65,7 +105,7 @@ class Settings extends Component
 
         $user->update($data);
 
-        $this->dispatch('notification', ['message' => __('messages.profile.updated'), 'type' => 'success']);
+        $this->dispatch('notification', ['message' => __('profile_settings.profile_updated'), 'type' => 'success']);
     }
 
     public function updatePassword(): void
@@ -75,7 +115,7 @@ class Settings extends Component
         $this->validateOnly('newPasswordConfirm');
 
         if ($this->newPassword !== $this->newPasswordConfirm) {
-            $this->addError('newPasswordConfirm', __('messages.auth.password_mismatch'));
+            $this->addError('newPasswordConfirm', __('profile_settings.password_mismatch'));
 
             return;
         }
@@ -83,7 +123,7 @@ class Settings extends Component
         $user = $this->authenticatedUser();
 
         if (! Hash::check($this->currentPassword, $user->password)) {
-            $this->addError('currentPassword', __('messages.profile.wrong_password'));
+            $this->addError('currentPassword', __('profile_settings.wrong_password'));
 
             return;
         }
@@ -101,7 +141,7 @@ class Settings extends Component
         $this->newPassword = '';
         $this->newPasswordConfirm = '';
 
-        $this->dispatch('notification', ['message' => __('messages.profile.password_updated'), 'type' => 'success']);
+        $this->dispatch('notification', ['message' => __('profile_settings.password_updated'), 'type' => 'success']);
     }
 
     public function render(): View

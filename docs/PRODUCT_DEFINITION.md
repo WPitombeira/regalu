@@ -3,7 +3,7 @@
 **Date:** February 18, 2026
 **Status:** Synthesized from BA1 (Current State) + BA2 (Product Vision)
 
-> Historical product-vision document. The implementation inventory below predates the family/wishlist/Secret Santa work and is not current. See [LARAVEL_13_MODERNIZATION.md](LARAVEL_13_MODERNIZATION.md) for the modernization inventory and [DEPENDENCY_UPGRADE.md](DEPENDENCY_UPGRADE.md) for the toolchain. [SECRET_SANTA_PRIVACY.md](SECRET_SANTA_PRIVACY.md) supersedes the recipient-secrecy assumptions below and documents assignment delivery, wishlist consent and automatic reveal. Other vision items, including WhatsApp, are not implied to be implemented.
+> Historical product-vision document. The implementation inventory below predates the family/wishlist/Secret Santa work and is not current. See [LARAVEL_13_MODERNIZATION.md](LARAVEL_13_MODERNIZATION.md) for the modernization inventory and [DEPENDENCY_UPGRADE.md](DEPENDENCY_UPGRADE.md) for the toolchain. [SECRET_SANTA_PRIVACY.md](SECRET_SANTA_PRIVACY.md) supersedes the recipient-secrecy assumptions below and documents assignment delivery, wishlist consent and automatic reveal. [SECRET_SANTA_EVENT_HISTORY.md](SECRET_SANTA_EVENT_HISTORY.md) documents organizer-driven completion, archival and private event history. Other vision items, including WhatsApp, are not implied to be implemented.
 
 ---
 
@@ -92,6 +92,8 @@ A family-oriented platform for wishlists and **Amigo Secreto** (Secret Santa). B
 
 ### B. Family Management
 
+Implementation contract for email invitations, recipient decisions and cancellation/reissue: [FAMILY_EMAIL_INVITATIONS.md](FAMILY_EMAIL_INVITATIONS.md). QR invitations remain a separate follow-up.
+
 - Create family with shareable invite code + QR
 - Invite members via email link
 - Accept/reject invitations
@@ -107,6 +109,10 @@ A family-oriented platform for wishlists and **Amigo Secreto** (Secret Santa). B
 - Mark items as BOUGHT (hidden from wishlist owner, visible to others)
 - Email notification when item marked bought
 
+The ordinary wishlist purchase implementation, qualification, and delivery limits are documented in [WISHLIST_PURCHASE_FLOW.md](WISHLIST_PURCHASE_FLOW.md). Secret Santa assignment purchases remain a separate authorization path.
+
+Product-link price suggestions, explicit currencies, manual fallback and legacy-price handling are documented in [WISHLIST_PRICE_IMPORT.md](WISHLIST_PRICE_IMPORT.md). Imported prices require review; no live-price, stock or currency-conversion guarantee is implied.
+
 ### D. Amigo Secreto
 
 - Create event: name, budget range, date, type
@@ -116,6 +122,10 @@ A family-oriented platform for wishlists and **Amigo Secreto** (Secret Santa). B
 - Send assignment via email with target's wishlist link
 - Reveal mechanism (automatic on event date)
 - Past events archive
+
+### E. Actionable dashboard and in-app inbox
+
+Current behavior is documented in [ACTIONABLE_DASHBOARD.md](ACTIONABLE_DASHBOARD.md): active list/family shortcuts, upcoming events, protected assignment links, email-invitation reminders, and persistent generic domain notices. Email invitation confirmation remains required; notifications never grant membership or reveal gift/recipient details. Push, WhatsApp and a full activity feed remain outside this slice.
 
 ---
 

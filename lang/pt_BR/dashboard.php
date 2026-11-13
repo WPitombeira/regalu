@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'title' => 'Seus planos de presentes',
+    'view_all' => 'Ver todas',
+    'empty_events' => 'Nenhum evento próximo. Reúna seu grupo para a próxima comemoração.',
+    'create_event' => 'Organize um amigo secreto',
+    'empty_notifications' => 'Nenhuma novidade por enquanto.',
+    'empty_wishlists' => 'Salve algumas ideias de presentes para mostrar o que você gostaria de ganhar.',
+    'start_wishlists' => 'Crie sua primeira lista',
+    'empty_families' => 'Compartilhe listas com as pessoas mais próximas de você.',
+    'start_families' => 'Entre em uma família',
+    'notifications' => 'Notificações recentes',
+    'all_notifications' => 'Todas as notificações',
+    'assignments' => 'Vamos preparar o próximo presente?',
+    'assignment_help' => 'Seus sorteios estão prontos. Os detalhes do destinatário ficam na página protegida de cada sorteio.',
+    'open_assignment' => 'Ver meu sorteio',
+    'events' => 'Próximos amigos secretos',
+    'all_events' => 'Todos os eventos',
+    'date_pending' => 'Data a definir',
+    'wishlists' => 'Suas listas de desejos',
+    'families' => 'Suas famílias',
+    'check_email' => 'Confira seu e-mail',
+    'invitation_help' => 'Abra o convite no seu e-mail para responder. Uma notificação não confirma sua entrada na família ou no evento.',
+    'family_invitations' => '{1} :count convite de família pendente|[2,*] :count convites de família pendentes',
+    'event_invitations' => '{1} :count convite de amigo secreto pendente|[2,*] :count convites de amigo secreto pendentes',
+];

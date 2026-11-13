@@ -35,6 +35,17 @@
         @endif
     </div>
 
+    @if ($isOwner)
+        <div class="mb-6 rounded-xl border border-gray-700 bg-gray-800/30 p-4">
+            <p role="status" class="font-medium text-green-300">{{ trans_choice('wishlist_purchase.summary', $purchasedCount, ['count' => $purchasedCount]) }}</p>
+            <p class="mt-1 text-sm text-gray-400">{{ __('wishlist_purchase.owner_privacy') }}</p>
+        </div>
+    @endif
+
+    @if ($wishlist->is_archived)
+        <p class="mb-6 text-sm text-gray-400">{{ __('wishlist_purchase.archived') }}</p>
+    @endif
+
     {{-- Add Item (owner only) --}}
     @if ($isOwner)
         <div class="mb-8">
@@ -55,7 +66,7 @@
         <div class="space-y-4">
             @foreach ($items as $item)
                 <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4
-                    {{ $item->status === 'BOUGHT' ? 'opacity-60' : '' }}">
+                    {{ !$isOwner && in_array($item->status, ['BOUGHT', 'RECEIVED'], true) ? 'opacity-60' : '' }}">
 
                     {{-- Item Image --}}
                     @if ($item->image_url)
@@ -83,18 +94,8 @@
                             <p class="text-gray-400 text-sm mb-1">{{ $item->description }}</p>
                         @endif
 
-                        <div class="flex items-center gap-4 text-sm text-gray-500">
-                            @if ($item->price_min || $item->price_max)
-                                <span>
-                                    @if ($item->price_min && $item->price_max)
-                                        ${{ number_format($item->price_min, 2) }} - ${{ number_format($item->price_max, 2) }}
-                                    @elseif ($item->price_min)
-                                        From ${{ number_format($item->price_min, 2) }}
-                                    @else
-                                        Up to ${{ number_format($item->price_max, 2) }}
-                                    @endif
-                                </span>
-                            @endif
+                        <div class="flex flex-wrap items-center gap-4 text-sm text-gray-400">
+                            <x-wishlist.price :minimum="$item->price_min" :maximum="$item->price_max" :currency="$item->currency" />
 
                             @if ($item->url)
                                 <a href="{{ $item->url }}" target="_blank" rel="noopener noreferrer"
@@ -110,38 +111,28 @@
                     </div>
 
                     {{-- Status / Actions --}}
-                    <div class="shrink-0">
-                        @if ($item->status === 'BOUGHT')
-                            @if ($isOwner)
+                    @if (!$isOwner)
+                        <div class="shrink-0">
+                            @if (in_array($item->status, ['BOUGHT', 'RECEIVED'], true))
                                 <span class="inline-flex items-center px-3 py-1.5 rounded-lg bg-green-900/30 text-green-300 text-sm font-medium">
                                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                     </svg>
-                                    {{ __("messages.wishlist.buyer_hidden") }}
+                                    {{ __('wishlist_purchase.bought') }}
                                 </span>
-                            @else
-                                <span class="inline-flex items-center px-3 py-1.5 rounded-lg bg-green-900/30 text-green-300 text-sm font-medium">
+                            @elseif ($item->status === 'AVAILABLE' && !$wishlist->is_archived)
+                                <button wire:click="markAsBought({{ $item->id }})"
+                                    wire:loading.attr="disabled"
+                                    class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 disabled:opacity-50">
                                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
                                     </svg>
-                                    Bought
-                                </span>
+                                    {{ __("messages.wishlist.mark_bought") }}
+                                </button>
                             @endif
-                        @elseif ($item->status === 'AVAILABLE' && !$isOwner)
-                            <button wire:click="markAsBought({{ $item->id }})"
-                                class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
-                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
-                                </svg>
-                                {{ __("messages.wishlist.mark_bought") }}
-                            </button>
-                        @elseif ($item->status === 'AVAILABLE')
-                            <span class="inline-flex items-center px-3 py-1.5 rounded-lg bg-gray-700 text-gray-400 text-sm font-medium">
-                                Available
-                            </span>
-                        @endif
-                    </div>
+                        </div>
+                    @endif
                 </div>
             @endforeach
         </div>

@@ -6,7 +6,7 @@
         <p class="text-sm text-gray-400 mb-6">{{ __('messages.amigo_secreto.reveal_date') }}: {{ $event->reveal_date->format('M d, Y') }}</p>
     @endif
     @if ($items === null)
-        <p class="bg-gray-800 border border-gray-700 rounded-xl p-6 text-gray-300">{{ __('assignments.not_shared') }}</p>
+        <p class="bg-gray-800 border border-gray-700 rounded-xl p-6 text-gray-300">{{ $event->status === 'COMPLETED' ? __('event_history.closed') : __('assignments.not_shared') }}</p>
     @else
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             @forelse ($items as $item)
@@ -16,9 +16,7 @@
                     @endif
                     <h2 class="text-xl font-semibold text-gray-100">{{ $item['name'] }}</h2>
                     <p class="text-sm text-gray-400">{{ __('assignments.priority_'.strtolower($item['priority'])) }}</p>
-                    @if ($item['price_min'] || $item['price_max'])
-                        <p class="text-gray-300">{{ __('assignments.price_range', ['min' => $item['price_min'] ?? '—', 'max' => $item['price_max'] ?? '—']) }}</p>
-                    @endif
+                    <x-wishlist.price :minimum="$item['price_min']" :maximum="$item['price_max']" :currency="$item['currency']" class="block text-gray-300" />
                     @if ($item['url'] && preg_match('/^https?:\/\//i', $item['url']))
                         <a href="{{ $item['url'] }}" target="_blank" rel="noopener noreferrer" class="block text-blue-400 underline">{{ __('assignments.store') }}</a>
                     @endif

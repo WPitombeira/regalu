@@ -4,5 +4,7 @@
     <p class="text-xl font-bold text-gray-100">
         {{ $assignment['recipient_name'] === null ? __('assignments.hidden_recipient') : __('assignments.you_drew', ['name' => $assignment['recipient_name']]) }}
     </p>
-    <a href="{{ route('amigo-secreto.assignment', $event) }}" class="inline-flex mt-4 px-4 py-2 bg-blue-600 rounded-lg text-white">{{ __('assignments.open') }}</a>
+    @if ($event->status !== 'COMPLETED')
+        <a href="{{ route('amigo-secreto.assignment', $event) }}" class="inline-flex mt-4 px-4 py-2 bg-blue-600 rounded-lg text-white">{{ __('assignments.open') }}</a>
+    @endif
 </div>

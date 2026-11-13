@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\AmigoSecretoEventFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -59,6 +60,39 @@ class AmigoSecretoEvent extends Model
     public function organizer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'organizer_id');
+    }
+
+    /** @return Builder<static> */
+    public static function visibleTo(User $user): Builder
+    {
+        return static::query()->where(function (Builder $query) use ($user): void {
+            $query->where('organizer_id', $user->id)
+                ->orWhereHas('participants', fn (Builder $participants) => $participants
+                    ->where('user_id', $user->id)->where('status', 'ACCEPTED'));
+        });
+    }
+
+    /** @return Builder<static> */
+    public static function historyFor(User $user): Builder
+    {
+        return static::visibleTo($user)->where(fn (Builder $query) => $query
+            ->where('status', 'COMPLETED')->orWhere('is_archived', true));
+    }
+
+    /** @return Builder<static> */
+    public static function completableBy(User $user): Builder
+    {
+        return static::query()->where('organizer_id', $user->id)
+            ->where('is_archived', false)
+            ->where(fn (Builder $query) => $query->whereNull('event_date')->orWhereDate('event_date', '<=', today()))
+            ->where(function (Builder $query): void {
+                $query->where(function (Builder $query): void {
+                    $query->where('recipient_visibility', 'NAMED')->whereIn('status', ['DRAWS_COMPLETE', 'REVEALED']);
+                })->orWhere(function (Builder $query): void {
+                    $query->where('recipient_visibility', 'ANONYMOUS_UNTIL_REVEAL')
+                        ->where('status', 'REVEALED')->whereDate('reveal_date', '<=', today());
+                });
+            });
     }
 
     /** @return BelongsTo<Family, $this> */

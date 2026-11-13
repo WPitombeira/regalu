@@ -3,9 +3,12 @@
 namespace App\Livewire\AmigoSecreto;
 
 use App\Models\AmigoSecretoEvent;
+use App\Models\AmigoSecretoParticipant;
 use App\Models\Wishlist;
 use App\Services\AssignmentAccess;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule as ValidationRule;
@@ -40,8 +43,9 @@ class EventDetail extends Component
         Gate::authorize('update', $event);
         $this->validate();
 
-        // The conditional write also rejects a draw committed since authorization.
+        // The final write rejects ownership changes and a draw since authorization.
         $updated = AmigoSecretoEvent::query()->whereKey($event->id)
+            ->where('organizer_id', Auth::id())
             ->where('is_archived', false)
             ->whereNotIn('status', ['DRAWS_COMPLETE', 'REVEALED', 'COMPLETED'])
             ->update([
@@ -52,16 +56,60 @@ class EventDetail extends Component
         $this->dispatch('notification', ['message' => __('assignments.saved'), 'type' => 'success']);
     }
 
+    public function complete(): void
+    {
+        $event = $this->authorizedEvent();
+        Gate::authorize('complete', $event);
+        // Recheck lifecycle and current organizer in the same write.
+        $updated = AmigoSecretoEvent::completableBy(Auth::user())->whereKey($event->id)
+            ->update(['status' => 'COMPLETED']);
+        abort_unless($updated === 1, 403);
+        $this->dispatch('notification', ['message' => __('event_history.completed_notice'), 'type' => 'success']);
+    }
+
+    public function archive(): void
+    {
+        $event = $this->authorizedEvent();
+        Gate::authorize('archive', $event);
+        $updated = AmigoSecretoEvent::query()->whereKey($event->id)
+            ->where('organizer_id', Auth::id())->where('is_archived', false)->where('status', 'COMPLETED')
+            ->update(['is_archived' => true]);
+        abort_unless($updated === 1, 403);
+        $this->redirectRoute('amigo-secreto.index', ['period' => 'past']);
+    }
+
+    public function revokeWishlist(): void
+    {
+        $this->wishlist_id = null;
+        $this->saveWishlist();
+    }
+
     public function saveWishlist(): void
     {
         $event = $this->authorizedEvent();
         $participant = $event->participants()->where('user_id', Auth::id())
             ->where('status', 'ACCEPTED')->firstOrFail();
+        abort_if($event->status === 'COMPLETED' && $this->wishlist_id !== null, 403);
         $this->validate([
             'wishlist_id' => ['nullable', 'integer', ValidationRule::exists('wishlists', 'id')
                 ->where('user_id', Auth::id())->where('is_archived', false)],
         ]);
-        $participant->update(['wishlist_id' => $this->wishlist_id]);
+        $updated = AmigoSecretoParticipant::query()->whereKey($participant->id)
+            ->where('event_id', $event->id)->where('user_id', Auth::id())->where('status', 'ACCEPTED')
+            ->whereHas('event', function (Builder $query): void {
+                $query->where('is_archived', false);
+                if ($this->wishlist_id !== null) {
+                    $query->where('status', '!=', 'COMPLETED');
+                }
+            })
+            ->when($this->wishlist_id !== null, function (Builder $query): void {
+                $query->whereExists(function (QueryBuilder $wishlist): void {
+                    $wishlist->selectRaw('1')->from('wishlists')->where('id', $this->wishlist_id)
+                        ->where('user_id', Auth::id())->where('is_archived', false);
+                });
+            })
+            ->update(['wishlist_id' => $this->wishlist_id]);
+        abort_unless($updated === 1, 403);
         $this->dispatch('notification', ['message' => __('assignments.saved'), 'type' => 'success']);
     }
 
@@ -88,16 +136,17 @@ class EventDetail extends Component
 
         $isOrganizer = $this->event->organizer_id === Auth::id();
 
-        $isParticipant = $this->event->participants()
+        $participant = $this->event->participants()
             ->where('user_id', Auth::id())
             ->where('status', 'ACCEPTED')
-            ->exists();
+            ->first(['wishlist_id']);
 
         return view('livewire.amigo-secreto.event-detail', [
             'myAssignment' => $myAssignment,
             'isOrganizer' => $isOrganizer,
-            'isParticipant' => $isParticipant,
-            'ownWishlists' => Wishlist::query()->where('user_id', Auth::id())
+            'isParticipant' => $participant !== null,
+            'hasWishlistConsent' => $participant?->wishlist_id !== null,
+            'ownWishlists' => $this->event->status === 'COMPLETED' ? collect() : Wishlist::query()->where('user_id', Auth::id())
                 ->where('is_archived', false)->orderBy('name')->get(['id', 'name']),
             'statusSteps' => $this->getStatusSteps(),
         ]);

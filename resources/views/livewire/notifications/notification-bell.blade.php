@@ -1,14 +1,20 @@
 <div
     wire:poll.30s
     x-data="{ open: false }"
+    x-id="['notification-panel']"
+    @keydown.escape.window="if (open) { open = false; $refs.trigger.focus() }"
     @click.outside="open = false"
-    class="relative"
+    class="static sm:relative"
 >
     {{-- Bell button --}}
     <button
+        type="button"
+        x-ref="trigger"
         @click="open = !open"
+        :aria-expanded="open"
+        :aria-controls="$id('notification-panel')"
         class="relative p-2 text-gray-400 hover:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500 rounded-lg transition-colors"
-        aria-label="{{ __('messages.navbar.notifications') }}"
+        aria-label="{{ trans_choice('inbox.bell_label', $this->unreadCount) }}"
     >
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -25,6 +31,7 @@
 
     {{-- Dropdown --}}
     <div
+        :id="$id('notification-panel')"
         x-show="open"
         x-transition:enter="transition ease-out duration-200"
         x-transition:enter-start="opacity-0 scale-95"
@@ -32,7 +39,7 @@
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="opacity-100 scale-100"
         x-transition:leave-end="opacity-0 scale-95"
-        class="absolute right-0 mt-2 w-80 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50"
+        class="absolute inset-x-4 mt-2 sm:left-auto sm:right-0 sm:w-80 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50"
         style="display: none;"
     >
         {{-- Header --}}
@@ -83,11 +90,16 @@
 
                     {{-- Content --}}
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-white truncate">
+                        <button type="button" wire:click="markAsRead({{ $notification->id }})" wire:loading.attr="disabled"
+                                class="rounded-lg py-2 text-left text-sm font-medium text-white hover:underline focus-visible:outline-2 focus-visible:outline-blue-400">
                             {{ $notification->title }}
-                        </p>
+                            <span class="sr-only">{{ $notification->action_url ? __('inbox.open') : __('inbox.mark_read') }}</span>
+                            @if (!$notification->is_read)
+                                <span class="sr-only">{{ __('inbox.unread') }}</span>
+                            @endif
+                        </button>
                         <p class="text-xs text-gray-400 truncate mt-0.5">
-                            {{ $notification->message }}
+                            {{ $notification->available ? $notification->message : __('inbox.unavailable') }}
                         </p>
                         <p class="text-xs text-gray-500 mt-1">
                             {{ $notification->created_at->diffForHumans() }}

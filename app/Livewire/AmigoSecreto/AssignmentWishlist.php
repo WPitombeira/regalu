@@ -38,10 +38,10 @@ class AssignmentWishlist extends Component
         abort_if($assignment === null, 404);
         $wishlist = $access->wishlistFor($event, $buyer);
         $items = $wishlist?->items()->select([
-            'id', 'name', 'url', 'image_url', 'price_min', 'price_max', 'priority', 'status',
+            'id', 'name', 'url', 'image_url', 'price_min', 'price_max', 'currency', 'priority', 'status',
         ])->orderByRaw("case priority when 'HIGH' then 0 when 'MEDIUM' then 1 else 2 end")
             ->orderByDesc('id')->paginate(12)->through(fn (WishlistItem $item): array => [
-                ...$item->only(['name', 'url', 'image_url', 'price_min', 'price_max', 'priority', 'status']),
+                ...$item->only(['name', 'url', 'image_url', 'price_min', 'price_max', 'currency', 'priority', 'status']),
                 // No correlatable item/list/recipient identifiers leave this page.
                 'token' => Crypt::encryptString($event->id.':'.$buyer->id.':'.$item->id),
             ]);

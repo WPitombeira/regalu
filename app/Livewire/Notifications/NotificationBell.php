@@ -4,15 +4,24 @@ namespace App\Livewire\Notifications;
 
 use App\Models\Notification;
 use App\Models\User;
+use App\Services\NotificationInbox;
 use App\Services\NotificationService;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 class NotificationBell extends Component
 {
+    public function markAsRead(int $notificationId): void
+    {
+        $destination = app(NotificationInbox::class)->open($this->currentUser(), $notificationId);
+        if ($destination !== null) {
+            $this->redirect($destination);
+        }
+    }
+
     /**
      * Get the count of unread notifications for the current user.
      */
@@ -27,17 +36,14 @@ class NotificationBell extends Component
     /**
      * Get the most recent notifications (max 5) for the dropdown preview.
      *
-     * @return Collection<int, Notification>
+     * @return Collection<int, \stdClass>
      */
     #[Computed]
     public function recentNotifications(): Collection
     {
         $user = $this->currentUser();
 
-        return Notification::where('user_id', $user->id)
-            ->orderByDesc('created_at')
-            ->limit(5)
-            ->get();
+        return app(NotificationInbox::class)->recentFor($user);
     }
 
     /**

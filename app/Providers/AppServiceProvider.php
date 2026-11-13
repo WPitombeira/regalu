@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Jobs\SendAssignment;
 use App\Jobs\SendEventInvitation;
+use App\Jobs\SendFamilyInvitation;
+use App\Jobs\SendWishlistPurchaseNotice;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Queue;
@@ -31,6 +33,8 @@ class AppServiceProvider extends ServiceProvider
         Livewire::addPersistentMiddleware([AuthenticateSession::class]);
 
         Queue::route(SendEventInvitation::class, 'mail');
+        Queue::route(SendFamilyInvitation::class, 'mail');
         Queue::route(SendAssignment::class, 'mail');
+        Queue::route(SendWishlistPurchaseNotice::class, 'mail');
     }
 }

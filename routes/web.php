@@ -3,6 +3,7 @@
 use App\Http\Controllers\AmigoSecretoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FamilyController;
+use App\Http\Controllers\FamilyInvitationController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\UserController;
@@ -21,6 +22,7 @@ Route::group(['middleware' => 'guest'], function () {
 
 Route::group(['middleware' => ['auth', 'auth.session']], function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::view('/getting-started', 'onboarding.index')->name('onboarding');
     Route::post('/logout', [UserController::class, 'logout'])->name('logout');
     Route::get('/settings', [UserController::class, 'viewSettings'])->name('settings');
     Route::get('/profile', [UserController::class, 'viewSettings'])->name('profile');
@@ -31,6 +33,9 @@ Route::group(['middleware' => ['auth', 'auth.session']], function () {
     })->name('notifications.index');
 
     // Family routes
+    Route::get('/family-invitations/{invitation}', [FamilyInvitationController::class, 'show'])->whereNumber('invitation')->name('family-invitations.show');
+    Route::post('/family-invitations/{invitation}', [FamilyInvitationController::class, 'respond'])->whereNumber('invitation')->name('family-invitations.respond');
+
     Route::prefix('families')->group(function () {
         Route::get('/', [FamilyController::class, 'index'])->name('families.index');
         Route::get('/create', [FamilyController::class, 'create'])->name('families.create');
@@ -57,6 +62,7 @@ Route::group(['middleware' => ['auth', 'auth.session']], function () {
         Route::get('/{event}/exclusions', [AmigoSecretoController::class, 'exclusions'])->name('amigo-secreto.exclusions');
         Route::get('/{event}/draw', [AmigoSecretoController::class, 'drawPage'])->name('amigo-secreto.draw');
         Route::get('/{event}/assignment', [AmigoSecretoController::class, 'assignment'])->name('amigo-secreto.assignment');
+        Route::get('/{event}/history', [AmigoSecretoController::class, 'history'])->whereNumber('event')->name('amigo-secreto.history');
     });
     // Shareable links retain their URLs, but require a current authenticated session.
     Route::get('/w/{wishlist}', [WishlistController::class, 'show'])->name('wishlists.public');

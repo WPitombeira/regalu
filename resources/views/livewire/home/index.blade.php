@@ -76,55 +76,65 @@
     </section>
 
     <section id="newsletter" class="bg-white mt-10 dark:bg-gray-900 py-10">
-        <div class="w-auto m-auto justify-center flex">
-            <div class="grid lg:grid-cols-2 gap-4 place-content-center">
-                <div class="max-w-lg md:px-4">
-                    <h1 class="text-xl font-bold tracking-tight leading-none md:text-xl xl:text-2xl dark:text-white">{{ __("messages.newsletter.headline") }}</h1>
-                    <p class="mb-6 font-light text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">{{ __("messages.newsletter.subheadline") }}</h2>
+        <div class="mx-auto max-w-6xl px-4">
+            <div class="grid gap-6 lg:grid-cols-2">
+                <div class="min-w-0 max-w-lg md:px-4">
+                    <h2 class="text-xl font-bold tracking-tight leading-none md:text-xl xl:text-2xl dark:text-white">{{ __("messages.newsletter.headline") }}</h2>
+                    <p class="mt-3 font-light text-gray-500 md:text-lg lg:text-xl dark:text-gray-400">{{ __("messages.newsletter.subheadline") }}</p>
                 </div>
-                <div class="align-middle flex flex-col justify-center">
-                    <form class="flex flex-col" wire:submit="registerNewsletter">
-                        <div class="grid grid-cols-3 gap-4">
-                            <input wire:model="email"  class="inset-0 py-2 px-3.5 text-sm h-9 col-span-2 form-input rounded-md px-4 py-3" type="email" placeholder="Your best e-mail" required="">
-                            <button type="submit" class="hover:text-violet-900 hover:bg-gray-200 transition hover:duration-200 ease-in-out shadow-xs text-violet-800 bg-white text-black font-bold text-sm rounded-md py-2 px-3.5">{{ __("messages.buttons.notify_me") }}</button>
+                <div class="min-w-0">
+                    <form class="flex flex-col gap-3" wire:submit="registerNewsletter">
+                        <label for="newsletter-email" class="text-sm font-medium text-gray-900 dark:text-white">{{ __('newsletter.email') }}</label>
+                        <input id="newsletter-email" wire:model.live.blur="email" class="form-input min-h-11 w-full min-w-0 rounded-md border-gray-300 px-4 py-3 text-base text-gray-900 focus:border-violet-500 focus:ring-violet-500" type="email" autocomplete="email" maxlength="254" required aria-invalid="{{ $errors->has('email') ? 'true' : 'false' }}" aria-describedby="newsletter-purpose{{ $errors->has('email') ? ' newsletter-email-error' : '' }}">
+                        @error('email')
+                            <p id="newsletter-email-error" role="alert" class="text-sm text-red-700 dark:text-red-300">{{ $message }}</p>
+                        @enderror
+                        <p id="newsletter-purpose" class="text-sm text-gray-600 dark:text-gray-300">{{ __('newsletter.purpose') }}</p>
+                        <div class="flex min-h-11 items-start gap-3">
+                            <input id="newsletter-consent" wire:model.live="newsletterConsent" type="checkbox" required class="mt-3 h-5 w-5 shrink-0 rounded border-gray-300 text-violet-700 focus:ring-violet-500" aria-invalid="{{ $errors->has('newsletterConsent') ? 'true' : 'false' }}" @if($errors->has('newsletterConsent')) aria-describedby="newsletter-consent-error" @endif>
+                            <label for="newsletter-consent" class="min-h-11 cursor-pointer py-2 text-sm text-gray-900 dark:text-white">{{ __('newsletter.consent') }}</label>
                         </div>
-                        <span class="m-auto text-base">{{ __("messages.newsletter.caredata") }} <a href="#" class="font-bold">{{ __("messages.newsletter.privacy_policy") }}</a></span>
+                        @error('newsletterConsent')
+                            <p id="newsletter-consent-error" role="alert" class="text-sm text-red-700 dark:text-red-300">{{ $message }}</p>
+                        @enderror
+                        <button type="submit" wire:loading.attr="disabled" wire:target="registerNewsletter" class="min-h-11 w-full rounded-md bg-white px-4 py-3 text-sm font-bold text-violet-800 shadow-xs transition hover:bg-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 disabled:cursor-wait disabled:opacity-60 sm:w-auto sm:self-start">{{ __("messages.buttons.notify_me") }}</button>
+                        @error('newsletter')
+                            <p id="newsletter-error" role="alert" class="text-sm text-red-700 dark:text-red-300">{{ $message }}</p>
+                        @enderror
+                        @if($newsletterSubmitted)
+                            <p id="newsletter-status" role="status" aria-live="polite" class="text-sm text-green-800 dark:text-green-300">{{ __('newsletter.success') }}</p>
+                        @endif
                     </form>
                 </div>
             </div>
         </div>
     </section>
     
-    <section id="contact" class="bg-white mt-10 dark:bg-gray-900">
-        <div class="grid grid-rows-[10vh_1fr] min-h-[50vh] max-w-screen-xl px-6 py-8 mx-auto justify-center">
-            <div class="flex flex-col">
-                <h1 class="text-4xl text-white font-bold">Have any suggestion, feedback or need assistance?</h1>
-                <h2 class="text-lg text-center dark:text-white font-light">We would love to hear you</h2>
-            </div>
-            <div>
-                <form wire:submit="registerFeedback" class="w-full flex flex-row justify-center">
-                    <div class="w-8/12">
-                        <div class="mb-4">
-                            <label for="feedback_name" class="hidden">Your Name</label>
-                            <input type="text" wire:model="feedback_name" class="form rounded-lg border border-gray-300 text-gray-900 dark:text-white focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Your Name (optional)">
-                        </div>
-                        <div class="mb-4">
-                            <label for="feedback_email" class="hidden">Your Email</label>
-                            <input type="email" wire:model="feedback_email" class="form rounded-lg border border-gray-300 text-gray-900 dark:text-white focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Your Email (optional)">
-                        </div>
-                        <div class="mb-4">
-                            <label for="feedback_message" class="hidden">Your Message</label>
-                            <textarea placeholder="Your Message" wire:model="feedback_message" class="form rounded-lg border border-gray-300 text-gray-900 dark:text-white focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" rows="5"></textarea>
-                            @error('feedback_message')
-                                <span>Missing field</span>
-                            @enderror
-                        </div>
-                        <div class="w-full flex justify-center">
-                            <button class="w-4/12 font-base text-lg hover:text-violet-900 hover:bg-gray-200 transition hover:duration-200 ease-in-out shadow-xs text-violet-800 bg-white text-black font-bold text-sm rounded-md py-2 px-3.5" type="submit">Submit</button>
-                        </div>
+    <section id="contact" aria-labelledby="contact-heading" class="bg-white mt-10 dark:bg-gray-900">
+        <div class="max-w-2xl px-6 py-8 mx-auto space-y-6">
+            <h2 id="contact-heading" class="text-3xl font-bold text-gray-900 dark:text-white">{{ __('contact.heading') }}</h2>
+            <p id="contact-unavailable" class="text-base leading-relaxed text-gray-700 dark:text-gray-300">{{ __('contact.notice') }}</p>
+            <form wire:submit="registerFeedback" aria-describedby="contact-unavailable" class="w-full space-y-4">
+                <fieldset disabled class="min-w-0 space-y-4">
+                    <legend class="sr-only">{{ __('contact.heading') }}</legend>
+                    <div>
+                        <label for="feedback_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-200">{{ __('contact.name') }}</label>
+                        <input id="feedback_name" type="text" wire:model="feedback_name" disabled class="block w-full min-w-0 rounded-lg border border-gray-300 bg-gray-100 p-2.5 text-gray-700 disabled:cursor-not-allowed dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
                     </div>
-                </form>
-            </div>
+                    <div>
+                        <label for="feedback_email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-200">{{ __('contact.email') }}</label>
+                        <input id="feedback_email" type="email" wire:model="feedback_email" disabled class="block w-full min-w-0 rounded-lg border border-gray-300 bg-gray-100 p-2.5 text-gray-700 disabled:cursor-not-allowed dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                    </div>
+                    <div>
+                        <label for="feedback_message" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-200">{{ __('contact.message') }}</label>
+                        <textarea id="feedback_message" wire:model="feedback_message" disabled rows="5" class="block w-full min-w-0 rounded-lg border border-gray-300 bg-gray-100 p-2.5 text-gray-700 disabled:cursor-not-allowed dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"></textarea>
+                    </div>
+                    <button type="submit" disabled class="min-h-11 w-full rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-600 disabled:cursor-not-allowed dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">{{ __('contact.button') }}</button>
+                </fieldset>
+                @error('feedback')
+                    <p id="contact-error" role="alert" class="text-sm text-red-700 dark:text-red-300">{{ $message }}</p>
+                @enderror
+            </form>
         </div>
     </section>
 </div>

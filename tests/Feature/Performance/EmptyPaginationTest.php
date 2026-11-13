@@ -21,7 +21,7 @@ it('keeps previous navigation when another tab empties a later page', function (
         $componentClass = EventIndex::class;
     } else {
         $wishlist = Wishlist::factory()->create(['user_id' => $owner->id]);
-        $records = WishlistItem::factory()->count(21)->create(['wishlist_id' => $wishlist->id]);
+        $records = WishlistItem::factory()->count(21)->create(['wishlist_id' => $wishlist->id, 'priority' => 'MEDIUM', 'created_at' => now()]);
         $componentClass = WishlistDetail::class;
         $parameters = ['wishlist' => $wishlist];
         $pageSize = 20;
