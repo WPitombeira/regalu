@@ -75,8 +75,8 @@ it('handles contact submission without falsely acknowledging delivery', function
     Mail::assertNothingOutgoing();
     Queue::assertNothingPushed();
 })->with([
-    'mounted English' => ['home.index', 'en', 'Contact messages cannot be sent right now. Your message has not been sent.'],
-    'legacy English' => ['home', 'en', 'Contact messages cannot be sent right now. Your message has not been sent.'],
-    'mounted Portuguese' => ['home.index', 'pt_BR', 'Não é possível enviar mensagens de contato no momento. Sua mensagem não foi enviada.'],
-    'legacy Portuguese' => ['home', 'pt_BR', 'Não é possível enviar mensagens de contato no momento. Sua mensagem não foi enviada.'],
+    'mounted English' => ['home.index', 'en', 'Contact delivery is unavailable. Your message has not been sent.'],
+    'legacy English' => ['home', 'en', 'Contact delivery is unavailable. Your message has not been sent.'],
+    'mounted Portuguese' => ['home.index', 'pt_BR', 'O envio de mensagens está indisponível. Sua mensagem não foi enviada.'],
+    'legacy Portuguese' => ['home', 'pt_BR', 'O envio de mensagens está indisponível. Sua mensagem não foi enviada.'],
 ]);
