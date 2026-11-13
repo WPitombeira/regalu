@@ -16,9 +16,7 @@
                     @endif
                     <h2 class="text-xl font-semibold text-gray-100">{{ $item['name'] }}</h2>
                     <p class="text-sm text-gray-400">{{ __('assignments.priority_'.strtolower($item['priority'])) }}</p>
-                    @if ($item['price_min'] || $item['price_max'])
-                        <p class="text-gray-300">{{ __('assignments.price_range', ['min' => $item['price_min'] ?? '—', 'max' => $item['price_max'] ?? '—']) }}</p>
-                    @endif
+                    <x-wishlist.price :minimum="$item['price_min']" :maximum="$item['price_max']" :currency="$item['currency']" class="block text-gray-300" />
                     @if ($item['url'] && preg_match('/^https?:\/\//i', $item['url']))
                         <a href="{{ $item['url'] }}" target="_blank" rel="noopener noreferrer" class="block text-blue-400 underline">{{ __('assignments.store') }}</a>
                     @endif
