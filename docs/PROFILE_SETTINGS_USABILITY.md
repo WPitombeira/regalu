@@ -32,11 +32,20 @@ Run with the qualified dependencies/runtime and a production asset build:
 
 ```bash
 php artisan test tests/Feature/Profile/SettingsLocalizationTest.php tests/Feature/Profile/SettingsPresentationTest.php tests/Feature/Profile/SettingsAvatarTest.php
+python -B tests/Browser/profile_settings_runtime_test.py
 python -B tests/Browser/profile_settings_smoke.py --output coverage/profile-settings-browser
 python -B tests/Browser/profile_settings_report_test.py --output coverage/profile-settings-browser
 ```
 
 The harness uses `APP_ENV=browser`, not Laravel's unit-testing environment, so real HTTP file uploads use the actual isolated temporary disk. It explicitly configures disposable services and refuses an unsafe seed target. Multipart upload bodies must not be decoded as Livewire JSON action requests. Passwords and session identifiers are not exported in reports; screenshots mask password controls.
+
+### Hosted failure and HTTP-isolation regression
+
+The first hosted run, `43377909865` on `9ef0dd20a39e228df947b618a5990f14692ca189`, passed PHP tests, quality, native assets and release smoke but failed all twelve JavaScript profile journeys after avatar preview; the two no-JavaScript cases passed. That failed matrix is retained as partial evidence, not a browser PASS.
+
+The same failure was reproduced locally by setting PHP's ambient `variables_order=GPCS`: the CLI seed resolved its run-owned storage, but the built-in HTTP server exposed the storage override through neither `$_ENV` nor `$_SERVER`. Laravel's `storagePath()` therefore used the source checkout's storage instead of the disposable target. The avatar was saved outside the served run-owned directory, and the saved-image assertion correctly failed. This was a harness-isolation defect, not a reason to weaken avatar persistence checks or alter production storage.
+
+The seed and server now explicitly use `variables_order=EGPCS`. `profile_settings_runtime_test.py` injects the failing ambient default into actual PHP subprocesses, verifies the injection, and makes a real HTTP request to a run-owned bootstrap probe. It requires both public and private disk roots plus the application storage path to stay isolated, and verifies temporary-directory cleanup. Its RED result reproduced the missing environment and wrong roots; GREEN verifies the correction. The browser's existing exact saved-image bytes assertion remains unchanged. A replacement hosted exact-head run is still required; the successful local regression does not retroactively qualify the failed run.
 
 ## Local qualification before publication
 

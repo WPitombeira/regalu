@@ -54,6 +54,7 @@ SOURCES = (
     'resources/views/livewire/profile/settings.blade.php', 'resources/css/app.css', 'resources/js/app.js',
     'lang/en/profile_settings.php', 'lang/pt_BR/profile_settings.php', 'lang/en/validation.php', 'lang/pt_BR/validation.php',
     'tests/Browser/profile_settings_smoke.py', 'tests/Browser/profile_settings_report_test.py',
+    'tests/Browser/profile_settings_runtime_test.py',
     'tests/Browser/seed-profile-settings.php', 'tests/Browser/event_history_smoke.py',
     'composer.lock', 'package-lock.json', '.github/workflows/laravel.yml',
 )
@@ -120,12 +121,15 @@ def application(locale):
                    APP_CONFIG_CACHE=str(directory / 'config.php'), APP_ROUTES_CACHE=str(directory / 'routes.php'),
                    APP_SERVICES_CACHE=str(directory / 'services.php'), APP_PACKAGES_CACHE=str(directory / 'packages.php'),
                    VIEW_COMPILED_PATH=str(directory / 'views'), LOG_CHANNEL='stderr')
-        seed = subprocess.run(['php', str(ROOT / 'tests/Browser/seed-profile-settings.php')],
+        # Laravel storagePath() reads $_ENV/$_SERVER, not getenv(). The built-in
+        # HTTP server omits inherited variables from both when E is disabled.
+        php = ['php', '-d', 'variables_order=EGPCS']
+        seed = subprocess.run([*php, str(ROOT / 'tests/Browser/seed-profile-settings.php')],
                               cwd=ROOT, env=env, capture_output=True, text=True, timeout=60)
         assert seed.returncode == 0, 'seed_failed'
         json.loads(seed.stdout)
         router = ROOT / 'vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php'
-        server = subprocess.Popen(['php', '-d', 'upload_max_filesize=3M', '-d', 'post_max_size=4M', '-S', f'127.0.0.1:{port}', str(router)],
+        server = subprocess.Popen([*php, '-d', 'upload_max_filesize=3M', '-d', 'post_max_size=4M', '-S', f'127.0.0.1:{port}', str(router)],
                                   cwd=directory / 'public', env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         try:
             for _ in range(100):

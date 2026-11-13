@@ -94,6 +94,7 @@ test('release smoke builds caches and migrates a disposable SQLite database both
 test('profile settings runs the full browser matrix and validates its always-uploaded evidence', () => {
     const tests = job('tests');
 
+    assert.match(tests, /"\$RUNNER_TEMP\/regalu-browser-venv\/bin\/python" -B tests\/Browser\/profile_settings_runtime_test\.py\s*$/m);
     assert.match(tests, /"\$RUNNER_TEMP\/regalu-browser-venv\/bin\/python" -B tests\/Browser\/profile_settings_smoke\.py --output coverage\/profile-settings-browser\s*$/m);
     assert.match(tests, /"\$RUNNER_TEMP\/regalu-browser-venv\/bin\/python" -B tests\/Browser\/profile_settings_report_test\.py --output coverage\/profile-settings-browser\s*$/m);
     assert.match(tests, /name: Upload profile settings browser evidence\n\s+if: always\(\)\n\s+uses: actions\/upload-artifact@/);

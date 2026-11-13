@@ -265,6 +265,7 @@ jobs:
         env:
           PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
         run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/profile_settings_runtime_test.py
           "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/profile_settings_smoke.py --output coverage/profile-settings-browser
           "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/profile_settings_report_test.py --output coverage/profile-settings-browser
 
