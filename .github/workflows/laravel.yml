@@ -278,6 +278,21 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Exercise family flows in English and Portuguese on desktop and mobile
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/family_flow_smoke.py --output coverage/family-flow-browser
+
+      - name: Upload family flow browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: family-flow-browser
+          path: |
+            coverage/family-flow-browser/results.json
+            coverage/family-flow-browser/**/geometry.json
+            coverage/family-flow-browser/**/*.png
       - name: Exercise wishlist forms in English and Portuguese on desktop and mobile
         env:
           PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache

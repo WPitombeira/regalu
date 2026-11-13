@@ -22,6 +22,12 @@ class FamilyRoster extends Component
 
     public string $inviteEmail = '';
 
+    /** @return array<string, string> */
+    protected function validationAttributes(): array
+    {
+        return ['inviteEmail' => __('family_forms.attribute_email')];
+    }
+
     public function mount(Family $family): void
     {
         $this->family = $family;
@@ -98,7 +104,7 @@ class FamilyRoster extends Component
         // Confirm an already-admin membership using the same identity and grant.
         abort_unless($changed === 1 || ($changed === 0 && $eligible->useWritePdo()->where('role', 'ADMIN')->exists()), 409);
 
-        $this->dispatch('notification', ['message' => __('messages.family.role_admin'), 'type' => 'success']);
+        $this->dispatch('notification', ['message' => __('family_forms.promoted'), 'type' => 'success']);
     }
 
     public function render(): View

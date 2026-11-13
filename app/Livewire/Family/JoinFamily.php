@@ -17,6 +17,12 @@ class JoinFamily extends Component
     #[Rule(['required', 'size:12'])]
     public string $inviteCode = '';
 
+    /** @return array<string, string> */
+    protected function validationAttributes(): array
+    {
+        return ['inviteCode' => __('family_forms.attribute_code')];
+    }
+
     public function join(): Redirector|RedirectResponse|null
     {
         abort_unless(auth()->check(), 403);

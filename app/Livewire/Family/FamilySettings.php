@@ -20,6 +20,12 @@ class FamilySettings extends Component
     #[Rule(['nullable'])]
     public ?string $description = null;
 
+    /** @return array<string, string> */
+    protected function validationAttributes(): array
+    {
+        return ['name' => __('family_forms.attribute_name')];
+    }
+
     public function mount(Family $family): void
     {
         $this->family = $family;
@@ -43,7 +49,7 @@ class FamilySettings extends Component
         // Some drivers report zero for an unchanged row; never retry the write.
         abort_unless($changed === 1 || ($changed === 0 && $editable->useWritePdo()->where($values)->exists()), 409);
 
-        $this->dispatch('notification', ['message' => __('messages.family.created'), 'type' => 'success']);
+        $this->dispatch('notification', ['message' => __('family_forms.updated'), 'type' => 'success']);
     }
 
     public function archive(): void

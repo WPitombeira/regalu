@@ -21,7 +21,7 @@
 
             @if($families->isEmpty())
                 <div class="flex flex-col items-center justify-center py-16">
-                    <p class="text-[#C3C3D1] text-lg mb-4">You don't belong to any family yet.</p>
+                    <p class="text-[#C3C3D1] text-lg mb-4">{{ __('family_forms.empty') }}</p>
                     <div class="flex gap-3">
                         <a href="{{ route('families.create') }}"
                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
@@ -47,7 +47,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 </svg>
-                                {{ $family->members_count }} {{ __("messages.family.members") }}
+                                {{ trans_choice('family_forms.member_count', $family->members_count) }}
                             </div>
                         </a>
                     @endforeach
