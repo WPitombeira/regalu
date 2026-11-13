@@ -47,13 +47,28 @@ class Family extends Model
     public function scopeEditableBy(Builder $query, int $userId): void
     {
         // Keep mutable administration grants inside the final database write.
+        //
+        // MySQL refuses to modify a table that a subquery of the same statement
+        // selects (error 1093), which breaks the roster mutations that update
+        // family_members while this scope reads it. The administrator grant is
+        // therefore read from a materialized derived table (GROUP BY prevents
+        // MySQL from merging it back into the outer statement), so the write and
+        // its authorization predicate remain a single statement on every driver.
+        $administrators = DB::query()->selectRaw('1')
+            ->fromSub(
+                DB::table('family_members')
+                    ->select('family_id')
+                    ->where('user_id', $userId)
+                    ->where('role', 'ADMIN')
+                    ->groupBy('family_id'),
+                'administrators'
+            )
+            ->whereColumn('administrators.family_id', 'families.id');
+
         $query->where('families.is_archived', false)
-            ->where(function (Builder $family) use ($userId): void {
+            ->where(function (Builder $family) use ($userId, $administrators): void {
                 $family->where('families.creator_id', $userId)
-                    ->orWhereExists(DB::table('family_members as administrators')->selectRaw('1')
-                        ->whereColumn('administrators.family_id', 'families.id')
-                        ->where('administrators.user_id', $userId)
-                        ->where('administrators.role', 'ADMIN'));
+                    ->orWhereExists($administrators);
             });
     }
 

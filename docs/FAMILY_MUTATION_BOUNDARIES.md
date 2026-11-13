@@ -10,6 +10,7 @@ Family code admission, settings and roster actions retain their existing entry-p
 - Creator privileges do not depend on a membership row. Valid administrators, unchanged settings submissions and promotion of an existing administrator retain their previous successful behavior.
 - Drivers may report zero changed rows for a valid no-op. Settings updates and promotions accept that result only when a read on the write connection confirms the same target identity, current authority and requested values. This confirmation never retries the write or overwrites intervening changes; missing, rebound, archived or newly unauthorized targets remain conflicts.
 - Existing authorization and scoped-lookup failures keep their 403/404 behavior. A request that passes those checks but loses eligibility before the final statement returns 409 and sends no success notification. Reload and re-evaluate the current state rather than blindly retrying a rejected mutation.
+- The administrator grant is read from a materialized derived table (`GROUP BY family_id`) instead of a correlated subquery on the same table. MySQL/MariaDB reject a statement that modifies a table another subquery of that statement reads (error 1093), so the derived form keeps the authority predicate inside the final `UPDATE`/`DELETE` on every supported driver.
 - Email invitation acceptance/cancellation continue through their existing service and are not replaced with code-based admission.
 
 ## Regression evidence and limits
