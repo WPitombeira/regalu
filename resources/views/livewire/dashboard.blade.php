@@ -1,5 +1,8 @@
 <div class="mx-auto max-w-6xl space-y-8" data-testid="dashboard">
-    <h1 class="text-3xl font-bold text-gray-100">{{ __('dashboard.title') }}</h1>
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <h1 class="text-3xl font-bold text-gray-100">{{ __('dashboard.title') }}</h1>
+        <a href="{{ route('onboarding') }}" class="inline-flex rounded-lg border border-blue-400 px-4 py-3 text-blue-200 hover:bg-gray-800 focus-visible:outline-2 focus-visible:outline-blue-300">{{ __('onboarding.entry') }}</a>
+    </div>
     @if ($assignments->isNotEmpty())
         <section aria-labelledby="dashboard-assignments" class="rounded-xl border border-blue-700 bg-gray-800 p-6">
             <h2 id="dashboard-assignments" class="text-xl font-semibold text-gray-100">{{ __('dashboard.assignments') }}</h2>

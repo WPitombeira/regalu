@@ -49,7 +49,8 @@ def row(database, sql, args):
 
 @contextmanager
 def application(locale, seed_script="seed-event-history.php"):
-    if seed_script not in ("seed-event-history.php", "seed-dashboard.php", "seed-newsletter.php"):
+    if seed_script not in ("seed-event-history.php", "seed-dashboard.php", "seed-newsletter.php",
+                           "seed-price-import.php"):
         raise ValueError("Unknown browser fixture")
     # Array cache is request-local: newsletter HTTP throttling needs a real shared store.
     cache_store = "database" if seed_script == "seed-newsletter.php" else "array"
@@ -80,7 +81,6 @@ def application(locale, seed_script="seed-event-history.php"):
                    APP_SERVICES_CACHE=str(directory / "services.php"), APP_PACKAGES_CACHE=str(directory / "packages.php"),
                    VIEW_COMPILED_PATH=str(directory / "views"), LOG_CHANNEL="stderr")
         (directory / "views").mkdir()
-
         seed = subprocess.run(["php", str(ROOT / "tests/Browser" / seed_script)],
                               cwd=ROOT, env=env, capture_output=True, text=True, timeout=60)
         if seed.returncode:
@@ -88,6 +88,8 @@ def application(locale, seed_script="seed-event-history.php"):
             raise RuntimeError(f"Fixture seed failed (exit {seed.returncode})")
         fixture = json.loads(seed.stdout)
         router = ROOT / "vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php"
+        if seed_script == "seed-price-import.php":
+            router = ROOT / "tests/Browser/price-import-router.php"
         with (directory / "server.log").open("w") as log:
             server = subprocess.Popen(["php", "-S", f"127.0.0.1:{port}", str(router)],
                                       cwd=ROOT / "public", env=env, stdout=log, stderr=log)
