@@ -227,6 +227,25 @@ jobs:
           # The hosted image supplies native libraries; real browser launch below verifies them.
           "$RUNNER_TEMP/regalu-browser-venv/bin/playwright" install chromium
 
+      - name: Exercise avatar storage refusal and retry
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/avatar_storage_report_test.py
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/avatar_storage_smoke.py --output coverage/avatar-storage-browser
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/avatar_storage_report_test.py --report coverage/avatar-storage-browser/results.json
+
+      - name: Upload avatar storage browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: avatar-storage-browser
+          path: |
+            coverage/avatar-storage-browser/results.json
+            coverage/avatar-storage-browser/**/*.png
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Exercise event lifecycle in English and Portuguese on desktop and mobile
         env:
           PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache

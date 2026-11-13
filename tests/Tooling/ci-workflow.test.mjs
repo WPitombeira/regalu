@@ -48,6 +48,22 @@ test('PHP quality checks Composer validity and security, Pint, and Larastan', ()
     assert.match(quality, /vendor\/bin\/phpstan analyse --no-progress/);
 });
 
+test('avatar storage refusal and retry run with runtime and receipt gates and always-uploaded evidence', () => {
+    const tests = job('tests');
+    const step = tests.match(/      - name: Exercise avatar storage refusal and retry\n([\s\S]*?)(?=      - name:)/)?.[1];
+    assert.ok(step, 'missing required avatar browser step');
+    assert.doesNotMatch(step, /continue-on-error|if:|\|\|\s*true/);
+    assert.match(step, /PLAYWRIGHT_BROWSERS_PATH: \$\{\{ runner\.temp \}\}\/regalu-browser-cache/);
+    const commands = [...step.matchAll(/"\$RUNNER_TEMP\/regalu-browser-venv\/bin\/python" -B (.+)/g)].map(([, command]) => command);
+    assert.deepEqual(commands, [
+        'tests/Browser/avatar_storage_report_test.py',
+        'tests/Browser/avatar_storage_smoke.py --output coverage/avatar-storage-browser',
+        'tests/Browser/avatar_storage_report_test.py --report coverage/avatar-storage-browser/results.json',
+    ]);
+    assert.match(tests, /name: Upload avatar storage browser evidence\n\s+if: always\(\)\n\s+uses: actions\/upload-artifact@/);
+    assert.match(tests, /name: avatar-storage-browser\n\s+path: \|\n\s+coverage\/avatar-storage-browser\/results\.json\n\s+coverage\/avatar-storage-browser\/\*\*\/\*\.png/);
+});
+
 test('assets run native Vite, portable tooling smoke tests, npm audit, and publish the native build', () => {
     const assets = job('assets');
 
