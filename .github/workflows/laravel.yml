@@ -263,6 +263,23 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Exercise private-first onboarding in English and Portuguese on desktop and mobile
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/onboarding_smoke.py --output coverage/onboarding-browser
+
+      - name: Upload onboarding browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: onboarding-browser
+          path: |
+            coverage/onboarding-browser/results.json
+            coverage/onboarding-browser/**/*.png
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Exercise dashboard and inbox in English and Portuguese on desktop and mobile
         env:
           PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
@@ -277,6 +294,174 @@ jobs:
           path: |
             coverage/dashboard-browser/results.json
             coverage/dashboard-browser/**/*.png
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Exercise profile settings in English and Portuguese with and without JavaScript
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/profile_settings_runtime_test.py
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/profile_settings_smoke.py --output coverage/profile-settings-browser
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/profile_settings_report_test.py --output coverage/profile-settings-browser
+
+      - name: Upload profile settings browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: profile-settings-browser
+          path: |
+            coverage/profile-settings-browser/results.json
+            coverage/profile-settings-browser/**/*.png
+      - name: Exercise password recovery in English and Portuguese with and without JavaScript
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/password_recovery_smoke.py --output coverage/password-recovery-browser
+
+      - name: Upload password recovery browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: password-recovery-browser
+          path: |
+            coverage/password-recovery-browser/results.json
+            coverage/password-recovery-browser/**/result.json
+            coverage/password-recovery-browser/**/*.png
+          if-no-files-found: error
+      - name: Exercise auth forms in English and Portuguese across themes and viewports
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/auth_forms_smoke.py --output coverage/auth-forms-browser
+
+      - name: Upload auth form browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: auth-forms-browser
+          path: |
+            coverage/auth-forms-browser/results.json
+            coverage/auth-forms-browser/**/*.png
+      - name: Exercise unavailable contact form across locales, schemes, and viewports
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/contact_smoke.py --output coverage/contact-browser
+
+      - name: Upload contact browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: contact-browser
+          path: |
+            coverage/contact-browser/*.json
+            coverage/contact-browser/*.png
+      - name: Exercise public newsletter consent and persistent throttling
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/newsletter_smoke.py --output coverage/newsletter-browser
+
+      - name: Upload newsletter browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: newsletter-browser
+          path: |
+            coverage/newsletter-browser/results.json
+            coverage/newsletter-browser/**/*.png
+            coverage/newsletter-browser/**/geometry.json
+      - name: Exercise guest and member navigation in English and Portuguese across five widths
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/header_navigation_smoke.py --output coverage/header-navigation-browser
+
+      - name: Upload header navigation browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: header-navigation-browser
+          path: |
+            coverage/header-navigation-browser/results.json
+            coverage/header-navigation-browser/**/geometry.json
+            coverage/header-navigation-browser/**/*.png
+      - name: Exercise account menu keyboard and avatar behavior in both locales and three viewports
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/account_menu_smoke.py --output coverage/account-menu-browser
+
+      - name: Upload account menu browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: account-menu-browser
+          path: |
+            coverage/account-menu-browser/results.json
+            coverage/account-menu-browser/**/*.json
+            coverage/account-menu-browser/**/*.png
+      - name: Exercise family flows in English and Portuguese on desktop and mobile
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/family_flow_smoke.py --output coverage/family-flow-browser
+
+      - name: Upload family flow browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: family-flow-browser
+          path: |
+            coverage/family-flow-browser/results.json
+            coverage/family-flow-browser/**/geometry.json
+            coverage/family-flow-browser/**/*.png
+      - name: Exercise wishlist forms in English and Portuguese on desktop and mobile
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/wishlist_forms_smoke.py --output coverage/wishlist-forms-browser
+
+      - name: Upload wishlist form browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: wishlist-forms-browser
+          path: |
+            coverage/wishlist-forms-browser/results.json
+            coverage/wishlist-forms-browser/**/*.png
+      - name: Exercise price import in English and Portuguese on desktop and mobile
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/price_import_smoke.py --output coverage/price-import-browser
+
+      - name: Upload price import browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: price-import-browser
+          path: |
+            coverage/price-import-browser/results.json
+            coverage/price-import-browser/**/*.png
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Exercise family mutations in English and Portuguese on desktop and mobile
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/family_mutations_smoke.py --output coverage/family-mutations-browser
+
+      - name: Upload family mutation browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: family-mutations-browser
+          path: |
+            coverage/family-mutations-browser/results.json
+            coverage/family-mutations-browser/**/*.png
           if-no-files-found: warn
           retention-days: 14
 

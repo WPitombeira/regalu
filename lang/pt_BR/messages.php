@@ -8,7 +8,7 @@ return [
     ],
     'features' => [
         'headline' => 'Nossos Recursos',
-        'subheadline' => ['Descubra uma variedade de recursos projetados para melhorar sua experiência.'],
+        'subheadline' => 'Descubra uma variedade de recursos projetados para melhorar sua experiência.',
         'wishlist' => [
             'headline' => 'Gerenciamento de Lista de Desejos',
             'subheadline' => 'Crie e gerencie suas listas de desejos sem esforço.',
@@ -35,6 +35,7 @@ return [
         'dashboard' => 'Dashboard',
         'wishlists' => 'Listas de Desejos',
         'secret_santa' => 'Amigo Secreto',
+        'families' => 'Famílias',
         'notifications' => 'Notificações',
         'privacy_policy' => 'Política de Privacidade',
     ],
@@ -43,6 +44,9 @@ return [
         'terms' => 'Termos de Serviço',
         'privacy_policy' => 'Política de Privacidade',
         'rights' => 'Todos os direitos reservados.',
+    ],
+    'contact' => [
+        'unavailable' => 'Não é possível enviar mensagens de contato no momento. Sua mensagem não foi enviada.',
     ],
     'newsletter' => [
         'caredata' => 'Nós nos preocupamos com seus dados. Leia nossa',
@@ -53,6 +57,10 @@ return [
     'buttons' => [
         'notify_me' => 'Notifique-me',
         'backhome' => 'Voltar para a página inicial',
+        'create' => 'Criar',
+        'cancel' => 'Cancelar',
+        'update' => 'Atualizar',
+        'archive' => 'Arquivar',
     ],
     'login' => [
         'headline' => 'Acesse sua conta',
@@ -70,6 +78,26 @@ return [
         'wrongcredentials' => 'Email ou Senha incorretos ou não cadastrados',
         'success' => 'Login efetuado com sucesso',
     ],
+    'family' => [
+        'families' => 'Minhas famílias',
+        'create' => 'Criar família',
+        'name' => 'Nome da família',
+        'description' => 'Descrição',
+        'created' => 'Família criada com sucesso.',
+        'invite_code' => 'Código de convite',
+        'join' => 'Entrar na família',
+        'join_placeholder' => 'Digite o código de convite',
+        'joined' => 'Você entrou na família.',
+        'invalid_code' => 'Código de convite inválido.',
+        'already_member' => 'Você já faz parte desta família.',
+        'settings' => 'Configurações da família',
+        'archived' => 'Família arquivada.',
+        'code_regenerated' => 'Novo código de convite gerado.',
+        'members' => 'Membros',
+        'role_admin' => 'Administrador',
+        'role_member' => 'Membro',
+        'removed' => 'Membro removido da família.',
+    ],
     'amigo_secreto' => [
         'invite_queued' => 'Convite na fila de envio.',
         'draw_complete' => 'Sorteio concluído! Os participantes podem consultar quem tiraram.',
@@ -84,6 +112,9 @@ return [
         'title' => 'Notificações',
         'mark_all_read' => 'Marcar todas como lidas',
         'no_notifications' => 'Nenhuma notificação ainda.',
+    ],
+    'wishlist' => [
+        'add_item' => 'Adicionar Item',
     ],
     'errors' => [
         '404' => [

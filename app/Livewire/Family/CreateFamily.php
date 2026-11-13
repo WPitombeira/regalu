@@ -18,6 +18,12 @@ class CreateFamily extends Component
     #[Rule(['nullable'])]
     public ?string $description = null;
 
+    /** @return array<string, string> */
+    protected function validationAttributes(): array
+    {
+        return ['name' => __('family_forms.attribute_name')];
+    }
+
     public function create(): Redirector|RedirectResponse
     {
         abort_unless(auth()->check(), 403);

@@ -38,6 +38,19 @@ class Settings extends Component
     #[Rule(['required', 'string', 'min:8'])]
     public string $newPasswordConfirm = '';
 
+    /** @return array<string, string> */
+    protected function validationAttributes(): array
+    {
+        return [
+            'name' => __('profile_settings.name'),
+            'phone' => __('profile_settings.phone'),
+            'avatar' => __('profile_settings.avatar'),
+            'currentPassword' => __('profile_settings.current_password'),
+            'newPassword' => __('profile_settings.new_password'),
+            'newPasswordConfirm' => __('profile_settings.confirm_password'),
+        ];
+    }
+
     public function mount(): void
     {
         $user = $this->authenticatedUser();
@@ -86,7 +99,7 @@ class Settings extends Component
 
         $user->update($data);
 
-        $this->dispatch('notification', ['message' => __('messages.profile.updated'), 'type' => 'success']);
+        $this->dispatch('notification', ['message' => __('profile_settings.profile_updated'), 'type' => 'success']);
     }
 
     public function updatePassword(): void
@@ -96,7 +109,7 @@ class Settings extends Component
         $this->validateOnly('newPasswordConfirm');
 
         if ($this->newPassword !== $this->newPasswordConfirm) {
-            $this->addError('newPasswordConfirm', __('messages.auth.password_mismatch'));
+            $this->addError('newPasswordConfirm', __('profile_settings.password_mismatch'));
 
             return;
         }
@@ -104,7 +117,7 @@ class Settings extends Component
         $user = $this->authenticatedUser();
 
         if (! Hash::check($this->currentPassword, $user->password)) {
-            $this->addError('currentPassword', __('messages.profile.wrong_password'));
+            $this->addError('currentPassword', __('profile_settings.wrong_password'));
 
             return;
         }
@@ -122,7 +135,7 @@ class Settings extends Component
         $this->newPassword = '';
         $this->newPasswordConfirm = '';
 
-        $this->dispatch('notification', ['message' => __('messages.profile.password_updated'), 'type' => 'success']);
+        $this->dispatch('notification', ['message' => __('profile_settings.password_updated'), 'type' => 'success']);
     }
 
     public function render(): View
