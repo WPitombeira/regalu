@@ -6,7 +6,9 @@ use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use League\Flysystem\FilesystemException;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -26,6 +28,9 @@ class Settings extends Component
     public ?TemporaryUploadedFile $avatar = null;
 
     public string $avatarPreview = '';
+
+    /** The chosen draft stays previewable even when the disk refused the write. */
+    public bool $avatarStorageFailed = false;
 
     #[Rule(['required', 'string'])]
     public string $currentPassword = '';
@@ -68,9 +73,31 @@ class Settings extends Component
             'phone' => $this->phone,
         ];
 
+        $this->avatarStorageFailed = false;
+
         if ($this->avatar) {
             $this->validateOnly('avatar');
-            $path = $this->avatar->store('avatars', 'public');
+            $path = 'avatars/'.$this->avatar->hashName();
+            $stream = $this->avatar->readStream();
+
+            try {
+                // Livewire's store() returns a path even when the disk write fails.
+                $stored = is_resource($stream) && Storage::disk('public')->put($path, $stream);
+            } catch (FilesystemException) {
+                $stored = false;
+            } finally {
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
+            }
+
+            if (! $stored) {
+                $this->avatarStorageFailed = true;
+                $this->addError('avatar', __('avatar_upload.failed'));
+
+                return;
+            }
+
             $data['avatar_url'] = '/storage/'.$path;
             $this->avatarPreview = $data['avatar_url'];
             $this->avatar = null;
