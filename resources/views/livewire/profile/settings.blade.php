@@ -29,7 +29,7 @@
 
                 <div>
                     <label for="avatar" class="block mb-2 text-sm font-medium text-[#C3C3D1]">{{ __('profile_settings.avatar') }}</label>
-                    @if ($avatar && ! $errors->has('avatar') && $avatar->isPreviewable())
+                    @if ($avatar && $avatar->isPreviewable())
                         <div class="mb-3">
                             <img src="{{ $avatar->temporaryUrl() }}" alt="{{ __('profile_settings.avatar_preview') }}" class="w-20 h-20 rounded-full object-cover border-2 border-gray-600">
                         </div>
