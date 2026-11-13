@@ -8,7 +8,7 @@ return [
     ],
     'features' => [
         'headline' => 'Nossos Recursos',
-        'subheadline' => ['Descubra uma variedade de recursos projetados para melhorar sua experiência.'],
+        'subheadline' => 'Descubra uma variedade de recursos projetados para melhorar sua experiência.',
         'wishlist' => [
             'headline' => 'Gerenciamento de Lista de Desejos',
             'subheadline' => 'Crie e gerencie suas listas de desejos sem esforço.',
@@ -43,6 +43,9 @@ return [
         'terms' => 'Termos de Serviço',
         'privacy_policy' => 'Política de Privacidade',
         'rights' => 'Todos os direitos reservados.',
+    ],
+    'contact' => [
+        'unavailable' => 'Não é possível enviar mensagens de contato no momento. Sua mensagem não foi enviada.',
     ],
     'newsletter' => [
         'caredata' => 'Nós nos preocupamos com seus dados. Leia nossa',
