@@ -5,6 +5,7 @@ namespace App\Livewire\Wishlist;
 use App\Models\Wishlist;
 use App\Models\WishlistItem;
 use App\Services\UrlMetaFetchService;
+use App\Support\WishlistPrice;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -31,11 +32,23 @@ class AddItem extends Component
     #[Rule(['nullable', 'string', 'url:http,https', 'max:2048'])]
     public string $image_url = '';
 
-    #[Rule(['nullable', 'numeric', 'min:0'])]
-    public ?float $price_min = null;
+    #[Rule(['nullable', 'numeric', 'regex:'.WishlistPrice::AMOUNT_PATTERN])]
+    public ?string $price_min = null;
 
-    #[Rule(['nullable', 'numeric', 'min:0'])]
-    public ?float $price_max = null;
+    #[Rule(['nullable', 'numeric', 'regex:'.WishlistPrice::AMOUNT_PATTERN])]
+    public ?string $price_max = null;
+
+    #[Rule(['required', 'in:BRL,USD,EUR'])]
+    public string $currency = 'BRL';
+
+    #[Locked]
+    public ?string $suggestedPrice = null;
+
+    #[Locked]
+    public ?string $suggestedCurrency = null;
+
+    #[Locked]
+    public ?string $metadataSourceUrl = null;
 
     #[Rule(['required', 'in:LOW,MEDIUM,HIGH'])]
     public string $priority = 'MEDIUM';
@@ -48,7 +61,7 @@ class AddItem extends Component
 
     public function fetchMeta(): void
     {
-        $this->authorizeWishlist();
+        $this->updatedUrl();
 
         if ($this->url === '') {
             return;
@@ -59,7 +72,7 @@ class AddItem extends Component
         $rateLimitKey = 'wishlist-meta-fetch:'.Auth::id();
 
         if (RateLimiter::tooManyAttempts($rateLimitKey, 10)) {
-            $this->addError('url', __('Too many metadata requests. Please try again shortly.'));
+            $this->addError('url', __('price_import.rate_limited'));
 
             return;
         }
@@ -76,6 +89,37 @@ class AddItem extends Component
         if (isset($meta['image'])) {
             $this->image_url = $meta['image'];
         }
+
+        $this->suggestedPrice = $meta['price'] ?? null;
+        $this->suggestedCurrency = $meta['currency'] ?? null;
+        $this->metadataSourceUrl = $this->url;
+    }
+
+    public function updatedUrl(): void
+    {
+        $this->authorizeWishlist();
+        $this->reset(['image_url', 'suggestedPrice', 'suggestedCurrency', 'metadataSourceUrl']);
+        $this->resetValidation(['url', 'suggestedPrice']);
+    }
+
+    public function applySuggestedPrice(): void
+    {
+        $this->authorizeWishlist();
+        $this->resetValidation('suggestedPrice');
+
+        if (filled($this->price_min) || filled($this->price_max)) {
+            $this->addError('suggestedPrice', __('price_import.manual_price_preserved'));
+
+            return;
+        }
+
+        if ($this->metadataSourceUrl === $this->url && $this->suggestedPrice !== null && $this->suggestedCurrency !== null) {
+            $this->price_min = $this->suggestedPrice;
+            $this->price_max = $this->suggestedPrice;
+            $this->currency = $this->suggestedCurrency;
+        } else {
+            $this->addError('suggestedPrice', __('price_import.fetch_again'));
+        }
     }
 
     public function save(): void
@@ -83,22 +127,29 @@ class AddItem extends Component
         $this->authorizeWishlist();
         $this->validate();
 
+        if (filled($this->price_min) && filled($this->price_max) && $this->price_min > $this->price_max) {
+            $this->addError('price_max', __('price_import.invalid_range'));
+
+            return;
+        }
+
         WishlistItem::create([
             'wishlist_id' => $this->wishlist_id,
             'name' => $this->name,
             'description' => $this->description ?: null,
             'url' => $this->url ?: null,
             'image_url' => $this->image_url ?: null,
-            'price_min' => $this->price_min,
-            'price_max' => $this->price_max,
+            'price_min' => WishlistPrice::normalize($this->price_min),
+            'price_max' => WishlistPrice::normalize($this->price_max),
+            'currency' => filled($this->price_min) || filled($this->price_max) ? $this->currency : null,
             'priority' => $this->priority,
             'status' => 'AVAILABLE',
         ]);
 
-        $this->dispatch('notification', ['message' => __('messages.wishlist.item_added'), 'type' => 'success']);
+        $this->dispatch('notification', ['message' => __('price_import.item_added'), 'type' => 'success']);
         $this->dispatch('item-added');
 
-        $this->reset(['name', 'description', 'url', 'image_url', 'price_min', 'price_max', 'priority']);
+        $this->reset(['name', 'description', 'url', 'image_url', 'price_min', 'price_max', 'currency', 'suggestedPrice', 'suggestedCurrency', 'metadataSourceUrl', 'priority']);
         $this->priority = 'MEDIUM';
     }
 

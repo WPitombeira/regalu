@@ -278,6 +278,40 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Exercise price import in English and Portuguese on desktop and mobile
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/price_import_smoke.py --output coverage/price-import-browser
+
+      - name: Upload price import browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: price-import-browser
+          path: |
+            coverage/price-import-browser/results.json
+            coverage/price-import-browser/**/*.png
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Exercise family mutations in English and Portuguese on desktop and mobile
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/family_mutations_smoke.py --output coverage/family-mutations-browser
+
+      - name: Upload family mutation browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: family-mutations-browser
+          path: |
+            coverage/family-mutations-browser/results.json
+            coverage/family-mutations-browser/**/*.png
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Upload PHP coverage reports
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
