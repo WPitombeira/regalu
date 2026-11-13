@@ -71,7 +71,7 @@ class Index extends Component
     public function registerFeedback(): void
     {
         // Delivery is not configured; retain the draft without claiming success.
-        $this->addError('feedback', __('messages.contact.unavailable'));
+        $this->addError('feedback', __('contact.unavailable'));
     }
 
     #[Rule(['required', 'min:5'])]
