@@ -135,18 +135,15 @@ def journey(browser, locale, viewport, output):
             assert requests == []
             capture(page, "initial-native-validation")
 
-            # The separate contact form has no delivery backend: keep the draft and say so.
+            # The separate contact form has no delivery backend: it refuses drafts up front.
             contact = page.locator("#contact")
             cache_before = row(database, "select count(*) from cache", ())
-            contact.get_by_placeholder("Your Name (optional)", exact=True).fill("Reader")
-            contact.get_by_placeholder("Your Email (optional)", exact=True).fill("reader@example.test")
-            contact.get_by_placeholder("Your Message", exact=True).fill("Please keep my message until it can be sent.")
-            action(page, contact.get_by_role("button", name="Submit", exact=True), "registerFeedback")
-            expect(contact.locator("#contact-error")).to_have_text(labels["contact_unavailable"])
-            expect(contact.locator("#contact-error")).to_have_attribute("role", "alert")
-            expect(contact.get_by_placeholder("Your Name (optional)", exact=True)).to_have_value("Reader")
-            expect(contact.get_by_placeholder("Your Email (optional)", exact=True)).to_have_value("reader@example.test")
-            expect(contact.get_by_placeholder("Your Message", exact=True)).to_have_value("Please keep my message until it can be sent.")
+            expect(contact.locator("#contact-unavailable")).to_be_visible()
+            for field in ("#feedback_name", "#feedback_email", "#feedback_message"):
+                expect(contact.locator(field)).to_be_disabled()
+                expect(contact.locator(field)).to_have_value("")
+            expect(contact.locator('button[type="submit"]')).to_be_disabled()
+            expect(contact.locator("#contact-error")).to_have_count(0)
             expect(page.locator("#newsletter-status")).to_have_count(0)
             assert row(database, "select count(*) from newsletters", ()) == (1,)
             assert row(database, "select count(*) from cache", ()) == cache_before
