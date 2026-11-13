@@ -45,6 +45,9 @@ return [
         'privacy_policy' => 'Política de Privacidade',
         'rights' => 'Todos os direitos reservados.',
     ],
+    'contact' => [
+        'unavailable' => 'Não é possível enviar mensagens de contato no momento. Sua mensagem não foi enviada.',
+    ],
     'newsletter' => [
         'caredata' => 'Nós nos preocupamos com seus dados. Leia nossa',
         'privacy_policy' => 'Política de Privacidade',
