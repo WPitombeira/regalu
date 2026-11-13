@@ -111,6 +111,8 @@ Implementation contract for email invitations, recipient decisions and cancellat
 
 The ordinary wishlist purchase implementation, qualification, and delivery limits are documented in [WISHLIST_PURCHASE_FLOW.md](WISHLIST_PURCHASE_FLOW.md). Secret Santa assignment purchases remain a separate authorization path.
 
+Product-link price suggestions, explicit currencies, manual fallback and legacy-price handling are documented in [WISHLIST_PRICE_IMPORT.md](WISHLIST_PRICE_IMPORT.md). Imported prices require review; no live-price, stock or currency-conversion guarantee is implied.
+
 ### D. Amigo Secreto
 
 - Create event: name, budget range, date, type
