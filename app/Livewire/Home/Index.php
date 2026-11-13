@@ -22,4 +22,9 @@ class Index extends Component
     public string $feedback_email = '';
 
     public string $feedback_name = '';
+
+    public function registerFeedback(): void
+    {
+        $this->addError('feedback', __('contact.unavailable'));
+    }
 }

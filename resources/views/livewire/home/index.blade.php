@@ -95,36 +95,31 @@
         </div>
     </section>
     
-    <section id="contact" class="bg-white mt-10 dark:bg-gray-900">
-        <div class="grid grid-rows-[10vh_1fr] min-h-[50vh] max-w-screen-xl px-6 py-8 mx-auto justify-center">
-            <div class="flex flex-col">
-                <h1 class="text-4xl text-white font-bold">Have any suggestion, feedback or need assistance?</h1>
-                <h2 class="text-lg text-center dark:text-white font-light">We would love to hear you</h2>
-            </div>
-            <div>
-                <form wire:submit="registerFeedback" class="w-full flex flex-row justify-center">
-                    <div class="w-8/12">
-                        <div class="mb-4">
-                            <label for="feedback_name" class="hidden">Your Name</label>
-                            <input type="text" wire:model="feedback_name" class="form rounded-lg border border-gray-300 text-gray-900 dark:text-white focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Your Name (optional)">
-                        </div>
-                        <div class="mb-4">
-                            <label for="feedback_email" class="hidden">Your Email</label>
-                            <input type="email" wire:model="feedback_email" class="form rounded-lg border border-gray-300 text-gray-900 dark:text-white focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Your Email (optional)">
-                        </div>
-                        <div class="mb-4">
-                            <label for="feedback_message" class="hidden">Your Message</label>
-                            <textarea placeholder="Your Message" wire:model="feedback_message" class="form rounded-lg border border-gray-300 text-gray-900 dark:text-white focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" rows="5"></textarea>
-                            @error('feedback_message')
-                                <span>Missing field</span>
-                            @enderror
-                        </div>
-                        <div class="w-full flex justify-center">
-                            <button class="w-4/12 font-base text-lg hover:text-violet-900 hover:bg-gray-200 transition hover:duration-200 ease-in-out shadow-xs text-violet-800 bg-white text-black font-bold text-sm rounded-md py-2 px-3.5" type="submit">Submit</button>
-                        </div>
+    <section id="contact" aria-labelledby="contact-heading" class="bg-white mt-10 dark:bg-gray-900">
+        <div class="max-w-2xl px-6 py-8 mx-auto space-y-6">
+            <h2 id="contact-heading" class="text-3xl font-bold text-gray-900 dark:text-white">{{ __('contact.heading') }}</h2>
+            <p id="contact-unavailable" class="text-base leading-relaxed text-gray-700 dark:text-gray-300">{{ __('contact.notice') }}</p>
+            <form wire:submit="registerFeedback" aria-describedby="contact-unavailable" class="w-full space-y-4">
+                <fieldset disabled class="min-w-0 space-y-4">
+                    <legend class="sr-only">{{ __('contact.heading') }}</legend>
+                    <div>
+                        <label for="feedback_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-200">{{ __('contact.name') }}</label>
+                        <input id="feedback_name" type="text" wire:model="feedback_name" disabled class="block w-full min-w-0 rounded-lg border border-gray-300 bg-gray-100 p-2.5 text-gray-700 disabled:cursor-not-allowed dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
                     </div>
-                </form>
-            </div>
+                    <div>
+                        <label for="feedback_email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-200">{{ __('contact.email') }}</label>
+                        <input id="feedback_email" type="email" wire:model="feedback_email" disabled class="block w-full min-w-0 rounded-lg border border-gray-300 bg-gray-100 p-2.5 text-gray-700 disabled:cursor-not-allowed dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                    </div>
+                    <div>
+                        <label for="feedback_message" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-200">{{ __('contact.message') }}</label>
+                        <textarea id="feedback_message" wire:model="feedback_message" disabled rows="5" class="block w-full min-w-0 rounded-lg border border-gray-300 bg-gray-100 p-2.5 text-gray-700 disabled:cursor-not-allowed dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"></textarea>
+                    </div>
+                    <button type="submit" disabled class="min-h-11 w-full rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-600 disabled:cursor-not-allowed dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">{{ __('contact.button') }}</button>
+                </fieldset>
+                @error('feedback')
+                    <p role="alert" class="text-sm text-red-700 dark:text-red-300">{{ $message }}</p>
+                @enderror
+            </form>
         </div>
     </section>
 </div>

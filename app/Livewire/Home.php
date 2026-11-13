@@ -26,16 +26,15 @@ class Home extends Component
         }
     }
 
-    public string $feedback_email = 'Anonymous';
+    public string $feedback_email = '';
 
-    public string $feedback_name = 'Anonymous';
+    public string $feedback_name = '';
 
     #[Rule(['required'])]
     public string $feedback_message = '';
 
     public function registerFeedback(): void
     {
-        $this->validate();
-        $this->dispatch('notification', ['message' => __('messages.action.newsletter_success'), 'type' => 'success']);
+        $this->addError('feedback', __('contact.unavailable'));
     }
 }

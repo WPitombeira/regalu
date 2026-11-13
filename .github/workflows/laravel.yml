@@ -261,6 +261,23 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Exercise unavailable contact form across locales, schemes, and viewports
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/contact_smoke.py --output coverage/contact-browser
+
+      - name: Upload contact browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: contact-browser
+          path: |
+            coverage/contact-browser/*.json
+            coverage/contact-browser/*.png
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Upload PHP coverage reports
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
