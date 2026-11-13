@@ -4,11 +4,11 @@
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        {{ __('price_import.add_item') }}
+        {{ __('messages.wishlist.add_item') }}
     </button>
 
     <div x-show="open" x-transition x-cloak class="mt-4 bg-gray-800/50 border border-gray-700 rounded-xl p-6">
-        <h3 class="text-lg font-semibold text-gray-100 mb-4">{{ __('price_import.add_item') }}</h3>
+        <h3 class="text-lg font-semibold text-gray-100 mb-4">{{ __('messages.wishlist.add_item') }}</h3>
 
         <form wire:submit="save" class="space-y-4">
             {{-- URL with Fetch --}}
