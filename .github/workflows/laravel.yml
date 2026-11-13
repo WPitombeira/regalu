@@ -261,6 +261,25 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Exercise localized toast feedback
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          set -euo pipefail
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/toast_feedback_smoke.py --output coverage/toast-browser
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/toast_feedback_report_test.py coverage/toast-browser/results.json
+
+      - name: Upload toast browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: toast-feedback-browser
+          path: |
+            coverage/toast-browser/results.json
+            coverage/toast-browser/**/*.png
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Upload PHP coverage reports
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

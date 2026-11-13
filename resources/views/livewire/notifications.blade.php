@@ -8,17 +8,18 @@
     ];
 @endphp
 <div>
-    <div id="toast-parent" class="top-4 right-4 fixed">
+    <div id="toast-parent" class="fixed inset-x-4 top-4 z-50 sm:left-auto sm:w-80">
         @foreach ($notifications as $index => $notification)
         @php
         if (isset($notification["wasSeen"]) && $notification["wasSeen"])
             continue;
 
         $notifications[$index]["wasSeen"] = true;
-        $class = $classes[$notification["type"]] ?? 'dark:bg-blue-800 dark:text-blue-200 bg-blue-500 border-blue-700';    
+        $type = isset($classes[$notification["type"]]) ? $notification["type"] : 'info';
+        $class = $classes[$type] ?? 'dark:bg-blue-800 dark:text-blue-200 bg-blue-500 border-blue-700';
         @endphp
 
-        <div id="toast-default" class="flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg shadow-sm dark:text-gray-400 dark:bg-gray-800 mb-2" role="alert"
+        <div id="toast-{{ $this->getId() }}-{{ $index }}" wire:key="toast-{{ $this->getId() }}-{{ $index }}" class="flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg shadow-sm dark:text-gray-400 dark:bg-gray-800 mb-2" role="alert"
             x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 scale-90"
             x-transition:enter-end="opacity-100 scale-100"
@@ -39,11 +40,11 @@
                             <x-ui.icons.info />
                             
                     @endswitch
-                    <span class="sr-only">{{ $notification["type"] }} icon</span>
+                    <span class="sr-only">{{ __('toast_feedback.types.'.$type) }}</span>
                 </div>
-                <div class="ms-3 text-sm font-normal">{{ $notification["message"] }}</div>
-                <button type="button" class="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700" data-dismiss-target="#toast-default" aria-label="Close">
-                    <span class="sr-only">Close</span>
+                <div class="ms-3 min-w-0 flex-1 [overflow-wrap:anywhere] text-sm font-normal">{{ $notification["message"] }}</div>
+                <button type="button" class="ms-3 shrink-0 bg-white text-gray-500 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-11 w-11 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700" @click="show = false" aria-label="{{ __('toast_feedback.dismiss') }}">
+                    <span class="sr-only">{{ __('toast_feedback.dismiss') }}</span>
                     <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
                     </svg>
