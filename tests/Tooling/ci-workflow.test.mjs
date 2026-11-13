@@ -108,6 +108,21 @@ test('release smoke builds caches and migrates a disposable SQLite database both
 });
 
 
+test('event budgets run the complete browser matrix and fail-closed validator with retained evidence', () => {
+    const tests = job('tests');
+    const start = tests.indexOf('      - name: Exercise event budgets');
+    assert.ok(start >= 0, 'missing event-budget browser gate');
+    const gate = tests.slice(start, tests.indexOf('      - name: Upload event budget', start));
+    assert.match(gate, /set -euo pipefail/);
+    assert.match(gate, /tests\/Browser\/event_budget_smoke\.py --output coverage\/event-budget-browser/);
+    assert.match(gate, /tests\/Browser\/event_budget_report_test\.py --output coverage\/event-budget-browser/);
+    assert.doesNotMatch(gate, /--case|continue-on-error|\|\| true/);
+    assert.match(tests, /name: Upload event budget browser evidence\n\s+if: always\(\)\n\s+uses: actions\/upload-artifact@/);
+    assert.match(tests, /name: event-budget-browser/);
+    assert.match(tests, /coverage\/event-budget-browser\/report\.json\n\s+coverage\/event-budget-browser\/\*\*\/\*\.png/);
+});
+
+
 test('footer navigation runs the full browser matrix and fail-closed report validation', () => {
     const tests = job('tests');
     assert.match(tests, /name: Exercise localized footer navigation[\s\S]*?set -euo pipefail/);

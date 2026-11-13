@@ -27,10 +27,10 @@ class CreateEvent extends Component
     #[Rule(['required', 'in:NAMED,ANONYMOUS_UNTIL_REVEAL'])]
     public string $recipient_visibility = 'NAMED';
 
-    #[Rule(['nullable', 'numeric', 'min:0'])]
+    #[Rule]
     public ?string $budget_min = null;
 
-    #[Rule(['nullable', 'numeric', 'min:0'])]
+    #[Rule]
     public ?string $budget_max = null;
 
     #[Rule(['nullable', 'date', 'after_or_equal:today'])]
@@ -41,6 +41,41 @@ class CreateEvent extends Component
 
     #[Rule(['nullable', 'exists:families,id'])]
     public ?int $family_id = null;
+
+    /** @return array<string, list<string>> */
+    protected function rules(): array
+    {
+        return [
+            'budget_min' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:99999999.99'],
+            'budget_max' => [
+                'nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:99999999.99',
+                ...(! blank($this->budget_min) ? ['gte:budget_min'] : []),
+            ],
+        ];
+    }
+
+    /** @return array<string, string> */
+    protected function validationAttributes(): array
+    {
+        return [
+            'budget_min' => __('event_budget.minimum'),
+            'budget_max' => __('event_budget.maximum'),
+        ];
+    }
+
+    /** @return array<string, string> */
+    protected function messages(): array
+    {
+        $messages = ['budget_max.gte' => __('event_budget.ordered')];
+
+        foreach (['budget_min', 'budget_max'] as $field) {
+            foreach (['numeric', 'decimal', 'min', 'max'] as $rule) {
+                $messages[$field.'.'.$rule] = __('event_budget.'.$rule);
+            }
+        }
+
+        return $messages;
+    }
 
     public function create(): Redirector|RedirectResponse
     {
@@ -59,8 +94,8 @@ class CreateEvent extends Component
             'name' => $this->name,
             'description' => $this->description ?: null,
             'event_type' => $this->event_type,
-            'budget_min' => $this->budget_min ?: null,
-            'budget_max' => $this->budget_max ?: null,
+            'budget_min' => blank($this->budget_min) ? null : $this->budget_min,
+            'budget_max' => blank($this->budget_max) ? null : $this->budget_max,
             'event_date' => $this->event_date ?: null,
             'reveal_date' => $this->reveal_date ?: null,
             'recipient_visibility' => $this->recipient_visibility,
