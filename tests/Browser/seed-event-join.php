@@ -1,0 +1,57 @@
+<?php
+
+// Synthetic account; the ephemeral login secret stays in this disposable fixture.
+use App\Models\AmigoSecretoEvent;
+use App\Models\AmigoSecretoParticipant;
+use App\Models\User;
+use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
+
+require dirname(__DIR__, 2).'/vendor/autoload.php';
+$app = require dirname(__DIR__, 2).'/bootstrap/app.php';
+$app->make(Kernel::class)->bootstrap();
+$directory = realpath((string) getenv('REGALU_BROWSER_DIRECTORY'));
+$database = realpath((string) getenv('DB_DATABASE'));
+if ($directory === false || ! str_starts_with(basename($directory), 'regalu-join-browser-')
+    || $database === false || dirname($database) !== $directory || basename($database) !== 'browser.sqlite'
+    || filesize($database) !== 0
+    || ! $app->environment('browser') || $app->runningUnitTests() || $app->configurationIsCached()
+    || config('database.default') !== 'sqlite'
+    || DB::connection()->getDriverName() !== 'sqlite' || DB::connection()->getDatabaseName() !== $database
+    || config('cache.default') !== 'array' || ! in_array(config('cache.limiter'), [null, 'array'], true)
+    || config('session.driver') !== 'database' || config('session.connection') !== 'sqlite'
+    || config('mail.default') !== 'array' || config('queue.default') !== 'sync'
+    || config('filesystems.default') !== 'local'
+    || storage_path() !== $directory.'/storage'
+    || config('filesystems.disks.local.root') !== $directory.'/storage/app/private'
+    || config('filesystems.disks.public.root') !== $directory.'/storage/app/public') {
+    throw new RuntimeException('Browser fixture isolation refused.');
+}
+if (Artisan::call('migrate', ['--force' => true]) !== 0) {
+    throw new RuntimeException('Browser fixture migration failed.');
+}
+$password = getenv('REGALU_BROWSER_PASSWORD');
+if (! is_string($password) || strlen($password) < 24) {
+    throw new RuntimeException('Browser login fixture missing.');
+}
+$guest = User::create([
+    'name' => 'Join Guest', 'email' => 'guest@example.test', 'password' => $password,
+    'locale' => config('app.locale'), 'avatar_url' => '/media/logo.png',
+]);
+$host = User::create([
+    'name' => 'Join Host', 'email' => 'host@example.test', 'password' => $password,
+    'locale' => config('app.locale'), 'avatar_url' => '/media/logo.png',
+]);
+foreach (['INVITATION01', 'DIRECTCODE01', 'CLOSEDCASE01', 'REVOKEDSES01'] as $code) {
+    $event = AmigoSecretoEvent::create([
+        'organizer_id' => $host->id, 'name' => 'Fixture '.$code, 'event_code' => $code,
+        'event_type' => 'CASUAL', 'status' => 'PLANNING', 'is_archived' => false,
+    ]);
+    if ($code === 'INVITATION01') {
+        AmigoSecretoParticipant::create([
+            'event_id' => $event->id, 'invite_email' => ' Guest@Example.Test ', 'status' => 'INVITED',
+        ]);
+    }
+}
+echo json_encode(['ready' => true], JSON_THROW_ON_ERROR);

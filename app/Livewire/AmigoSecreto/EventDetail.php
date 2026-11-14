@@ -6,6 +6,7 @@ use App\Models\AmigoSecretoEvent;
 use App\Models\AmigoSecretoParticipant;
 use App\Models\Wishlist;
 use App\Services\AssignmentAccess;
+use App\Services\EventRoster;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
@@ -86,29 +87,32 @@ class EventDetail extends Component
 
     public function saveWishlist(): void
     {
-        $event = $this->authorizedEvent();
-        $participant = $event->participants()->where('user_id', Auth::id())
-            ->where('status', 'ACCEPTED')->firstOrFail();
-        abort_if($event->status === 'COMPLETED' && $this->wishlist_id !== null, 403);
-        $this->validate([
-            'wishlist_id' => ['nullable', 'integer', ValidationRule::exists('wishlists', 'id')
-                ->where('user_id', Auth::id())->where('is_archived', false)],
-        ]);
-        $updated = AmigoSecretoParticipant::query()->whereKey($participant->id)
-            ->where('event_id', $event->id)->where('user_id', Auth::id())->where('status', 'ACCEPTED')
-            ->whereHas('event', function (Builder $query): void {
-                $query->where('is_archived', false);
-                if ($this->wishlist_id !== null) {
-                    $query->where('status', '!=', 'COMPLETED');
-                }
-            })
-            ->when($this->wishlist_id !== null, function (Builder $query): void {
-                $query->whereExists(function (QueryBuilder $wishlist): void {
-                    $wishlist->selectRaw('1')->from('wishlists')->where('id', $this->wishlist_id)
-                        ->where('user_id', Auth::id())->where('is_archived', false);
-                });
-            })
-            ->update(['wishlist_id' => $this->wishlist_id]);
+        $updated = EventRoster::locked($this->event->id, function (AmigoSecretoEvent $event): int {
+            Gate::authorize('view', $event);
+            $participant = $event->participants()->where('user_id', Auth::id())
+                ->where('status', 'ACCEPTED')->lockForUpdate()->firstOrFail();
+            abort_if($event->status === 'COMPLETED' && $this->wishlist_id !== null, 403);
+            $this->validate([
+                'wishlist_id' => ['nullable', 'integer', ValidationRule::exists('wishlists', 'id')
+                    ->where('user_id', Auth::id())->where('is_archived', false)],
+            ]);
+
+            return AmigoSecretoParticipant::query()->whereKey($participant->id)
+                ->where('event_id', $event->id)->where('user_id', Auth::id())->where('status', 'ACCEPTED')
+                ->whereHas('event', function (Builder $query): void {
+                    $query->where('is_archived', false);
+                    if ($this->wishlist_id !== null) {
+                        $query->where('status', '!=', 'COMPLETED');
+                    }
+                })
+                ->when($this->wishlist_id !== null, function (Builder $query): void {
+                    $query->whereExists(function (QueryBuilder $wishlist): void {
+                        $wishlist->selectRaw('1')->from('wishlists')->where('id', $this->wishlist_id)
+                            ->where('user_id', Auth::id())->where('is_archived', false);
+                    });
+                })
+                ->update(['wishlist_id' => $this->wishlist_id]);
+        });
         abort_unless($updated === 1, 403);
         $this->dispatch('notification', ['message' => __('assignments.saved'), 'type' => 'success']);
     }
