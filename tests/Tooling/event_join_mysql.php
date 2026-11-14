@@ -22,7 +22,12 @@ $app->useEnvironmentPath($directory)->loadEnvironmentFrom('.env');
 $app->make(Kernel::class)->bootstrap();
 // Avoid Laravel's console exception renderer exposing fixture values or exiting 0.
 set_exception_handler(function (Throwable $error): never {
-    fwrite(STDERR, json_encode(['passed' => false, 'error_class' => $error::class], JSON_THROW_ON_ERROR)."\n");
+    $diagnostic = ['passed' => false, 'error_class' => $error::class];
+    if ($error instanceof QueryException) {
+        $diagnostic += ['sqlstate' => $error->errorInfo[0] ?? null,
+            'driver_code' => $error->errorInfo[1] ?? null, 'statement' => $error->getSql()];
+    }
+    fwrite(STDERR, json_encode($diagnostic, JSON_THROW_ON_ERROR)."\n");
     exit(1);
 });
 $connection = DB::connection();
@@ -34,6 +39,11 @@ if ($app->configurationIsCached() || ! $app->environment('qualification')
     || config('queue.default') !== 'sync' || storage_path() !== $directory.'/storage'
     || $connection->getPdo()->getAttribute(PDO::ATTR_DRIVER_NAME) !== 'mysql') {
     throw new RuntimeException('Native fixture isolation refused.');
+}
+if (getenv('REGALU_ADMISSION_WORKER') === '1') {
+    require __DIR__.'/event_admission_probe.php';
+    admissionWorker($directory);
+    exit(0);
 }
 if ($connection->getSchemaBuilder()->getTables() !== []) {
     throw new RuntimeException('Expected an empty disposable database.');
@@ -69,8 +79,14 @@ foreach ([true, false] as $invited) {
     }
 }
 $passed = array_all($results, fn ($result) => $result['passed']);
+$admission = null;
+if (getenv('REGALU_ADMISSION') === '1') {
+    require __DIR__.'/event_admission_probe.php';
+    $admission = admissionProbe($root, $directory);
+    $passed = $passed && $admission['passed'];
+}
 echo json_encode(['passed' => $passed, 'version' => DB::selectOne('select version() as version')->version,
     'driver' => $connection->getDriverName(), 'migrations' => DB::table('migrations')->count(),
     'source_sha256' => hash_file('sha256', $root.'/app/Livewire/AmigoSecreto/JoinEvent.php'),
-    'cases' => $results], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT), "\n";
+    'cases' => $results, 'admission' => $admission], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT), "\n";
 exit($passed ? 0 : 1);

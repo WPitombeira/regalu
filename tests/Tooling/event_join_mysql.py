@@ -77,10 +77,53 @@ def owned_container(identity, name, image_id, baseline):
     return bound
 
 
+def verify_admission(observed):
+    """Require the whole native matrix, not a summary boolean or partial run."""
+    assert type(observed) is dict and observed.get('passed') is True
+    drivers = observed.get('drivers')
+    assert type(drivers) is list and len(drivers) == 2
+    cases = ['same_account', 'same_email', 'draw_twice', 'invite_then_join', 'join_then_invite',
+             'draw_then_join', 'join_then_draw', 'draw_then_remove', 'remove_then_draw',
+             'draw_then_exclude', 'exclude_then_draw', 'draw_then_unexclude', 'unexclude_then_draw',
+             'rollback_invite', 'consent_then_remove', 'remove_then_consent']
+    for driver, result in zip(('mysql', 'sqlite'), drivers, strict=True):
+        assert type(result) is dict and result.get('driver') == driver
+        migration = result.get('migration')
+        assert type(migration) is dict and all(migration.get(key) is True for key in (
+            'passed', 'populated_round_trip', 'native_unique_rejections',
+            'account_collision_preserved', 'email_collision_preserved'))
+        expected = cases + (['rr_join', 'rr_invite'] if driver == 'mysql' else [])
+        records = result.get('cases')
+        assert type(records) is list and len(records) == len(expected)
+        for case, record in zip(expected, records, strict=True):
+            assert type(record) is dict and record.get('case') == case and record.get('passed') is True
+            assert record.get('barrier') == (
+                'mysql_event_row_wait' if driver == 'mysql' else 'sqlite_busy_then_explicit_retry')
+            denied = case.startswith('draw_then_') or case == 'remove_then_consent'
+            duplicate = case in ('same_email', 'rr_invite', 'join_then_invite')
+            assert record.get('outcomes') == ['ok', 'http_403' if denied else ('validation' if duplicate else 'ok')]
+            assert type(record.get('workers')) is int and record['workers'] == 2
+            exits = record.get('native_exits')
+            assert type(exits) is list and len(exits) == 2 and all(type(code) is int and code == 0 for code in exits)
+
+
+def source_hashes():
+    """Bind loaded app/schema/view inputs and the runner, excluding env and caches."""
+    paths = {ROOT / name for name in (
+        'composer.json', 'composer.lock', '.github/workflows/laravel.yml',
+        'tests/Tooling/event_join_mysql.py', 'tests/Tooling/event_join_mysql.php',
+        'tests/Tooling/event_admission_probe.php', 'tests/Tooling/event_join_mysql_test.py')}
+    for pattern in ('app/**/*.php', 'bootstrap/*.php', 'config/*.php', 'routes/*.php',
+                    'database/migrations/*.php', 'resources/views/**/*.php', 'lang/**/*.php', 'lang/*.json'):
+        paths.update(ROOT.glob(pattern))
+    return {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest() for path in sorted(paths)}
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', required=True)
     parser.add_argument('--extension-dir', type=Path, help='Optional task-local PHP mysqlnd/pdo_mysql module directory')
+    parser.add_argument('--admission', action='store_true', help='Also require native roster races and populated migration probes')
     args = parser.parse_args()
     destination = Path(args.output).resolve()
     assert not destination.exists()
@@ -100,7 +143,8 @@ def main():
     label = 'regalu.qualification=' + name
     receipt = {'image': IMAGE, 'image_id': image['Id'], 'name': name,
                'probe_sha256': hashlib.sha256(script.read_bytes()).hexdigest(),
-               'runner_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(), 'passed': False}
+               'runner_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+               'source_hashes': source_hashes(), 'passed': False}
     (destination / 'create-intent.json').write_text(json.dumps(receipt, indent=2) + '\n')
     cid = None
     result = None
@@ -175,7 +219,9 @@ def main():
                 for module in ('mysqlnd.so', 'pdo_mysql.so'):
                     assert (extensions / module).is_file()
                     php.extend(['-d', 'extension=' + str(extensions / module)])
-            result = command([*php, str(script)], timeout=120, cwd=ROOT, env=env)
+            if args.admission:
+                env.update(REGALU_ADMISSION='1', REGALU_PROBE_PHP=json.dumps(php))
+            result = command([*php, str(script)], timeout=240 if args.admission else 120, cwd=ROOT, env=env)
             # The probe reports only synthetic case metadata/SQL, never account secrets.
             (destination / 'stdout.txt').write_text(result.stdout)
             (destination / 'stderr.txt').write_text(result.stderr)
@@ -192,6 +238,8 @@ def main():
                 assert observed['migrations'] == len(list((ROOT / 'database/migrations').glob('*.php')))
                 assert observed['source_sha256'] == hashlib.sha256((ROOT / 'app/Livewire/AmigoSecreto/JoinEvent.php').read_bytes()).hexdigest()
                 assert observed['cases'] == [{'case': 'invitation', 'passed': True}, {'case': 'code', 'passed': True}]
+                if args.admission:
+                    verify_admission(observed.get('admission'))
             # Stop before tempfile cleanup so the owned socket is no longer live.
             receipt['state_before_cleanup'] = json.loads(docker('container', 'inspect', cid))[0]['State']['Status']
             docker('stop', '--time', '10', cid)
@@ -226,10 +274,11 @@ def main():
             else:
                 receipt['retained_fixture'] = fixture
             receipt['fixture_removed'] = not Path(fixture).exists()
+            receipt['sources_unchanged'] = source_hashes() == receipt['source_hashes']
         except Exception as error:
             receipt.update(passed=False, postcheck_error=type(error).__name__)
         receipt['passed'] = receipt['passed'] and all(receipt.get(key) is True for key in (
-            'cleanup_verified', 'protected_containers_unchanged', 'volumes_unchanged', 'fixture_removed'))
+            'cleanup_verified', 'protected_containers_unchanged', 'volumes_unchanged', 'fixture_removed', 'sources_unchanged'))
         (destination / 'receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
     print(json.dumps(receipt, indent=2))
     return 0 if receipt['passed'] else 1

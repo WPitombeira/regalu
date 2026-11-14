@@ -5,9 +5,9 @@ namespace App\Livewire\AmigoSecreto;
 use App\Jobs\SendEventInvitation;
 use App\Models\AmigoSecretoEvent;
 use App\Models\AmigoSecretoParticipant;
+use App\Services\EventRoster;
 use App\Services\NotificationService;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
@@ -30,17 +30,22 @@ class ManageParticipants extends Component
         $event = $this->authorizedEvent('update');
         $this->validate();
 
-        $existing = $event->participants()
-            ->where('invite_email', $this->inviteEmail)
-            ->first();
+        $created = EventRoster::locked($event->id, function (AmigoSecretoEvent $event): bool {
+            Gate::authorize('update', $event);
+            $existing = $event->participants()
+                ->where(function ($query) {
+                    $query->whereRaw('LOWER(TRIM(invite_email)) = LOWER(TRIM(?))', [$this->inviteEmail])
+                        ->orWhereHas('user', fn ($user) => $user
+                            ->whereRaw('LOWER(TRIM(email)) = LOWER(TRIM(?))', [$this->inviteEmail]));
+                })
+                ->lockForUpdate()->first();
 
-        if ($existing) {
-            $this->addError('inviteEmail', 'This email has already been invited.');
+            if ($existing) {
+                $this->addError('inviteEmail', 'This email has already been invited.');
 
-            return;
-        }
+                return false;
+            }
 
-        DB::transaction(function () use ($event): void {
             $participant = AmigoSecretoParticipant::create([
                 'event_id' => $event->id,
                 'invite_email' => $this->inviteEmail,
@@ -50,7 +55,13 @@ class ManageParticipants extends Component
 
             NotificationService::eventInvited($participant);
             SendEventInvitation::dispatch($participant->id)->afterCommit();
+
+            return true;
         });
+
+        if (! $created) {
+            return;
+        }
 
         $this->dispatch('notification', ['message' => __('messages.amigo_secreto.invite_queued'), 'type' => 'success']);
         $this->inviteEmail = '';
@@ -61,12 +72,15 @@ class ManageParticipants extends Component
     {
         $event = $this->authorizedEvent('update');
 
-        $participant = $event->participants()->find($participantId);
+        EventRoster::locked($event->id, function (AmigoSecretoEvent $event) use ($participantId): void {
+            Gate::authorize('update', $event);
+            $participant = $event->participants()->lockForUpdate()->find($participantId);
 
-        if ($participant && $participant->getAttribute('user_id') !== $event->organizer_id) {
-            $participant->delete();
-            $this->event = $event->refresh();
-        }
+            if ($participant && $participant->getAttribute('user_id') !== $event->organizer_id) {
+                $participant->delete();
+            }
+        });
+        $this->event = $event->refresh();
     }
 
     public function render(): View

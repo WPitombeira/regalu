@@ -7,11 +7,11 @@ use App\Models\AmigoSecretoDraw;
 use App\Models\AmigoSecretoEvent;
 use App\Services\AssignmentAccess;
 use App\Services\DrawAlgorithmService;
+use App\Services\EventRoster;
 use App\Services\NotificationService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use RuntimeException;
@@ -30,31 +30,23 @@ class ExecuteDraw extends Component
     {
         $event = $this->authorizedEvent('draw');
 
-        if (in_array($event->status, ['DRAWS_COMPLETE', 'REVEALED', 'COMPLETED'], true)) {
-            $this->dispatch('notification', ['message' => __('messages.amigo_secreto.already_drawn'), 'type' => 'error']);
-
-            return;
-        }
-
-        $acceptedParticipants = $event->participants()
-            ->where('status', 'ACCEPTED')
-            ->whereNotNull('user_id')
-            ->pluck('user_id')
-            ->all();
-
-        $exclusions = $event->exclusions()
-            ->get()
-            ->map(fn (Model $exclusion): array => [
-                (int) $exclusion->getAttribute('user_a_id'),
-                (int) $exclusion->getAttribute('user_b_id'),
-            ])
-            ->all();
-
         try {
-            $service = new DrawAlgorithmService;
-            $results = $service->execute($acceptedParticipants, $exclusions);
+            $drawn = EventRoster::locked($event->id, function (AmigoSecretoEvent $event): bool {
+                Gate::authorize('draw', $event);
+                if (in_array($event->status, ['DRAWS_COMPLETE', 'REVEALED', 'COMPLETED'], true)) {
+                    return false;
+                }
 
-            DB::transaction(function () use ($results, $event) {
+                $acceptedParticipants = $event->participants()
+                    ->where('status', 'ACCEPTED')->whereNotNull('user_id')
+                    ->lockForUpdate()->pluck('user_id')->all();
+                $exclusions = $event->exclusions()->lockForUpdate()->get()
+                    ->map(fn (Model $exclusion): array => [
+                        (int) $exclusion->getAttribute('user_a_id'),
+                        (int) $exclusion->getAttribute('user_b_id'),
+                    ])->all();
+                $results = (new DrawAlgorithmService)->execute($acceptedParticipants, $exclusions);
+
                 foreach ($results as $drawerId => $targetId) {
                     $draw = AmigoSecretoDraw::create([
                         'event_id' => $event->id,
@@ -67,11 +59,16 @@ class ExecuteDraw extends Component
 
                 $event->update(['status' => 'DRAWS_COMPLETE']);
                 NotificationService::assignmentsAvailable($event);
+
+                return true;
             });
 
             $this->event = $event->refresh();
 
-            $this->dispatch('notification', ['message' => __('messages.amigo_secreto.draw_complete'), 'type' => 'success']);
+            $this->dispatch('notification', [
+                'message' => __($drawn ? 'messages.amigo_secreto.draw_complete' : 'messages.amigo_secreto.already_drawn'),
+                'type' => $drawn ? 'success' : 'error',
+            ]);
         } catch (RuntimeException $e) {
             $this->dispatch('notification', ['message' => __('messages.amigo_secreto.draw_impossible'), 'type' => 'error']);
         }

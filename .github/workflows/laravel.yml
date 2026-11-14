@@ -184,7 +184,7 @@ jobs:
           set -euo pipefail
           python3 -B tests/Tooling/event_join_mysql_test.py
           docker pull --platform linux/amd64 mysql@sha256:0845b57a4927c2e2e442b0c3c154ebf2bdede7d6e1cb3b5a4b3e8bc1d0e69e22
-          python3 -B tests/Tooling/event_join_mysql.py --output coverage/event-join-mysql
+          python3 -B tests/Tooling/event_join_mysql.py --admission --output coverage/event-join-mysql
 
       - name: Upload native MySQL evidence
         if: always()

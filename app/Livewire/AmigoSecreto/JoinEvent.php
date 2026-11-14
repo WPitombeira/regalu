@@ -4,6 +4,7 @@ namespace App\Livewire\AmigoSecreto;
 
 use App\Models\AmigoSecretoEvent;
 use App\Models\AmigoSecretoParticipant;
+use App\Services\EventRoster;
 use App\Services\NotificationInbox;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -39,51 +40,57 @@ class JoinEvent extends Component
             return null;
         }
 
-        $alreadyParticipant = $event->participants()
-            ->where('user_id', Auth::id())
-            ->exists();
+        $joined = EventRoster::locked($event->id, function (AmigoSecretoEvent $event): ?bool {
+            abort_unless($event->event_code === strtoupper($this->eventCode), 403);
+            $alreadyParticipant = $event->participants()
+                ->where('user_id', Auth::id())->lockForUpdate()->first();
 
-        if ($alreadyParticipant) {
-            return redirect()->route('amigo-secreto.show', $event);
+            if ($alreadyParticipant) {
+                return false;
+            }
+
+            Gate::authorize('join', $event);
+
+            $eligibleEvent = AmigoSecretoEvent::whereKey($event->id)
+                ->where('event_code', strtoupper($this->eventCode))->where('is_archived', false)
+                ->whereNotIn('status', ['DRAWS_COMPLETE', 'REVEALED', 'COMPLETED'])
+                ->whereExists(DB::table('users')->selectRaw('1')->where('id', Auth::id()))
+                ->whereNotExists(DB::table('amigo_secreto_participants as existing')->selectRaw('1')
+                    ->whereColumn('existing.event_id', 'amigo_secreto_events.id')->where('existing.user_id', Auth::id()));
+
+            // Reuse only invitations offered to this account by the dashboard.
+            $invitations = app(NotificationInbox::class)->eventInvitationsFor(Auth::user())
+                ->where('event_id', $event->id)->whereExists((clone $eligibleEvent)->select('id'));
+            $pendingInvite = (clone $invitations)->orderBy('id')->lockForUpdate()->first();
+
+            if ($pendingInvite) {
+                // DISTINCT prevents MySQL from merging this derived table back into
+                // the UPDATE target. All eligibility checks still run in this write.
+                $eligibleInvitation = $invitations->whereKey($pendingInvite->id)->select('id')->distinct();
+                $written = AmigoSecretoParticipant::whereKey($pendingInvite->id)
+                    ->whereIn('id', DB::query()->fromSub($eligibleInvitation, 'eligible_invitation')->select('id'))
+                    ->update([
+                        'user_id' => Auth::id(),
+                        'status' => 'ACCEPTED',
+                        'accepted_at' => now(),
+                    ]);
+            } else {
+                $timestamp = now();
+                $eligibleEvent->selectRaw('id, ?, ?, ?, ?, ?', [Auth::id(), 'ACCEPTED', $timestamp, $timestamp, $timestamp]);
+                $written = DB::table('amigo_secreto_participants')->insertUsing(
+                    ['event_id', 'user_id', 'status', 'accepted_at', 'created_at', 'updated_at'],
+                    $eligibleEvent
+                );
+            }
+
+            return $written === 1 ? true : null;
+        });
+
+        abort_if($joined === null, 403);
+
+        if ($joined) {
+            $this->dispatch('notification', ['message' => 'You have joined the event!', 'type' => 'success']);
         }
-
-        Gate::authorize('join', $event);
-
-        $eligibleEvent = AmigoSecretoEvent::whereKey($event->id)
-            ->where('event_code', strtoupper($this->eventCode))->where('is_archived', false)
-            ->whereNotIn('status', ['DRAWS_COMPLETE', 'REVEALED', 'COMPLETED'])
-            ->whereExists(DB::table('users')->selectRaw('1')->where('id', Auth::id()))
-            ->whereNotExists(DB::table('amigo_secreto_participants as existing')->selectRaw('1')
-                ->whereColumn('existing.event_id', 'amigo_secreto_events.id')->where('existing.user_id', Auth::id()));
-
-        // Reuse only invitations offered to this account by the dashboard.
-        $invitations = app(NotificationInbox::class)->eventInvitationsFor(Auth::user())
-            ->where('event_id', $event->id)->whereExists((clone $eligibleEvent)->select('id'));
-        $pendingInvite = (clone $invitations)->orderBy('id')->first();
-
-        if ($pendingInvite) {
-            // DISTINCT prevents MySQL from merging this derived table back into
-            // the UPDATE target. All eligibility checks still run in this write.
-            $eligibleInvitation = $invitations->whereKey($pendingInvite->id)->select('id')->distinct();
-            $written = AmigoSecretoParticipant::whereKey($pendingInvite->id)
-                ->whereIn('id', DB::query()->fromSub($eligibleInvitation, 'eligible_invitation')->select('id'))
-                ->update([
-                    'user_id' => Auth::id(),
-                    'status' => 'ACCEPTED',
-                    'accepted_at' => now(),
-                ]);
-        } else {
-            $timestamp = now();
-            $eligibleEvent->selectRaw('id, ?, ?, ?, ?, ?', [Auth::id(), 'ACCEPTED', $timestamp, $timestamp, $timestamp]);
-            $written = DB::table('amigo_secreto_participants')->insertUsing(
-                ['event_id', 'user_id', 'status', 'accepted_at', 'created_at', 'updated_at'],
-                $eligibleEvent
-            );
-        }
-
-        abort_unless($written === 1, 403);
-
-        $this->dispatch('notification', ['message' => 'You have joined the event!', 'type' => 'success']);
 
         return redirect()->route('amigo-secreto.show', $event);
     }

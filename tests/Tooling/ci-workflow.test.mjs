@@ -198,7 +198,7 @@ test('event admission runs a pinned native MySQL probe and retains fail-closed e
     assert.match(step, /TMPDIR: \$\{\{ runner\.temp \}\}/);
     assert.match(step, /docker pull --platform linux\/amd64 mysql@sha256:0845b57a4927c2e2e442b0c3c154ebf2bdede7d6e1cb3b5a4b3e8bc1d0e69e22/);
     assert.match(step, /python3 -B tests\/Tooling\/event_join_mysql_test\.py/);
-    assert.match(step, /python3 -B tests\/Tooling\/event_join_mysql\.py --output coverage\/event-join-mysql/);
+    assert.match(step, /python3 -B tests\/Tooling\/event_join_mysql\.py --admission --output coverage\/event-join-mysql\s*$/m);
     assert.doesNotMatch(step, /continue-on-error|\|\|\s*true/);
     const upload = tests.match(/      - name: Upload native MySQL evidence[\s\S]*?(?=\n      - name:)/)?.[0];
     assert.ok(upload, 'missing native MySQL evidence upload');

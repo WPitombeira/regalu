@@ -4,6 +4,7 @@ namespace App\Livewire\AmigoSecreto;
 
 use App\Models\AmigoSecretoEvent;
 use App\Models\AmigoSecretoExclusion;
+use App\Services\EventRoster;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule as ValidationRule;
@@ -29,37 +30,37 @@ class ManageExclusions extends Component
     public function addExclusion(): void
     {
         $event = $this->authorizedEvent('update');
-        $acceptedParticipant = ValidationRule::exists('amigo_secreto_participants', 'user_id')
-            ->where('event_id', $event->id)
-            ->where('status', 'ACCEPTED');
-        $this->validate([
-            'userAId' => ['required', 'integer', 'different:userBId', $acceptedParticipant],
-            'userBId' => ['required', 'integer', 'different:userAId', $acceptedParticipant],
-        ]);
+        $created = EventRoster::locked($event->id, function (AmigoSecretoEvent $event): bool {
+            Gate::authorize('update', $event);
+            $acceptedIds = $event->participants()->where('status', 'ACCEPTED')->whereNotNull('user_id')
+                ->lockForUpdate()->pluck('user_id')->all();
+            $this->validate([
+                'userAId' => ['required', 'integer', 'different:userBId', ValidationRule::in($acceptedIds)],
+                'userBId' => ['required', 'integer', 'different:userAId', ValidationRule::in($acceptedIds)],
+            ]);
 
-        $exists = $event->exclusions()
-            ->where(function ($query) {
-                $query->where('user_a_id', $this->userAId)
-                    ->where('user_b_id', $this->userBId);
-            })
-            ->orWhere(function ($query) {
-                $query->where('event_id', $this->event->id)
-                    ->where('user_a_id', $this->userBId)
-                    ->where('user_b_id', $this->userAId);
-            })
-            ->exists();
+            $existing = $event->exclusions()->where(function ($query) {
+                $query->where(fn ($pair) => $pair->where('user_a_id', $this->userAId)->where('user_b_id', $this->userBId))
+                    ->orWhere(fn ($pair) => $pair->where('user_a_id', $this->userBId)->where('user_b_id', $this->userAId));
+            })->lockForUpdate()->first();
 
-        if ($exists) {
-            $this->addError('userAId', 'This exclusion pair already exists.');
+            if ($existing) {
+                $this->addError('userAId', 'This exclusion pair already exists.');
 
+                return false;
+            }
+
+            AmigoSecretoExclusion::create([
+                'event_id' => $event->id,
+                'user_a_id' => $this->userAId,
+                'user_b_id' => $this->userBId,
+            ]);
+
+            return true;
+        });
+        if (! $created) {
             return;
         }
-
-        AmigoSecretoExclusion::create([
-            'event_id' => $event->id,
-            'user_a_id' => $this->userAId,
-            'user_b_id' => $this->userBId,
-        ]);
 
         $this->dispatch('notification', ['message' => 'Exclusion added.', 'type' => 'success']);
         $this->userAId = null;
@@ -71,8 +72,10 @@ class ManageExclusions extends Component
     {
         $event = $this->authorizedEvent('update');
 
-        $exclusion = $event->exclusions()->findOrFail($exclusionId);
-        $exclusion->delete();
+        EventRoster::locked($event->id, function (AmigoSecretoEvent $event) use ($exclusionId): void {
+            Gate::authorize('update', $event);
+            $event->exclusions()->lockForUpdate()->findOrFail($exclusionId)->delete();
+        });
         $this->event = $event->refresh();
     }
 

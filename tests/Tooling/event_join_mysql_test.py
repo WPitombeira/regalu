@@ -50,6 +50,15 @@ class AdmissionTests(unittest.TestCase):
 
 
 class CommandTests(unittest.TestCase):
+    def test_native_bootstrap_failure_reports_driver_codes_without_bindings(self):
+        source = (runner.ROOT / 'tests/Tooling/event_join_mysql.php').read_text()
+        handler = source.split('set_exception_handler(', 1)[1].split('$connection =', 1)[0]
+        self.assertIn("'sqlstate'", handler)
+        self.assertIn("'driver_code'", handler)
+        self.assertIn("'statement'", handler)
+        self.assertNotIn('getBindings', handler)
+        self.assertNotIn('getMessage', handler)
+
     def test_success_and_nonzero_preserve_separate_streams(self):
         result = command([sys.executable, '-c', 'import sys; print("out"); print("err", file=sys.stderr); sys.exit(7)'])
         self.assertEqual((result.returncode, result.stdout, result.stderr), (7, 'out\n', 'err\n'))
@@ -84,10 +93,54 @@ class CommandTests(unittest.TestCase):
             self.assertFalse(marker.exists(), 'descendant survived cancellation')
 
 
+class ReceiptTests(unittest.TestCase):
+    def valid(self):
+        cases = ['same_account', 'same_email', 'draw_twice', 'invite_then_join', 'join_then_invite',
+                 'draw_then_join', 'join_then_draw', 'draw_then_remove', 'remove_then_draw',
+                 'draw_then_exclude', 'exclude_then_draw', 'draw_then_unexclude', 'unexclude_then_draw',
+                 'rollback_invite', 'consent_then_remove', 'remove_then_consent']
+        drivers = []
+        for driver in ('mysql', 'sqlite'):
+            records = []
+            for case in cases + (['rr_join', 'rr_invite'] if driver == 'mysql' else []):
+                denied = case.startswith('draw_then_') or case == 'remove_then_consent'
+                duplicate = case in ('same_email', 'rr_invite', 'join_then_invite')
+                records.append({'case': case, 'passed': True,
+                    'barrier': 'mysql_event_row_wait' if driver == 'mysql' else 'sqlite_busy_then_explicit_retry',
+                    'outcomes': ['ok', 'http_403' if denied else ('validation' if duplicate else 'ok')],
+                    'workers': 2, 'native_exits': [0, 0]})
+            drivers.append({'driver': driver, 'migration': {'passed': True, 'populated_round_trip': True,
+                'native_unique_rejections': True, 'account_collision_preserved': True, 'email_collision_preserved': True},
+                'cases': records})
+        return {'passed': True, 'drivers': drivers}
+
+    def test_complete_receipt_and_negative_mutations(self):
+        valid = self.valid()
+        runner.verify_admission(valid)
+        broken = []
+        for mutate in (
+            lambda x: x['drivers'].pop(),
+            lambda x: x['drivers'][0]['cases'].pop(),
+            lambda x: x['drivers'][0]['cases'].append(x['drivers'][0]['cases'][0]),
+            lambda x: x['drivers'][0]['cases'][0].update(barrier='sleep'),
+            lambda x: x['drivers'][0]['cases'][0].update(native_exits=[0, 1]),
+            lambda x: x['drivers'][0]['cases'][0].update(native_exits=[False, 0]),
+            lambda x: x['drivers'][0]['cases'][0].update(outcomes=['ok', 'database_error']),
+            lambda x: x['drivers'][0]['migration'].update(native_unique_rejections=False),
+            lambda x: x.update(passed=1),
+        ):
+            candidate = copy.deepcopy(valid)
+            mutate(candidate)
+            broken.append(candidate)
+        for candidate in broken:
+            with self.subTest(candidate=candidate), self.assertRaises(AssertionError):
+                runner.verify_admission(candidate)
+
+
 class LifecycleTests(unittest.TestCase):
     """Synthetic Docker/PHP boundary only; real runner, files and cleanup."""
 
-    def exercise(self, fault):
+    def exercise(self, fault, admission=False):
         cid = '2' * 64
         baseline = '1' * 64
         state = {'created': False, 'removed': False, 'starts': 0, 'removals': 0}
@@ -97,6 +150,9 @@ class LifecycleTests(unittest.TestCase):
                 return subprocess.CompletedProcess(args, code, out, err)
 
             if args[0] == 'php':
+                if admission:
+                    self.assertEqual(kwargs['env']['REGALU_ADMISSION'], '1')
+                    self.assertEqual(json.loads(kwargs['env']['REGALU_PROBE_PHP']), args[:-1])
                 return result(json.dumps({'passed': True, 'driver': 'mysql', 'version': '8.0.46',
                     'migrations': len(list((runner.ROOT / 'database/migrations').glob('*.php'))),
                     'source_sha256': hashlib.sha256((runner.ROOT / 'app/Livewire/AmigoSecreto/JoinEvent.php').read_bytes()).hexdigest(),
@@ -158,7 +214,7 @@ class LifecycleTests(unittest.TestCase):
             output = Path(directory) / 'evidence'
             try:
                 with synthetic_resources(), \
-                        patch.object(sys, 'argv', ['event_join_mysql.py', '--output', str(output)]), \
+                        patch.object(sys, 'argv', ['event_join_mysql.py', '--output', str(output)] + (['--admission'] if admission else [])), \
                         patch.object(runner, 'command', side_effect=external), redirect_stdout(io.StringIO()):
                     code = runner.main()
                 report = json.loads((output / 'receipt.json').read_text())
@@ -175,6 +231,34 @@ class LifecycleTests(unittest.TestCase):
         self.assertTrue(report['cleanup_verified'])
         self.assertFalse(state['fixture'].exists())
         self.assertEqual((state['starts'], state['removals']), (1, 1))
+
+    def test_admission_mode_cannot_accept_the_old_join_receipt(self):
+        code, report, state = self.exercise(None, admission=True)
+        self.assertEqual(code, 1)
+        self.assertFalse(report['passed'])
+        self.assertTrue(report['cleanup_verified'])
+        self.assertEqual((state['starts'], state['removals']), (1, 1))
+
+    def test_receipt_binds_the_application_schema_and_probe_sources(self):
+        code, report, _ = self.exercise(None)
+        self.assertEqual(code, 0)
+        sources = report.get('source_hashes', {})
+        for name in ('tests/Tooling/event_admission_probe.php', 'tests/Tooling/event_join_mysql.php',
+                     'tests/Tooling/event_join_mysql.py', 'app/Services/EventRoster.php',
+                     'app/Livewire/AmigoSecreto/CreateEvent.php', 'app/Livewire/AmigoSecreto/ExecuteDraw.php',
+                     'database/migrations/2026_11_14_000001_enforce_event_participant_identity.php',
+                     'composer.lock', 'bootstrap/app.php', 'config/database.php'):
+            self.assertEqual(sources.get(name), hashlib.sha256((runner.ROOT / name).read_bytes()).hexdigest(), name)
+        self.assertTrue(report.get('sources_unchanged'))
+
+    def test_source_drift_cannot_return_success_and_still_cleans_up(self):
+        with patch.object(runner, 'source_hashes', create=True, side_effect=[{'fixture': 'a'}, {'fixture': 'b'}]):
+            code, report, state = self.exercise(None)
+        self.assertEqual(code, 1)
+        self.assertFalse(report['passed'])
+        self.assertFalse(report.get('sources_unchanged', True))
+        self.assertTrue(report['cleanup_verified'])
+        self.assertEqual(state['removals'], 1)
 
     def test_lost_create_ack_reconciles_and_removes_once_but_stays_failed(self):
         code, report, state = self.exercise('create_ack')

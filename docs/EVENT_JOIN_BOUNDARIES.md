@@ -2,6 +2,8 @@
 
 ## Contract
 
+This document describes the original final-write slice. [EVENT_ADMISSION_CONCURRENCY.md](EVENT_ADMISSION_CONCURRENCY.md) adds event-first serialization, database identity constraints and native two-process qualification; its newer concurrency/schema contract supersedes the original limitations below.
+
 `JoinEvent::join()` keeps authenticated code admission separate from email invitation identity. A valid current event code can admit an account without an email invitation. When the dashboard offers this account a pending invitation, joining reuses that exact row rather than creating a second participant.
 
 - Invitation eligibility comes from `NotificationInbox::eventInvitationsFor()`: normalized email matching, a unique matching account, a null participant user, `INVITED` state, and current event eligibility. If several eligible invitations exist, the lowest ID is selected deterministically; this change does not repair historical duplicates.
@@ -23,7 +25,7 @@ The successful destination header now stacks its title/status and event-type bad
 
 `JoinEventPresentationTest.php` checks the responsive header wiring through actual rendered HTML. It is markup evidence; the browser supplies the layout evidence. Existing join and resource-authorization tests remain in the focused gate.
 
-Controlled statement-boundary SQLite tests **do not prove parallel-process serialization or other-dialect boundary behavior**. There is no new unique event/user constraint or all-writer locking protocol. Conditional insertion bypasses model creation hooks; the current participant model has no creation observer to preserve. These limitations must be reevaluated before adding a new database dialect or participant creation side effect.
+Controlled statement-boundary SQLite tests **do not prove parallel-process serialization or other-dialect boundary behavior**. The original final-write slice introduced no unique event/user constraint or all-writer locking protocol; the follow-up concurrency slice now covers the application's roster writers and identity constraints separately. Its legacy-duplicate selection test temporarily removes only those new guards from its isolated fixture. Conditional insertion bypasses model creation hooks; the current participant model has no creation observer to preserve. These limitations must be reevaluated before adding a new database dialect or participant creation side effect.
 
 ### Native MySQL compatibility
 
@@ -64,6 +66,6 @@ Reports require the exact case/checkpoint/check set, source and asset hashes, ch
 
 ### Publication gates
 
-The workflow runs the native MySQL probe and the complete browser matrix/report validator with failure propagation, uploading `event-join-mysql` receipts and `event-join-browser` JSON/PNG evidence. The tooling contract requires the commands, `-B`, pinned database image and fail-closed artifact absence. Existing PHP quality/audits, native/portable assets, coverage, release cache/migration/rollback, event-history and dashboard gates remain intact.
+The workflow now runs the native MySQL probe with `--admission` (the additional concurrency/migration matrix described in the follow-up document) and the complete browser matrix/report validator with failure propagation, uploading `event-join-mysql` receipts and `event-join-browser` JSON/PNG evidence. The tooling contract requires the commands, `-B`, pinned database image and fail-closed artifact absence. Existing PHP quality/audits, native/portable assets, coverage, release cache/migration/rollback, event-history and dashboard gates remain intact.
 
 Local results do not establish hosted exact-head CI, required branch-protection configuration, or deployment. Publication requires an independent review of the frozen native tree, matching committed bytes, and verification of the exact published head's hosted results and artifacts. No merge or deployment is part of this slice.

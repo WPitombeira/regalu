@@ -29,6 +29,9 @@ it('accepts the same normalized email invitation that the dashboard offers', fun
 });
 
 it('reuses only the lowest eligible invitation id and preserves duplicate history', function () {
+    // Explicit pre-migration compatibility fixture: the new constraint refuses
+    // this historical shape without deleting it (see ParticipantIdentityMigrationTest).
+    (require database_path('migrations/2026_11_14_000001_enforce_event_participant_identity.php'))->down();
     $user = User::factory()->create(['email' => 'guest@example.test']);
     $event = AmigoSecretoEvent::factory()->create();
     $first = AmigoSecretoParticipant::create([

@@ -8,6 +8,7 @@ use App\Models\Family;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
@@ -88,26 +89,30 @@ class CreateEvent extends Component
             abort_if($family->is_archived, 403);
         }
 
-        $event = AmigoSecretoEvent::create([
-            'organizer_id' => Auth::id(),
-            'family_id' => $this->family_id,
-            'name' => $this->name,
-            'description' => $this->description ?: null,
-            'event_type' => $this->event_type,
-            'budget_min' => blank($this->budget_min) ? null : $this->budget_min,
-            'budget_max' => blank($this->budget_max) ? null : $this->budget_max,
-            'event_date' => $this->event_date ?: null,
-            'reveal_date' => $this->reveal_date ?: null,
-            'recipient_visibility' => $this->recipient_visibility,
-            'status' => 'PLANNING',
-        ]);
+        $event = DB::transaction(function (): AmigoSecretoEvent {
+            $event = AmigoSecretoEvent::create([
+                'organizer_id' => Auth::id(),
+                'family_id' => $this->family_id,
+                'name' => $this->name,
+                'description' => $this->description ?: null,
+                'event_type' => $this->event_type,
+                'budget_min' => blank($this->budget_min) ? null : $this->budget_min,
+                'budget_max' => blank($this->budget_max) ? null : $this->budget_max,
+                'event_date' => $this->event_date ?: null,
+                'reveal_date' => $this->reveal_date ?: null,
+                'recipient_visibility' => $this->recipient_visibility,
+                'status' => 'PLANNING',
+            ]);
 
-        AmigoSecretoParticipant::create([
-            'event_id' => $event->id,
-            'user_id' => Auth::id(),
-            'status' => 'ACCEPTED',
-            'accepted_at' => now(),
-        ]);
+            AmigoSecretoParticipant::create([
+                'event_id' => $event->id,
+                'user_id' => Auth::id(),
+                'status' => 'ACCEPTED',
+                'accepted_at' => now(),
+            ]);
+
+            return $event;
+        });
 
         $this->dispatch('notification', ['message' => __('messages.amigo_secreto.created'), 'type' => 'success']);
 
