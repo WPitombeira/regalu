@@ -170,6 +170,44 @@ test('auth forms run real browser journeys and retain only structured evidence a
     assert.match(upload, /coverage\/auth-forms-browser\/results\.json\n\s+coverage\/auth-forms-browser\/\*\*\/\*\.png/);
 });
 
+test('event admission runs the complete browser matrix and validates always-uploaded evidence', () => {
+    const tests = job('tests');
+    const step = tests.match(/      - name: Exercise event join boundaries[\s\S]*?(?=\n      - name:)/)?.[0];
+    assert.ok(step, 'missing event join browser step');
+    assert.match(step, /set -euo pipefail/);
+    assert.match(step, /PLAYWRIGHT_BROWSERS_PATH: \$\{\{ runner\.temp \}\}\/regalu-browser-cache/);
+    assert.match(step, /"\$RUNNER_TEMP\/regalu-browser-venv\/bin\/python" -B tests\/Browser\/event_join_smoke\.py --output coverage\/event-join-browser/);
+    assert.match(step, /"\$RUNNER_TEMP\/regalu-browser-venv\/bin\/python" -B tests\/Browser\/event_join_report_test\.py --report coverage\/event-join-browser\/results\.json/);
+    assert.doesNotMatch(step, /continue-on-error|\|\|\s*true|--case|--locale|--width/);
+    const upload = tests.match(/      - name: Upload event join browser evidence[\s\S]*?(?=\n      - name:)/)?.[0];
+    assert.ok(upload, 'missing event join artifact upload');
+    assert.match(upload, /if: always\(\)/);
+    assert.match(upload, /name: event-join-browser/);
+    assert.match(upload, /coverage\/event-join-browser\/results\.json/);
+    assert.match(upload, /coverage\/event-join-browser\/\*\*\/\*\.png/);
+    assert.match(upload, /if-no-files-found: error/);
+});
+
+test('event admission runs a pinned native MySQL probe and retains fail-closed evidence', () => {
+    const tests = job('tests');
+    assert.match(tests, /extensions: [^\n]*pdo_mysql/);
+    assert.match(tests, /extension_loaded\("pdo_mysql"\)/);
+    const step = tests.match(/      - name: Exercise event admission on native MySQL[\s\S]*?(?=\n      - name:)/)?.[0];
+    assert.ok(step, 'missing native MySQL step');
+    assert.match(step, /set -euo pipefail/);
+    assert.match(step, /TMPDIR: \$\{\{ runner\.temp \}\}/);
+    assert.match(step, /docker pull --platform linux\/amd64 mysql@sha256:0845b57a4927c2e2e442b0c3c154ebf2bdede7d6e1cb3b5a4b3e8bc1d0e69e22/);
+    assert.match(step, /python3 -B tests\/Tooling\/event_join_mysql_test\.py/);
+    assert.match(step, /python3 -B tests\/Tooling\/event_join_mysql\.py --output coverage\/event-join-mysql/);
+    assert.doesNotMatch(step, /continue-on-error|\|\|\s*true/);
+    const upload = tests.match(/      - name: Upload native MySQL evidence[\s\S]*?(?=\n      - name:)/)?.[0];
+    assert.ok(upload, 'missing native MySQL evidence upload');
+    assert.match(upload, /if: always\(\)/);
+    assert.match(upload, /name: event-join-mysql/);
+    assert.match(upload, /coverage\/event-join-mysql\/\*\.json/);
+    assert.match(upload, /if-no-files-found: error/);
+});
+
 test('Dependabot checks Composer, npm, and GitHub Actions weekly with grouped patch/minor updates', () => {
     for (const ecosystem of ['composer', 'npm', 'github-actions']) {
         assert.match(dependabot, new RegExp(`package-ecosystem: ${ecosystem}`));

@@ -141,7 +141,7 @@ jobs:
       - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: '8.5.12'
-          extensions: mbstring, pdo_sqlite, xml, curl, zip, sockets
+          extensions: mbstring, pdo_sqlite, pdo_mysql, xml, curl, zip, sockets
           tools: composer:2.11.1
           coverage: pcov
 
@@ -156,7 +156,7 @@ jobs:
 
       - name: Verify required PHP extensions and PCOV
         run: |
-          php -r 'if (! extension_loaded("curl") || ! extension_loaded("dom") || ! extension_loaded("pdo_sqlite") || ! extension_loaded("sockets") || ! extension_loaded("pcov")) { fwrite(STDERR, "Required PHP extension missing\n"); exit(1); }'
+          php -r 'if (! extension_loaded("curl") || ! extension_loaded("dom") || ! extension_loaded("pdo_sqlite") || ! extension_loaded("pdo_mysql") || ! extension_loaded("sockets") || ! extension_loaded("pcov")) { fwrite(STDERR, "Required PHP extension missing\n"); exit(1); }'
 
       - name: Install Composer dependencies from lockfile
         run: composer install --no-interaction --no-progress --prefer-dist
@@ -176,6 +176,26 @@ jobs:
         run: |
           mkdir -p coverage
           php artisan test --coverage --min=80 --coverage-clover=coverage/clover.xml --log-junit=coverage/junit.xml
+
+      - name: Exercise event admission on native MySQL
+        env:
+          TMPDIR: ${{ runner.temp }}
+        run: |
+          set -euo pipefail
+          python3 -B tests/Tooling/event_join_mysql_test.py
+          docker pull --platform linux/amd64 mysql@sha256:0845b57a4927c2e2e442b0c3c154ebf2bdede7d6e1cb3b5a4b3e8bc1d0e69e22
+          python3 -B tests/Tooling/event_join_mysql.py --output coverage/event-join-mysql
+
+      - name: Upload native MySQL evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: event-join-mysql
+          path: |
+            coverage/event-join-mysql/*.json
+            coverage/event-join-mysql/*.txt
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Release configuration and database boot smoke
         env:
@@ -518,6 +538,25 @@ jobs:
             coverage/family-mutations-browser/results.json
             coverage/family-mutations-browser/**/*.png
           if-no-files-found: warn
+          retention-days: 14
+
+      - name: Exercise event join boundaries in English and Portuguese on desktop and mobile
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/regalu-browser-cache
+        run: |
+          set -euo pipefail
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/event_join_smoke.py --output coverage/event-join-browser
+          "$RUNNER_TEMP/regalu-browser-venv/bin/python" -B tests/Browser/event_join_report_test.py --report coverage/event-join-browser/results.json
+
+      - name: Upload event join browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: event-join-browser
+          path: |
+            coverage/event-join-browser/results.json
+            coverage/event-join-browser/**/*.png
+          if-no-files-found: error
           retention-days: 14
 
       - name: Upload PHP coverage reports

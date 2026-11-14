@@ -1,10 +1,10 @@
 <div>
     <div class="max-w-4xl mx-auto">
         {{-- Header --}}
-        <div class="flex items-start justify-between mb-8">
-            <div>
-                <div class="flex items-center gap-3 mb-2">
-                    <h1 class="text-3xl font-bold text-gray-100">{{ $event->name }}</h1>
+        <div class="flex flex-col items-start justify-between gap-3 mb-8 sm:flex-row">
+            <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-3 mb-2">
+                    <h1 class="min-w-0 break-words text-3xl font-bold text-gray-100">{{ $event->name }}</h1>
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                         @switch($event->status)
                             @case('PLANNING') bg-yellow-900 text-yellow-300 @break
@@ -22,7 +22,7 @@
                     <p class="text-gray-400">{{ $event->description }}</p>
                 @endif
             </div>
-            <span class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-gray-700 text-gray-300">
+            <span class="inline-flex shrink-0 items-center px-3 py-1 rounded-lg text-sm font-medium bg-gray-700 text-gray-300">
                 {{ $event->event_type }}
             </span>
         </div>
